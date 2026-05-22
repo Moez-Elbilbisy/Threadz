@@ -26,7 +26,7 @@ export async function onRequest(context) {
         return raw ? JSON.parse(raw) : null;
       }))
     ).filter(Boolean);
-    return json({ user: { fullName: user.fullName, email: user.email }, orders });
+    return json({ user: { fullName: user.fullName, email: user.email, address: user.address || null }, orders });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
