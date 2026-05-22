@@ -37,18 +37,22 @@ export async function onRequest(context) {
       }), { status: 400 });
     }
 
-    // Cancel in Bosta too if we have a shipmentId
+    // Cancel in Bosta too
     if (order.orderId && context.env.BOSTA_API_KEY) {
       try {
-        await fetch(
+        const bostaRes = await fetch(
           `https://app.bosta.co/api/v2/deliveries/${order.orderId}/cancel`,
           {
             method: "POST",
             headers: { Authorization: context.env.BOSTA_API_KEY },
           }
         );
+        const bostaData = await bostaRes.json();
+        if (!bostaRes.ok) {
+          console.error("Bosta cancel API error:", bostaData);
+        }
       } catch (bostaErr) {
-        console.error("Bosta cancel error (non-fatal):", bostaErr);
+        console.error("Bosta cancel network error (non-fatal):", bostaErr);
       }
     }
 

@@ -101,7 +101,7 @@ export async function onRequestPost(context) {
           items: data.items || [],
           status: "created",
           createdAt: new Date().toISOString(),
-          orderId: result?._id,
+          orderId: result?.data?._id,
         }));
         if (data.email) {
           const ords = JSON.parse((await env.ORDERS.get(`user-orders:${data.email.toLowerCase()}`)) || "[]");
