@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Order | Threadz Premium Streetwear</title>
-    <meta name="description" content="Track your Threadz order in real-time. Enter your tracking number to see the latest status and delivery timeline.">
+    <title>My Orders | Threadz Premium Streetwear</title>
+    <meta name="description" content="View and track all your Threadz orders in one place.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -92,7 +92,7 @@
                     <a href="collections.html">Collections</a>
                     <a href="about.html">About</a>
                     <a href="journal.html">Journal</a>
-                    <a href="track.html" class="active">Track</a>
+                    <a href="track.html" class="active">Orders</a>
                     <a href="account.html">Account</a>
                 <div class="nav-icons">
                     <button aria-label="Search" class="icon-btn">
@@ -129,10 +129,10 @@
                 <div class="breadcrumbs">
                     <a href="index.html">Home</a>
                     <span>/</span>
-                    <span class="current">Track</span>
+                    <span class="current">Orders</span>
                 </div>
-                <h1>TRACK YOUR ORDER</h1>
-                <p>Enter your tracking number to see real-time delivery updates.</p>
+                <h1>MY ORDERS</h1>
+                <p>View and track all your orders.</p>
             </div>
         </header>
 
@@ -142,9 +142,13 @@
 
                 <!-- Order List (logged-in users) -->
                 <div id="order-list-section">
-                    <div class="track-search-card" id="order-list-header" style="display:none;">
-                        <h2>Your Orders</h2>
-                        <p>Select an order to track its delivery status.</p>
+                    <div id="order-list-header" style="display:none;">
+                        <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm order-filter active" data-filter="all" onclick="setFilter('all')">All</button>
+                            <button class="btn btn-outline btn-sm order-filter" data-filter="ordered" onclick="setFilter('ordered')">Ordered</button>
+                            <button class="btn btn-outline btn-sm order-filter" data-filter="delivered" onclick="setFilter('delivered')">Delivered</button>
+                            <button class="btn btn-outline btn-sm order-filter" data-filter="cancelled" onclick="setFilter('cancelled')">Cancelled</button>
+                        </div>
                     </div>
                     <div id="order-list"></div>
                 </div>
@@ -263,7 +267,7 @@
                 <div class="footer-links">
                     <h4>Support</h4>
                     <ul>
-                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="track.html">My Orders</a></li>
                         <li><a href="account.html">My Account</a></li>
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Shipping & Returns</a></li>
@@ -305,7 +309,7 @@
             <a href="collections.html" class="mobile-link">Collections</a>
             <a href="about.html" class="mobile-link">About</a>
             <a href="journal.html" class="mobile-link">Journal</a>
-            <a href="track.html" class="mobile-link">Track Order</a>
+            <a href="track.html" class="mobile-link">My Orders</a>
             <a href="account.html" class="mobile-link">My Account</a>
             <a href="cart.html" class="mobile-link">Cart</a>
         </div>
@@ -464,6 +468,15 @@
                 }
             }
 
+            let currentFilter = 'all';
+            let allOrders = [];
+
+            window.setFilter = function(filter) {
+                currentFilter = filter;
+                document.querySelectorAll('.order-filter').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+                renderOrderList(allOrders);
+            };
+
             window.cancelOrder = async function(trackingNumber) {
                 if (!confirm('Are you sure you want to cancel this order?')) return;
                 const token = localStorage.getItem('threadz_token');
@@ -508,24 +521,29 @@
             });
 
             function renderOrderList(orders) {
-                if (orders.length === 0) {
-                    orderListSection.innerHTML = '<div class="track-search-card"><p style="color:var(--muted);">No orders yet. <a href="shop.html" style="color:var(--gold);">Start shopping</a></p></div>';
+                allOrders = orders;
+                const filtered = currentFilter === 'all' ? orders : orders.filter(o => o.status === currentFilter);
+                if (filtered.length === 0) {
+                    orderListSection.innerHTML = '<div class="track-search-card"><p style="color:var(--muted);">No orders found. <a href="shop.html" style="color:var(--gold);">Start shopping</a></p></div>';
                     return;
                 }
-                orderListSection.innerHTML = orders.map(o => {
+                orderListSection.innerHTML = filtered.map(o => {
                     const items = o.items?.map(i => `${i.name} x${i.qty}`).join(', ') || '';
                     const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-                    const statusClass = o.status || '';
+                    const isActive = o.status !== 'delivered' && o.status !== 'cancelled';
                     return `<div class="track-search-card" style="cursor:pointer;text-align:left;">
                         <div onclick="showTracking('${o.trackingNumber}')">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
                                 <strong>#${o.trackingNumber || '?'}</strong>
-                                <span class="order-status ${statusClass}" style="font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--bg);text-transform:capitalize;">${o.status || 'Unknown'}</span>
+                                <span class="order-status ${o.status || ''}" style="font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--bg);text-transform:capitalize;">${o.status || 'Unknown'}</span>
                             </div>
                             <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem;">${items}</div>
                             <div style="font-size:0.8rem;color:var(--text-secondary);">${date} &middot; EGP ${(o.total || 0).toLocaleString()}</div>
                         </div>
-                        ${o.status !== 'delivered' && o.status !== 'cancelled' ? `<div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid rgba(201,168,76,0.1);"><button class="btn btn-outline btn-sm" style="color:#8a2a2a;border-color:#8a2a2a;" onclick="event.stopPropagation();cancelOrder('${o.trackingNumber}')">Cancel Order</button></div>` : ''}
+                        ${isActive ? `<div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid rgba(201,168,76,0.1);display:flex;gap:0.5rem;">
+                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();showTracking('${o.trackingNumber}')">Track Order</button>
+                            <button class="btn btn-outline btn-sm" style="color:#8a2a2a;border-color:#8a2a2a;" onclick="event.stopPropagation();cancelOrder('${o.trackingNumber}')">Cancel</button>
+                        </div>` : ''}
                     </div>`;
                 }).join('');
             }
