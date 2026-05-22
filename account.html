@@ -469,7 +469,7 @@
             const token = getToken();
             if (!token) { showLoggedOut(); return; }
             const result = await apiCall('/api/auth/me');
-            if (result.success) {
+            if (result.user) {
                 currentUser = result.user;
                 showLoggedIn(result.user, result.orders);
             } else {

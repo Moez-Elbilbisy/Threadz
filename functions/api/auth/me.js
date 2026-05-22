@@ -19,7 +19,13 @@ export async function onRequest(context) {
       return json({ error: "User not found" }, 404);
     }
 
-    const orders = await getUserOrders(env, payload.email);
+    const orderRefs = await getUserOrders(env, payload.email);
+    const orders = (
+      await Promise.all(orderRefs.map(async (tn) => {
+        const raw = await env.ORDERS.get(tn);
+        return raw ? JSON.parse(raw) : null;
+      }))
+    ).filter(Boolean);
     return json({ user: { fullName: user.fullName, email: user.email }, orders });
   } catch (e) {
     return json({ error: e.message }, 500);
