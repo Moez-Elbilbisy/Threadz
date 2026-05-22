@@ -140,14 +140,27 @@
         <section class="section" style="padding-top:2rem;">
             <div class="track-page">
 
-                <!-- Search Card -->
-                <div class="track-search-card">
+                <!-- Order List (logged-in users) -->
+                <div id="order-list-section">
+                    <div class="track-search-card" id="order-list-header" style="display:none;">
+                        <h2>Your Orders</h2>
+                        <p>Select an order to track its delivery status.</p>
+                    </div>
+                    <div id="order-list"></div>
+                </div>
+
+                <!-- Search Card (fallback) -->
+                <div class="track-search-card" id="track-search-card">
                     <h2>Track Your Shipment</h2>
                     <p>Enter your tracking number to see real-time delivery updates.</p>
                     <form class="track-form" id="track-form">
                         <input type="text" id="tracking-input" placeholder="Tracking number" required autocomplete="off">
                         <button type="submit">Track</button>
                     </form>
+                </div>
+
+                <div id="track-back" style="display:none;margin-bottom:1rem;">
+                    <button class="btn btn-outline btn-sm" onclick="showOrderList()">&larr; Back to orders</button>
                 </div>
 
                 <!-- Loading -->
@@ -202,19 +215,19 @@
                             </div>
                             <div class="detail-item">
                                 <div class="d-label">To</div>
-                                <div class="d-value" id="track-to">—</div>
+                                <div class="d-value" id="track-to">ï¿½</div>
                             </div>
                             <div class="detail-item">
                                 <div class="d-label">Tracking Number</div>
-                                <div class="d-value" id="track-number" style="font-family:monospace;">—</div>
+                                <div class="d-value" id="track-number" style="font-family:monospace;">ï¿½</div>
                             </div>
                             <div class="detail-item">
                                 <div class="d-label">Payment</div>
-                                <div class="d-value" id="track-payment">—</div>
+                                <div class="d-value" id="track-payment">ï¿½</div>
                             </div>
                             <div class="detail-item full">
                                 <div class="d-label">Last Update</div>
-                                <div class="d-value" id="track-last-update">—</div>
+                                <div class="d-value" id="track-last-update">ï¿½</div>
                             </div>
                         </div>
                     </div>
@@ -323,6 +336,10 @@
             const trackLastUpdate = document.getElementById('track-last-update');
             const timeline = document.getElementById('track-timeline');
             const stepperFill = document.getElementById('stepper-fill');
+            const orderListSection = document.getElementById('order-list');
+            const orderListHeader = document.getElementById('order-list-header');
+            const trackSearchCard = document.getElementById('track-search-card');
+            const trackBack = document.getElementById('track-back');
 
             const STATE_MAP = {
                 'created': 1, 'SHIPMENT_CREATED': 1,
@@ -363,7 +380,6 @@
                     }
                 });
 
-                // Show dates on completed steps from events
                 if (events && events.length) {
                     const stepDates = { 1: null, 2: null, 3: null, 4: null };
                     const evCopy = [...events].reverse();
@@ -403,11 +419,7 @@
                 });
             }
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const tn = input.value.trim();
-                if (!tn) return;
-
+            async function showTracking(tn) {
                 error.style.display = 'none';
                 result.style.display = 'none';
                 loading.style.display = 'block';
@@ -434,28 +446,97 @@
 
                     trackNum.textContent = tn;
                     trackFrom.textContent = 'Threadz Store, Cairo';
-                    trackTo.textContent = [d.street, d.building ? 'Bldg ' + d.building : '', d.apartment ? 'Apt ' + d.apartment : '', d.area, d.governorate].filter(Boolean).join(', ') || '—';
-                    trackPayment.textContent = d.paymentMethod === 'cod' ? 'Cash on Delivery' : d.paymentMethod === 'card' ? 'Card' : d.paymentMethod || '—';
-                    trackLastUpdate.textContent = d.updatedAt || d.createdAt ? formatDate(d.updatedAt || d.createdAt) : '—';
+                    trackTo.textContent = [d.street, d.building ? 'Bldg ' + d.building : '', d.apartment ? 'Apt ' + d.apartment : '', d.area, d.governorate].filter(Boolean).join(', ') || '?';
+                    trackPayment.textContent = d.paymentMethod === 'cod' ? 'Cash on Delivery' : d.paymentMethod === 'card' ? 'Card' : d.paymentMethod || '?';
+                    trackLastUpdate.textContent = d.updatedAt || d.createdAt ? formatDate(d.updatedAt || d.createdAt) : '?';
 
                     updateStepper(step, events);
                     renderTimeline(events);
                     result.style.display = 'block';
-
+                    orderListSection.style.display = 'none';
+                    trackSearchCard.style.display = 'none';
+                    orderListHeader.style.display = 'none';
+                    trackBack.style.display = 'block';
                 } catch (err) {
                     loading.style.display = 'none';
                     errorMsg.textContent = 'Something went wrong. Please try again.';
                     error.style.display = 'block';
                 }
+            }
+
+            window.showOrderList = function() {
+                result.style.display = 'none';
+                error.style.display = 'none';
+                loading.style.display = 'none';
+                trackBack.style.display = 'none';
+                const token = localStorage.getItem('threadz_token');
+                if (token) {
+                    orderListSection.style.display = 'block';
+                    trackSearchCard.style.display = 'none';
+                    orderListHeader.style.display = 'block';
+                } else {
+                    orderListSection.style.display = 'none';
+                    trackSearchCard.style.display = 'block';
+                }
+            };
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const tn = input.value.trim();
+                if (!tn) return;
+                await showTracking(tn);
             });
 
-            // Auto-submit from URL param
-            const params = new URLSearchParams(window.location.search);
-            const autoTn = params.get('tracking');
-            if (autoTn) {
-                input.value = autoTn;
-                form.dispatchEvent(new Event('submit'));
+            function renderOrderList(orders) {
+                if (orders.length === 0) {
+                    orderListSection.innerHTML = '<div class="track-search-card"><p style="color:var(--muted);">No orders yet. <a href="shop.html" style="color:var(--gold);">Start shopping</a></p></div>';
+                    return;
+                }
+                orderListSection.innerHTML = orders.map(o => {
+                    const items = o.items?.map(i => `${i.name} x${i.qty}`).join(', ') || '';
+                    const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                    const statusClass = o.status || '';
+                    return `<div class="track-search-card" style="cursor:pointer;text-align:left;" onclick="showTracking('${o.trackingNumber}')">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <strong>#${o.trackingNumber || '?'}</strong>
+                            <span class="order-status ${statusClass}" style="font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--bg);text-transform:capitalize;">${o.status || 'Unknown'}</span>
+                        </div>
+                        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem;">${items}</div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary);">${date} &middot; EGP ${(o.total || 0).toLocaleString()}</div>
+                    </div>`;
+                }).join('');
             }
+
+            async function init() {
+                const token = localStorage.getItem('threadz_token');
+                const params = new URLSearchParams(window.location.search);
+                const autoTn = params.get('tracking');
+
+                if (autoTn) {
+                    trackSearchCard.style.display = 'block';
+                    input.value = autoTn;
+                    form.dispatchEvent(new Event('submit'));
+                    return;
+                }
+
+                if (token) {
+                    try {
+                        const res = await fetch('/api/auth/me', {
+                            headers: { 'Authorization': 'Bearer ' + token },
+                        });
+                        const data = await res.json();
+                        if (data.user) {
+                            orderListHeader.style.display = 'block';
+                            trackSearchCard.style.display = 'none';
+                            renderOrderList(data.orders || []);
+                            return;
+                        }
+                    } catch {}
+                }
+                trackSearchCard.style.display = 'block';
+            }
+
+            init();
         });
     </script>
 </body>
