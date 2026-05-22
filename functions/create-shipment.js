@@ -82,7 +82,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    const trackingNumber = result?.data?.referenceNumber || result?.trackingNumber || result?._id;
+    const trackingNumber = result?.data?.referenceNumber || result?.data?.trackingNumber || result?.data?.fullTrackingNumber || result?.data?._id || result?._id;
 
     try {
       if (trackingNumber) {

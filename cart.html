@@ -952,7 +952,7 @@
 
                     if (result.success) {
                         checkoutBtn.style.display = 'none';
-                        trackingNumEl.textContent = result.trackingNumber || result.data?.trackingNumber || result.data?.data?.referenceNumber || result.data?.data?._id || '�';
+                        trackingNumEl.textContent = result.trackingNumber || '�';
                         orderSuccess.style.display = 'flex';
                         clearCart();
                         saveAddressLocal();
