@@ -528,6 +528,7 @@
                     <div class="order-card-meta">${date} &middot; EGP ${(o.total || 0).toLocaleString()} &middot; ${o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || '�'}</div>
                     <div class="order-card-actions">
                         <a href="track.html?tracking=${o.trackingNumber}" class="btn btn-outline btn-sm">Track Order</a>
+                        ${o.status !== 'delivered' && o.status !== 'cancelled' ? `<button class="btn btn-outline btn-sm" style="color:#8a2a2a;border-color:#8a2a2a;" onclick="cancelOrder('${o.trackingNumber}')">Cancel</button>` : ''}
                         <button class="btn btn-outline btn-sm" style="color:var(--gold-dim);border-color:rgba(201,168,76,0.2);" onclick="deleteOrder('${o.trackingNumber}')">Delete</button>
                     </div>
                 </div>`;
@@ -624,6 +625,23 @@
                 showLoggedIn(r.user, r.orders);
             } else {
                 alert(result.error || 'Failed to delete order');
+            }
+        };
+
+        window.cancelOrder = async function(trackingNumber) {
+            if (!confirm('Are you sure you want to cancel this order?')) return;
+            const token = getToken();
+            const res = await fetch('/cancel-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
+                body: JSON.stringify({ trackingNumber }),
+            });
+            const result = await res.json();
+            if (result.success) {
+                const r = await apiCall('/api/auth/me');
+                showLoggedIn(r.user, r.orders);
+            } else {
+                alert(result.error || 'Failed to cancel order');
             }
         };
 

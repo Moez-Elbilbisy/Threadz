@@ -464,6 +464,26 @@
                 }
             }
 
+            window.cancelOrder = async function(trackingNumber) {
+                if (!confirm('Are you sure you want to cancel this order?')) return;
+                const token = localStorage.getItem('threadz_token');
+                const res = await fetch('/cancel-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
+                    body: JSON.stringify({ trackingNumber }),
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const r = await fetch('/api/auth/me', {
+                        headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+                    });
+                    const data = await r.json();
+                    if (data.user) renderOrderList(data.orders || []);
+                } else {
+                    alert(result.error || 'Failed to cancel order');
+                }
+            };
+
             window.showOrderList = function() {
                 result.style.display = 'none';
                 error.style.display = 'none';
@@ -496,13 +516,16 @@
                     const items = o.items?.map(i => `${i.name} x${i.qty}`).join(', ') || '';
                     const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
                     const statusClass = o.status || '';
-                    return `<div class="track-search-card" style="cursor:pointer;text-align:left;" onclick="showTracking('${o.trackingNumber}')">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                            <strong>#${o.trackingNumber || '?'}</strong>
-                            <span class="order-status ${statusClass}" style="font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--bg);text-transform:capitalize;">${o.status || 'Unknown'}</span>
+                    return `<div class="track-search-card" style="cursor:pointer;text-align:left;">
+                        <div onclick="showTracking('${o.trackingNumber}')">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                                <strong>#${o.trackingNumber || '?'}</strong>
+                                <span class="order-status ${statusClass}" style="font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--bg);text-transform:capitalize;">${o.status || 'Unknown'}</span>
+                            </div>
+                            <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem;">${items}</div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);">${date} &middot; EGP ${(o.total || 0).toLocaleString()}</div>
                         </div>
-                        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.25rem;">${items}</div>
-                        <div style="font-size:0.8rem;color:var(--text-secondary);">${date} &middot; EGP ${(o.total || 0).toLocaleString()}</div>
+                        ${o.status !== 'delivered' && o.status !== 'cancelled' ? `<div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid rgba(201,168,76,0.1);"><button class="btn btn-outline btn-sm" style="color:#8a2a2a;border-color:#8a2a2a;" onclick="event.stopPropagation();cancelOrder('${o.trackingNumber}')">Cancel Order</button></div>` : ''}
                     </div>`;
                 }).join('');
             }
