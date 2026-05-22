@@ -7,4 +7,4 @@ pages_build_output_dir = "."
 # Then paste the ID below
 [[kv_namespaces]]
 binding = "ORDERS"
-id = "YOUR_NAMESPACE_ID"
+id = "9190f3f184944c9094bbeac430b89422"
