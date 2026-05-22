@@ -22,6 +22,7 @@ export async function onRequest(context) {
     }
 
     const order = JSON.parse(raw);
+    console.log("ORDER:", order);
 
     if (order.status === "delivered") {
       return new Response(JSON.stringify({
@@ -37,22 +38,27 @@ export async function onRequest(context) {
       }), { status: 400 });
     }
 
-    // Cancel in Bosta too
-    if (order.orderId && context.env.BOSTA_API_KEY) {
-      try {
-        const bostaRes = await fetch(
-          `https://app.bosta.co/api/v2/deliveries/${order.orderId}/cancel`,
-          {
-            method: "POST",
-            headers: { Authorization: context.env.BOSTA_API_KEY },
+    // Cancel in Bosta
+    if (order.shipmentId && context.env.BOSTA_API_KEY) {
+      const bostaRes = await fetch(
+        `https://app.bosta.co/api/v2/deliveries/${order.shipmentId}/cancel`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: context.env.BOSTA_API_KEY,
+            "Content-Type": "application/json"
           }
-        );
-        const bostaData = await bostaRes.json();
-        if (!bostaRes.ok) {
-          console.error("Bosta cancel API error:", bostaData);
         }
-      } catch (bostaErr) {
-        console.error("Bosta cancel network error (non-fatal):", bostaErr);
+      );
+      const bostaResult = await bostaRes.json();
+      console.log("BOSTA CANCEL:", bostaResult);
+
+      if (!bostaRes.ok) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "Failed to cancel shipment on Bosta",
+          details: bostaResult
+        }), { status: 500 });
       }
     }
 

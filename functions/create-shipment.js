@@ -101,7 +101,7 @@ export async function onRequestPost(context) {
           items: data.items || [],
           status: "created",
           createdAt: new Date().toISOString(),
-          orderId: result?.data?._id,
+          shipmentId: result?.data?._id,
         }));
         if (data.email) {
           const ords = JSON.parse((await env.ORDERS.get(`user-orders:${data.email.toLowerCase()}`)) || "[]");
@@ -118,7 +118,7 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({
       success: true,
       trackingNumber,
-      shipmentId: result?._id,
+      shipmentId: result?.data?._id,
       data: result,
     }), {
       status: 200,
