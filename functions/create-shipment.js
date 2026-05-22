@@ -90,6 +90,7 @@ export async function onRequestPost(context) {
           trackingNumber: trackingNumber.toString(),
           fullName: data.fullName,
           phone: data.phone,
+          email: data.email || "",
           governorate: data.governorate,
           area: data.area,
           street: data.street,
@@ -102,6 +103,13 @@ export async function onRequestPost(context) {
           createdAt: new Date().toISOString(),
           orderId: result?._id,
         }));
+        if (data.email) {
+          const ords = JSON.parse((await env.ORDERS.get(`user-orders:${data.email.toLowerCase()}`)) || "[]");
+          if (!ords.includes(trackingNumber.toString())) {
+            ords.push(trackingNumber.toString());
+            await env.ORDERS.put(`user-orders:${data.email.toLowerCase()}`, JSON.stringify(ords));
+          }
+        }
       }
     } catch (kvErr) {
       console.error("KV store error (non-fatal):", kvErr);

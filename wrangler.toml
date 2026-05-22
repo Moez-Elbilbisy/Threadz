@@ -8,3 +8,6 @@ pages_build_output_dir = "."
 [[kv_namespaces]]
 binding = "ORDERS"
 id = "9190f3f184944c9094bbeac430b89422"
+
+[vars]
+JWT_SECRET = "threadz-jwt-secret-2024"
