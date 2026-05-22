@@ -50,14 +50,16 @@ export async function onRequest(context) {
           }
         }
       );
-      const bostaResult = await bostaRes.json();
-      console.log("BOSTA CANCEL:", bostaResult);
+      const rawText = await bostaRes.text();
+      console.log("BOSTA STATUS:", bostaRes.status);
+      console.log("BOSTA RESPONSE:", rawText);
 
       if (!bostaRes.ok) {
         return new Response(JSON.stringify({
           success: false,
-          error: "Failed to cancel shipment on Bosta",
-          details: bostaResult
+          error: "Bosta cancellation failed",
+          status: bostaRes.status,
+          response: rawText
         }), { status: 500 });
       }
     }
