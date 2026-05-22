@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threadz | Premium Egyptian Streetwear</title>
+    <meta name="description"
+        content="Discover premium streetwear inspired by ancient Egyptian heritage. Shop the latest collections of high-quality hoodies, t-shirts, and jackets.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Three.js Animation Overlays -->
+    <div id="grain"></div>
+    <div id="vignette"></div>
+    <div id="center-glow"></div>
+    <canvas id="ribbon-canvas"></canvas>
+    <div id="canvas-container">
+        <canvas id="three-canvas"></canvas>
+    </div>
+
+    <div id="phase-tagline">
+        <p style="font-family:'Montserrat',sans-serif; font-weight:200; letter-spacing:0.4em;">Every Clothing Needs</p>
+        <p
+            style="font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(14px,2.2vw,24px); color:var(--gold-light); letter-spacing:0.55em; font-style:italic;">
+            Threadz</p>
+    </div>
+
+    <div id="welcome-overlay">
+        <h1
+            style="font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(56px,9vw,120px); color:var(--gold-light); letter-spacing:0.14em; text-transform:uppercase; line-height:1;">
+            Welcome</h1>
+        <p
+            style="font-family:'Montserrat',sans-serif; font-weight:200; font-size:clamp(9px,1vw,11px); letter-spacing:0.5em; color:var(--text-primary); text-transform:uppercase; opacity:0.7; margin-top:18px;">
+            We're glad you're here</p>
+    </div>
+
+    <!-- Main Store Content (for entering animation) -->
+    <main id="store-content" class="store-content">
+
+        <!-- Navigation -->
+        <nav class="navbar" id="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="#">
+                        <!-- SVG Placeholder for Logo (User's Profile Picture) -->
+                        <div class="logo-placeholder">
+                            <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="collections.html">Collections</a>
+                    <a href="about.html">About</a>
+                    <a href="journal.html">Journal</a>
+                    <a href="track.html">Track</a>
+                </div>
+                <div class="nav-icons">
+                    <button aria-label="Search" class="icon-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="cart.html" aria-label="Cart" class="icon-btn cart-btn" style="text-decoration:none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <button class="mobile-menu-btn" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="hero-bg">
+                <img src="https://images.unsplash.com/photo-1503342394128-c104d54dba01?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+                    alt="Dark moody streetwear fashion">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content fade-in-up">
+                <h1>Redefining Heritage</h1>
+                <p>Premium streetwear blending ancient Egyptian aesthetics with modern minimalism.</p>
+                <div class="hero-cta">
+                    <a href="#shop" class="btn btn-primary">Shop Collection</a>
+                    <a href="#about" class="btn btn-outline">Explore Story</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Featured Collections -->
+        <section id="collections" class="section">
+            <div class="container">
+                <div class="section-header fade-in-up">
+                    <h2>The Obsidian Collection</h2>
+                    <p>Dark, mysterious, and crafted with uncompromising quality.</p>
+                </div>
+
+                <div class="product-grid">
+                    <!-- Product 1 -->
+                    <div class="product-card fade-in-up" style="transition-delay: 0.1s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Obsidian Hoodie" class="product-img">
+                            <div class="product-badge">New</div>
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Oversized Obsidian Hoodie</h3>
+                            <p class="price">EGP 1,200</p>
+                        </div>
+                    </div>
+
+                    <!-- Product 2 -->
+                    <div class="product-card fade-in-up" style="transition-delay: 0.2s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Sand Graphic Tee" class="product-img">
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Dune Graphic Tee</h3>
+                            <p class="price">EGP 650</p>
+                        </div>
+                    </div>
+
+                    <!-- Product 3 -->
+                    <div class="product-card fade-in-up" style="transition-delay: 0.3s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Pharaoh Bomber Jacket" class="product-img">
+                            <div class="product-badge">Limited</div>
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Pharaoh Bomber Jacket</h3>
+                            <p class="price">EGP 2,400</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Image Banner -->
+        <section class="banner-section">
+            <div class="banner-content fade-in-up">
+                <h2>Crafted in Cairo.</h2>
+                <p>Every thread tells a story of our ancestors.</p>
+            </div>
+            <img src="https://images.unsplash.com/photo-1613531393649-652a20dcce66?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+                alt="Fashion texture" class="banner-img">
+            <div class="banner-overlay"></div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-placeholder" style="margin-bottom: 1rem;">
+                        <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                    </div>
+                    <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="#">All Products</a></li>
+                        <li><a href="#">T-Shirts</a></li>
+                        <li><a href="#">Hoodies</a></li>
+                        <li><a href="#">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Join the Cult</h4>
+                    <p>Subscribe for exclusive drops and early access.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email Address" required>
+                        <button type="submit">→</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Threadz Egypt. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Mobile Menu Panel Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+        <div class="mobile-menu-header">
+            <div class="logo-placeholder">
+                <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-links">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="shop.html" class="mobile-link">Shop</a>
+            <a href="collections.html" class="mobile-link">Collections</a>
+            <a href="about.html" class="mobile-link">About</a>
+            <a href="journal.html" class="mobile-link">Journal</a>
+                    <a href="track.html" class="mobile-link">Track Order</a>
+                    <a href="cart.html" class="mobile-link">Cart</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <p class="tagline">Every Clothing Needs Threadz</p>
+            <div class="mobile-socials">
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+                <a href="#">Cairo Office</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // ── SCENE SETUP ──────────────────────────────────────────────────────
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), antialias: true, alpha: false });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.55;
+        renderer.shadowMap.enabled = true;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050402);
+
+        const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.01, 1000);
+        camera.position.set(0, 1.5, 6);
+
+        // Lights
+        scene.add(new THREE.AmbientLight(0x0d0804, 0.15));
+        const keyLight = new THREE.SpotLight(0xffd080, 8, 30, Math.PI / 9, 0.25, 1.8);
+        keyLight.position.set(1.5, 9, 3.5); keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = keyLight.shadow.mapSize.height = 2048;
+        scene.add(keyLight); scene.add(keyLight.target);
+        const rimLight = new THREE.SpotLight(0xb8d0ff, 4.5, 25, Math.PI / 12, 0.1, 2);
+        rimLight.position.set(-4, 3, -5); scene.add(rimLight); scene.add(rimLight.target);
+        const bounce = new THREE.PointLight(0x5a2e00, 1.2, 8, 2);
+        bounce.position.set(0, -3, 1); scene.add(bounce);
+        const hair = new THREE.DirectionalLight(0xffe4b0, 0.6);
+        hair.position.set(5, 1, -1); scene.add(hair);
+
+        const shadowCatch = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.ShadowMaterial({ opacity: 0.55 }));
+        shadowCatch.rotation.x = -Math.PI / 2; shadowCatch.position.y = -2.8; shadowCatch.receiveShadow = true;
+        scene.add(shadowCatch);
+
+        // ── NEEDLE ───────────────────────────────────────────────────────────
+        const FALL_START_Y = 9, LAND_Y = 0;
+        const FALL_DURATION = 3.0;
+        let needle = null, needleLoaded = false;
+        let needleY = FALL_START_Y, fallTime = 0, landed = false;
+
+        function buildNeedle() {
+            const mat = new THREE.MeshStandardMaterial({ color: 0x3a2808, metalness: 1, roughness: 0.06, emissive: 0x0d0700, emissiveIntensity: 0.5 });
+            const g = new THREE.Group();
+            const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.016, 3.6, 32), mat); shaft.castShadow = true;
+            const head = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.04, 0.24, 32), mat); head.position.y = 1.92; head.castShadow = true;
+            const cap = new THREE.Mesh(new THREE.SphereGeometry(0.095, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), mat); cap.position.y = 2.04;
+            const tip = new THREE.Mesh(new THREE.ConeGeometry(0.016, 0.55, 24), mat); tip.position.y = -2.075; tip.castShadow = true;
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0x2a1a06, metalness: 1, roughness: 0.12 });
+            const eye = new THREE.Mesh(new THREE.TorusGeometry(0.052, 0.016, 16, 32), eyeMat); eye.position.y = 1.72; eye.rotation.x = Math.PI / 2;
+            g.add(shaft, head, cap, tip, eye);
+            g.position.set(0, FALL_START_Y, 0);
+            needle = g;
+            needle.userData = { localTopY: 2.04, localBottomY: -2.35 };
+            scene.add(needle); needleLoaded = true;
+        }
+
+        try {
+            new THREE.GLTFLoader().load('/mnt/user-data/uploads/uploads_files_3424082_Needle.glb', gltf => {
+                needle = gltf.scene;
+                const box = new THREE.Box3().setFromObject(needle);
+                const sz = new THREE.Vector3(); box.getSize(sz);
+                const sc = 3.5 / Math.max(sz.x, sz.y, sz.z); needle.scale.setScalar(sc);
+                const ctr = new THREE.Vector3(); box.getCenter(ctr);
+                needle.position.set(-ctr.x * sc, FALL_START_Y, -ctr.z * sc);
+                needle.traverse(c => { if (c.isMesh) { c.castShadow = true; c.material = new THREE.MeshStandardMaterial({ color: 0x4a3510, metalness: 1, roughness: 0.08, emissiveIntensity: 0.4 }); } });
+                needle.userData = {
+                    localTopY: box.max.y * sc,
+                    localBottomY: box.min.y * sc
+                };
+                scene.add(needle); needleLoaded = true;
+            }, null, () => buildNeedle());
+        } catch (e) { buildNeedle(); }
+
+        // ── RIBBON CANVAS ────────────────────────────────────────────────────
+        const rc = document.getElementById('ribbon-canvas');
+        const rctx = rc.getContext('2d');
+        rc.width = innerWidth; rc.height = innerHeight;
+        const RIBBON_TEXT = '  EVERY CLOTHING NEEDS  THREADZ  ·  ';
+
+        function drawRibbon(prog, alpha) {
+            rctx.clearRect(0, 0, rc.width, rc.height);
+            if (prog <= 0 || alpha <= 0) return;
+            
+            let cx = rc.width / 2;
+            let cy = rc.height / 2;
+            let cy_bottom = cy + 160;
+            if (needle && needleLoaded) {
+                const tempV = new THREE.Vector3();
+                const topY = (needle.userData && needle.userData.localTopY !== undefined) ? needle.userData.localTopY : 1.95;
+                const bottomY = (needle.userData && needle.userData.localBottomY !== undefined) ? needle.userData.localBottomY : -2.35;
+
+                // Project top of the needle
+                tempV.set(0, topY, 0);
+                needle.localToWorld(tempV);
+                tempV.project(camera);
+                cx = (tempV.x * 0.5 + 0.5) * rc.width;
+                cy = (-tempV.y * 0.5 + 0.5) * rc.height;
+
+                // Project bottom of the needle
+                tempV.set(0, bottomY, 0);
+                needle.localToWorld(tempV);
+                tempV.project(camera);
+                cy_bottom = (-tempV.y * 0.5 + 0.5) * rc.height;
+            }
+            
+            // Increased loops from 2.2 to 7.5 for longer ribbon and tighter loops (shorter spaces between turns)
+            const angleRange = 7.5 * Math.PI * 2 * prog;
+            const steps = Math.floor(angleRange / 0.02); if (steps < 2) return;
+            const rS = 0, rE = 240, yS = cy, yE = cy_bottom;
+            
+            rctx.save(); 
+            rctx.globalAlpha = alpha;
+            
+            // Draw the slogan text as the ribbon itself with luxury golden glow
+            rctx.font = `bold 12px 'Outfit',sans-serif`;
+            rctx.shadowColor = 'rgba(201, 168, 76, 0.65)';
+            rctx.shadowBlur = 5;
+            
+            let arcLen = 0;
+            const charSpacing = 10.0; // Perfect, tight visual spacing for a solid text ribbon look
+            let lastDrawnArcLen = -charSpacing;
+            
+            for (let i = 0; i < steps - 1; i++) {
+                const f = i / (steps - 1), a = -Math.PI / 2 + f * angleRange;
+                const r = rS + (rE - rS) * f, y = yS + (yE - yS) * f, x = cx + Math.cos(a) * r;
+                
+                if (i > 0) {
+                    const prev_f = (i - 1) / (steps - 1), prev_a = -Math.PI / 2 + prev_f * angleRange;
+                    const prev_r = rS + (rE - rS) * prev_f, prev_y = yS + (yE - yS) * prev_f, prev_x = cx + Math.cos(prev_a) * prev_r;
+                    const dx = x - prev_x, dy = y - prev_y;
+                    arcLen += Math.sqrt(dx * dx + dy * dy);
+                }
+                
+                // Draw a character only when we have traversed 'charSpacing' distance from the last character.
+                // This prevents overlapping near the top/center and creates perfect, uniform text density!
+                if (arcLen - lastDrawnArcLen >= charSpacing) {
+                    const ch = RIBBON_TEXT[Math.floor(arcLen / charSpacing) % RIBBON_TEXT.length];
+                    const na = -Math.PI / 2 + (f + 1 / (steps - 1)) * angleRange;
+                    const rot = Math.atan2((yS + (yE - yS) * ((i + 1) / (steps - 1))) - y, (cx + Math.cos(na) * r) - x);
+                    const op2 = 0.5 + ((Math.sin(a) + 1) * 0.5) * 0.5;
+                    
+                    rctx.save(); 
+                    rctx.translate(x, y); 
+                    rctx.rotate(rot);
+                    rctx.fillStyle = `rgba(245, 217, 140, ${op2 * alpha})`; 
+                    rctx.fillText(ch, 0, 0); 
+                    rctx.restore();
+                    
+                    lastDrawnArcLen = arcLen;
+                }
+            }
+            rctx.restore();
+        }
+
+// ── ANIMATION LOOP ───────────────────────────────────────────────────
+        let phase = 0, impactTime = 0, welcomeShown = false, finalShown = false;
+        let ribbonProg = 0, ribbonAlpha = 0, ribbonFadeOut = false, totalTime = 0;
+        const clock = new THREE.Clock();
+        rc.style.opacity = '1'; // Ribbon canvas visible from the start
+
+        function revealStore() {
+            document.body.classList.add('entering');
+            ['vignette', 'grain', 'canvas-container'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.transition = 'opacity 1.2s ease';
+                el.style.opacity = '0';
+            });
+            setTimeout(() => {
+                document.getElementById('canvas-container').style.display = 'none';
+            }, 1300);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(clock.getDelta(), 0.05);
+            totalTime += dt;
+            if (!needleLoaded) { renderer.render(scene, camera); return; }
+
+            // ── Phase 0: Needle eases down smoothly ──
+            if (phase === 0 && !landed) {
+                fallTime += dt;
+                const t = Math.min(1, fallTime / FALL_DURATION);
+                // easeOutQuart: fast start, very smooth stop
+                const eased = 1 - Math.pow(1 - t, 4);
+                needleY = FALL_START_Y + (LAND_Y - FALL_START_Y) * eased;
+                
+                // Update needle position immediately before drawing ribbon
+                if (needle) needle.position.y = needleY;
+
+                // Ribbon grows with fall progress
+                const fp = eased;
+                ribbonProg = Math.min(0.45, fp * 0.5);
+                ribbonAlpha = Math.min(0.7, fp * 1.4);
+                drawRibbon(ribbonProg, ribbonAlpha);
+
+                // Subtle gentle sway — slower frequency (0.3 instead of 0.5)
+                needle.rotation.z = Math.sin(totalTime * 0.3) * 0.03 * (1 - t);
+
+                if (t >= 1) {
+                    landed = true;
+                    needleY = LAND_Y;
+                    impactTime = totalTime;
+                    phase = 1;
+                    keyLight.intensity = 14;
+                    document.getElementById('center-glow').style.opacity = '1';
+                }
+            }
+            if (needle) needle.position.y = needleY;
+            // Settle key light glow
+            if (keyLight.intensity > 8) keyLight.intensity = Math.max(8, keyLight.intensity - 30 * dt);
+
+            // ── Ribbon: grows continuously 0→1 across the whole intro ──
+            // Slower majestic ribbon growth (takes 10s instead of 6s)
+            const RIBBON_TOTAL = 6.0;
+            if (!ribbonFadeOut && phase < 3) {
+                ribbonProg = Math.min(1, totalTime / RIBBON_TOTAL);
+                const targetAlpha = Math.min(0.9, totalTime / 1.5);
+                ribbonAlpha += (targetAlpha - ribbonAlpha) * 3 * dt;
+                drawRibbon(ribbonProg, ribbonAlpha);
+                if (ribbonProg >= 1 && !welcomeShown) {
+                    welcomeShown = true; phase = 3;
+                    ribbonFadeOut = true;
+                    document.getElementById('phase-tagline').style.opacity = '0';
+                }
+            }
+
+            // Phase-specific needle behaviour
+            if (phase === 1 && totalTime - impactTime > 0.4) {
+                phase = 2;
+                document.getElementById('phase-tagline').style.opacity = '1';
+            }
+            if (phase === 2 && needle) {
+                needle.rotation.y += dt * 0.05; // slower rotation
+            }
+
+            // Smooth ribbon fade-out driven by animation loop
+            if (ribbonFadeOut) {
+                ribbonAlpha -= dt / 2.0;
+                if (ribbonAlpha <= 0) { ribbonAlpha = 0; ribbonFadeOut = false; rc.style.opacity = '0'; }
+                else { drawRibbon(1, ribbonAlpha); }
+            }
+
+            if (phase === 3 && !finalShown) {
+                finalShown = true;
+                const w = document.getElementById('welcome-overlay');
+                w.style.opacity = '1';
+                // Slower transitions for the welcome overlay phase
+                setTimeout(() => { w.style.opacity = '0'; setTimeout(() => { phase = 4; revealStore(); }, 1000); }, 1500);
+            }
+
+            if (phase >= 4) {
+                if (needle) { needle.rotation.y += dt * 0.03; needle.position.y = LAND_Y + Math.sin(totalTime * 0.25) * 0.015; }
+                camera.position.x = Math.sin(totalTime * 0.04) * 0.3;
+                camera.position.y = 1.5 + Math.sin(totalTime * 0.06) * 0.1;
+            }
+            if (phase <= 2 && needle) {
+                camera.position.y += (needleY + 1.5 - camera.position.y) * 0.08;
+                camera.lookAt(0, needleY, 0);
+            } else { camera.lookAt(0, LAND_Y + 0.5, 0); }
+
+            renderer.render(scene, camera);
+        }
+        if (sessionStorage.getItem('threadz_internal_nav')) {
+            sessionStorage.removeItem('threadz_internal_nav');
+            document.body.classList.add('entering');
+            document.getElementById('canvas-container').style.display = 'none';
+            document.getElementById('grain').style.opacity = '0';
+            document.getElementById('vignette').style.opacity = '0';
+            document.getElementById('phase-tagline').style.opacity = '0';
+            document.getElementById('welcome-overlay').style.opacity = '0';
+            document.getElementById('ribbon-canvas').style.opacity = '0';
+            document.getElementById('center-glow').style.opacity = '0';
+        } else {
+            animate();
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+            rc.width = innerWidth; rc.height = innerHeight;
+        });
+    </script>
+    <script src="cart-data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

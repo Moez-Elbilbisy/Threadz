@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart | Threadz Premium Streetwear</title>
+    <meta name="description"
+        content="Review your cart and complete your Threadz order. Premium streetwear shipped across Egypt.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="entering">
+    <main id="store-content" class="store-content">
+
+        <!-- Navigation -->
+        <nav class="navbar scrolled" id="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html">
+                        <div class="logo-placeholder">
+                            <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="collections.html">Collections</a>
+                    <a href="about.html">About</a>
+                    <a href="journal.html">Journal</a>
+                    <a href="track.html">Track</a>
+                </div>
+                <div class="nav-icons">
+                    <button aria-label="Search" class="icon-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="cart.html" aria-label="Cart" class="icon-btn cart-btn" style="text-decoration:none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <button class="mobile-menu-btn" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Subpage Header -->
+        <header class="subpage-header cart-page-enter" id="cart-header">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Cart</span>
+                </div>
+                <h1>YOUR CART</h1>
+                <p>Review your selections and complete your order.</p>
+            </div>
+        </header>
+
+        <!-- Cart Content -->
+        <section class="section cart-section" style="padding-top: 2rem;">
+            <div class="container">
+
+                <!-- Empty Cart State -->
+                <div class="cart-empty cart-page-enter" id="cart-empty" style="display:none;">
+                    <div class="cart-empty-icon">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                    </div>
+                    <h2>Your cart is empty</h2>
+                    <p>Discover our premium streetwear collection and add something extraordinary.</p>
+                    <a href="shop.html" class="btn btn-primary" style="margin-top:1.5rem;">Browse the Archive</a>
+                </div>
+
+                <!-- Cart With Items -->
+                <div class="cart-layout cart-page-enter" id="cart-layout" style="display:none;">
+
+                    <!-- Left: Cart Items -->
+                    <div class="cart-items-column">
+                        <div class="cart-items-header">
+                            <span class="cart-col-product">Product</span>
+                            <span class="cart-col-qty">Quantity</span>
+                            <span class="cart-col-total">Total</span>
+                        </div>
+                        <div class="cart-items-list" id="cart-items-list">
+                            <!-- Items rendered by JS -->
+                        </div>
+                        <div class="cart-actions-row">
+                            <a href="shop.html" class="btn btn-outline btn-sm">Continue Shopping</a>
+                            <button class="btn btn-outline btn-sm cart-clear-btn" id="cart-clear-btn">Clear Cart</button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Shipping & Summary -->
+                    <div class="cart-summary-column">
+                        <div class="cart-summary-panel cart-page-enter">
+                            <h3 class="cart-summary-title">Order Summary</h3>
+
+                            <div class="cart-summary-row">
+                                <span>Subtotal</span>
+                                <span id="cart-subtotal">EGP 0</span>
+                            </div>
+                            <div class="cart-summary-row">
+                                <span>Shipping</span>
+                                <span id="cart-shipping">Calculated at checkout</span>
+                            </div>
+                            <div class="cart-summary-divider"></div>
+                            <div class="cart-summary-row cart-summary-total">
+                                <span>Total</span>
+                                <span id="cart-total">EGP 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Address -->
+                        <div class="cart-shipping-panel cart-page-enter">
+                            <h3 class="cart-summary-title">Shipping Details</h3>
+
+                            <form id="checkout-form" novalidate>
+
+                                <div class="form-group">
+                                    <label for="full-name">Full Name</label>
+                                    <input type="text" id="full-name" name="full-name" class="form-input" placeholder="Enter your full name" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" class="form-input" placeholder="01XXXXXXXXX" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="gov-search">Governorate</label>
+                                    <div class="search-select" id="gov-select-wrapper">
+                                        <div class="search-select-trigger">
+                                            <input type="text" id="gov-search" class="form-input search-select-input" placeholder="Search governorate..." autocomplete="off">
+                                            <span class="search-select-arrow">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="search-select-dropdown" id="gov-dropdown"></div>
+                                    </div>
+                                    <input type="hidden" id="gov-value" name="governorate" value="">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="area-search">Area / City</label>
+                                    <div class="search-select" id="area-select-wrapper">
+                                        <div class="search-select-trigger">
+                                            <input type="text" id="area-search" class="form-input search-select-input" placeholder="Select governorate first" autocomplete="off" disabled>
+                                            <span class="search-select-arrow">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="search-select-dropdown" id="area-dropdown"></div>
+                                    </div>
+                                    <input type="hidden" id="area-value" name="area" value="">
+                                </div>
+
+                                <div class="address-fields">
+                                    <div class="address-field-street">
+                                        <div class="form-group">
+                                            <label for="street-name">Street Name</label>
+                                            <input type="text" id="street-name" name="street-name" class="form-input" placeholder="Street name" required>
+                                        </div>
+                                    </div>
+                                    <div class="address-field-row">
+                                        <div class="form-group address-field-num">
+                                            <label for="building-number">Building No.</label>
+                                            <input type="text" id="building-number" name="building-number" class="form-input" placeholder="e.g. 12" required>
+                                        </div>
+                                        <div class="form-group address-field-num">
+                                            <label for="apartment-number">Apartment No.</label>
+                                            <input type="text" id="apartment-number" name="apartment-number" class="form-input" placeholder="e.g. 5A" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="notes">Order Notes <span class="optional-tag">(optional)</span></label>
+                                    <textarea id="notes" name="notes" class="form-input form-textarea" rows="3" placeholder="Special instructions for delivery..."></textarea>
+                                </div>
+
+                                <div class="payment-section">
+                                    <h4 class="payment-section-title">Payment Method</h4>
+
+                                    <div class="payment-options">
+                                        <label class="payment-option" id="po-cod">
+                                            <input type="radio" name="payment-method" value="cod" checked>
+                                            <span class="payment-option-content">
+                                                <span class="payment-option-icon">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                        <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                                                        <circle cx="12" cy="12" r="2"></circle>
+                                                    </svg>
+                                                </span>
+                                                <span class="payment-option-text">
+                                                    <span class="payment-option-name">Cash on Delivery</span>
+                                                    <span class="payment-option-desc">Pay when you receive</span>
+                                                </span>
+                                            </span>
+                                        </label>
+
+                                        <label class="payment-option" id="po-vodafone">
+                                            <input type="radio" name="payment-method" value="vodafone-cash">
+                                            <span class="payment-option-content">
+                                                <span class="payment-option-icon">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path>
+                                                        <path d="M12 6v6l4 2"></path>
+                                                    </svg>
+                                                </span>
+                                                <span class="payment-option-text">
+                                                    <span class="payment-option-name">Vodafone Cash</span>
+                                                    <span class="payment-option-desc">Pay via Vodafone Cash wallet</span>
+                                                </span>
+                                            </span>
+                                        </label>
+
+                                        <label class="payment-option" id="po-instapay">
+                                            <input type="radio" name="payment-method" value="instapay">
+                                            <span class="payment-option-content">
+                                                <span class="payment-option-icon">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                                    </svg>
+                                                </span>
+                                                <span class="payment-option-text">
+                                                    <span class="payment-option-name">Instapay</span>
+                                                    <span class="payment-option-desc">Pay via Instapay transfer</span>
+                                                </span>
+                                            </span>
+                                        </label>
+
+                                        <label class="payment-option" id="po-card">
+                                            <input type="radio" name="payment-method" value="card">
+                                            <span class="payment-option-content">
+                                                <span class="payment-option-icon">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                                        <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                                                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                                                    </svg>
+                                                </span>
+                                                <span class="payment-option-text">
+                                                    <span class="payment-option-name">Credit / Debit Card</span>
+                                                    <span class="payment-option-desc">Visa, Mastercard, Meeza</span>
+                                                </span>
+                                            </span>
+                                        </label>
+                                    </div>
+
+                                    <!-- Payment Details Panels -->
+                                    <div class="payment-detail-panel" id="payment-detail-cod">
+                                        <p>You'll pay <strong>EGP <span id="cod-total-display">0</span></strong> when your order arrives. Have exact change ready or pay with your card at the door.</p>
+                                    </div>
+
+                                    <div class="payment-detail-panel" id="payment-detail-vodafone-cash" style="display:none;">
+                                        <div class="payment-account-info">
+                                            <span class="payment-account-label">Vodafone Cash Account</span>
+                                            <span class="payment-account-number">0100 000 0000</span>
+                                        </div>
+                                        <p class="payment-account-hint">Send the exact amount to the number above, then enter the transaction reference below.</p>
+                                        <div class="form-group" style="margin-bottom:0;">
+                                            <label for="vodafone-ref">Transaction Reference</label>
+                                            <input type="text" id="vodafone-ref" name="vodafone-ref" class="form-input" placeholder="e.g. VF12345678">
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-detail-panel" id="payment-detail-instapay" style="display:none;">
+                                        <div class="payment-account-info">
+                                            <span class="payment-account-label">Instapay Handle</span>
+                                            <span class="payment-account-number">@ThreadzStore</span>
+                                        </div>
+                                        <p class="payment-account-hint">Send the exact amount via Instapay to the handle above, then enter the transaction reference below.</p>
+                                        <div class="form-group" style="margin-bottom:0;">
+                                            <label for="instapay-ref">Transaction Reference</label>
+                                            <input type="text" id="instapay-ref" name="instapay-ref" class="form-input" placeholder="e.g. IP987654321">
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-detail-panel" id="payment-detail-card" style="display:none;">
+                                        <p>You'll be redirected to a secure payment page to complete your card payment after placing the order.</p>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" name="order-items" id="order-items-value" value="">
+                                <input type="hidden" name="order-total" id="order-total-value" value="">
+
+                                <button type="submit" class="btn btn-primary btn-full" id="checkout-btn" disabled>
+                                    Place Order
+                                </button>
+                                <div class="order-success" id="order-success" style="display:none;">
+                                    <div class="order-success-icon">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <h4>Order Placed!</h4>
+                                    <p>Tracking number: <strong id="order-tracking-number"></strong></p>
+                                    <a href="track.html" class="btn btn-outline btn-sm" style="margin-top:0.5rem;">Track Your Order</a>
+                                </div>
+                                <p class="checkout-note">Free shipping on orders above EGP 2,000 • All prices in EGP</p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-placeholder" style="margin-bottom: 1rem;">
+                        <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                    </div>
+                    <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html">All Products</a></li>
+                        <li><a href="shop.html?cat=tees">T-Shirts</a></li>
+                        <li><a href="shop.html?cat=hoodies">Hoodies</a></li>
+                        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Join the Cult</h4>
+                    <p>Subscribe for exclusive drops and early access.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email Address" required>
+                        <button type="submit">→</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Threadz Egypt. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Mobile Menu Panel Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+        <div class="mobile-menu-header">
+            <div class="logo-placeholder">
+                <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-links">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="shop.html" class="mobile-link">Shop</a>
+            <a href="collections.html" class="mobile-link">Collections</a>
+            <a href="about.html" class="mobile-link">About</a>
+            <a href="journal.html" class="mobile-link">Journal</a>
+                    <a href="track.html" class="mobile-link">Track Order</a>
+                    <a href="cart.html" class="mobile-link">Cart</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <p class="tagline">Every Clothing Needs Threadz</p>
+            <div class="mobile-socials">
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+                <a href="#">Cairo Office</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="cart-data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // ============================================
+        // Cart Page Logic
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Trigger slide-in entrance animations with staggered delays
+            const cartPageElements = document.querySelectorAll('.cart-page-enter');
+            cartPageElements.forEach((el, i) => {
+                setTimeout(() => {
+                    el.classList.add('visible');
+                }, 100 + i * 150);
+            });
+
+            const cartEmpty = document.getElementById('cart-empty');
+            const cartLayout = document.getElementById('cart-layout');
+            const cartItemsList = document.getElementById('cart-items-list');
+            const cartSubtotal = document.getElementById('cart-subtotal');
+            const cartShipping = document.getElementById('cart-shipping');
+            const cartTotal = document.getElementById('cart-total');
+            const cartClearBtn = document.getElementById('cart-clear-btn');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            // ---- Searchable Dropdown Factory ----
+            function createSearchSelect(wrapperId, inputId, dropdownId, hiddenId, options, onSelect) {
+                const wrapper = document.getElementById(wrapperId);
+                const input = document.getElementById(inputId);
+                const dropdown = document.getElementById(dropdownId);
+                const hidden = document.getElementById(hiddenId);
+                let allOptions = [...options];
+                let filteredOptions = [...options];
+                let selectedValue = '';
+                let open = false;
+
+                function renderDropdown() {
+                    dropdown.innerHTML = '';
+                    if (filteredOptions.length === 0) {
+                        const msg = document.createElement('div');
+                        msg.className = 'search-select-empty-msg';
+                        msg.textContent = 'No results found';
+                        dropdown.appendChild(msg);
+                        return;
+                    }
+                    filteredOptions.forEach(opt => {
+                        const div = document.createElement('div');
+                        div.className = 'search-select-option';
+                        if (opt === selectedValue) div.classList.add('active');
+                        div.textContent = opt;
+                        div.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            selectOption(opt);
+                        });
+                        dropdown.appendChild(div);
+                    });
+                }
+
+                function selectOption(value) {
+                    selectedValue = value;
+                    hidden.value = value;
+                    input.value = value;
+                    input.dataset.selected = 'true';
+                    closeDropdown();
+                    if (onSelect) onSelect(value);
+                }
+
+                function openDropdown() {
+                    open = true;
+                    wrapper.classList.add('open');
+                    filterOptions(input.value);
+                    renderDropdown();
+                }
+
+                function closeDropdown() {
+                    open = false;
+                    wrapper.classList.remove('open');
+                    // If no selection was made, restore input to current selection
+                    if (!input.dataset.selected && selectedValue) {
+                        input.value = selectedValue;
+                    } else if (!input.dataset.selected && !selectedValue) {
+                        input.value = '';
+                    }
+                }
+
+                function filterOptions(query) {
+                    const lower = query.toLowerCase();
+                    filteredOptions = allOptions.filter(o => o.toLowerCase().includes(lower));
+                    renderDropdown();
+                }
+
+                input.addEventListener('focus', () => {
+                    openDropdown();
+                });
+
+                input.addEventListener('input', () => {
+                    input.dataset.selected = '';
+                    if (!open) openDropdown();
+                    filterOptions(input.value);
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeDropdown();
+                    }
+                    if (e.key === 'Enter' && open && filteredOptions.length > 0) {
+                        e.preventDefault();
+                        selectOption(filteredOptions[0]);
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!wrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                });
+
+                function setDisabled(disabled) {
+                    input.disabled = disabled;
+                    if (disabled) {
+                        input.placeholder = 'Select governorate first';
+                        input.value = '';
+                        hidden.value = '';
+                        selectedValue = '';
+                    }
+                }
+
+                function setOptions(newOptions) {
+                    allOptions = [...newOptions];
+                    filteredOptions = [...newOptions];
+                    selectedValue = '';
+                    hidden.value = '';
+                    input.value = '';
+                    input.dataset.selected = '';
+                    renderDropdown();
+                }
+
+                function getValue() { return hidden.value; }
+
+                return { setDisabled, setOptions, getValue, closeDropdown, openDropdown };
+            }
+
+            // ---- Governorate Searchable Select ----
+            const govNames = Object.keys(GOVERNORATES).sort();
+            const govSelect = createSearchSelect('gov-select-wrapper', 'gov-search', 'gov-dropdown', 'gov-value', govNames, (gov) => {
+                areaSearch.setOptions(GOVERNORATES[gov]);
+                areaSearch.setDisabled(false);
+                document.getElementById('area-search').placeholder = 'Search area...';
+                validateForm();
+            });
+
+            // ---- Area Searchable Select ----
+            const areaSearch = createSearchSelect('area-select-wrapper', 'area-search', 'area-dropdown', 'area-value', [], (val) => {
+                validateForm();
+            });
+            areaSearch.setDisabled(true);
+
+            // ---- Form Validation ----
+            function validateForm() {
+                const name = document.getElementById('full-name').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const gov = document.getElementById('gov-value').value;
+                const area = document.getElementById('area-value').value;
+                const street = document.getElementById('street-name').value.trim();
+                const building = document.getElementById('building-number').value.trim();
+                const apt = document.getElementById('apartment-number').value.trim();
+                const payment = document.querySelector('input[name="payment-method"]:checked');
+                const pm = payment ? payment.value : '';
+                let paymentValid = true;
+                if (pm === 'vodafone-cash') {
+                    paymentValid = document.getElementById('vodafone-ref').value.trim().length > 0;
+                } else if (pm === 'instapay') {
+                    paymentValid = document.getElementById('instapay-ref').value.trim().length > 0;
+                }
+                checkoutBtn.disabled = !(name && phone && gov && area && street && building && apt && paymentValid);
+            }
+
+            // Bind validation to all inputs
+            ['full-name', 'phone', 'street-name', 'building-number', 'apartment-number', 'vodafone-ref', 'instapay-ref'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', validateForm);
+            });
+
+            // ---- Payment Method Switching ----
+            function showPaymentPanel(method) {
+                ['cod', 'vodafone-cash', 'instapay', 'card'].forEach(m => {
+                    const panel = document.getElementById('payment-detail-' + m);
+                    const refInput = m === 'vodafone-cash' ? document.getElementById('vodafone-ref') :
+                                    m === 'instapay' ? document.getElementById('instapay-ref') : null;
+                    if (panel) {
+                        panel.style.display = m === method ? 'block' : 'none';
+                    }
+                });
+                // Update COD display total
+                if (method === 'cod') {
+                    const cart = getCart();
+                    const subtotal = getCartTotal();
+                    const shipping = subtotal >= 2000 ? 0 : 80;
+                    const total = subtotal + shipping;
+                    document.getElementById('cod-total-display').textContent = total.toLocaleString();
+                }
+                validateForm();
+            }
+
+            document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.checked) showPaymentPanel(radio.value);
+                });
+            });
+
+            // Show initial payment panel
+            showPaymentPanel('cod');
+
+            // ---- Render Cart ----
+            function renderCart() {
+                const cart = getCart();
+                if (cart.length === 0) {
+                    cartEmpty.style.display = 'flex';
+                    cartLayout.style.display = 'none';
+                    return;
+                }
+                cartEmpty.style.display = 'none';
+                cartLayout.style.display = 'grid';
+
+                cartItemsList.innerHTML = '';
+                let subtotal = 0;
+
+                cart.forEach(item => {
+                    subtotal += item.price * item.qty;
+                    const row = document.createElement('div');
+                    row.classList.add('cart-item-row');
+                    row.innerHTML = `
+                        <div class="cart-item-product">
+                            <div class="cart-item-img-wrapper">
+                                <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                            </div>
+                            <div class="cart-item-details">
+                                <h4 class="cart-item-name">${item.name}</h4>
+                                <p class="cart-item-price">EGP ${item.price.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="cart-item-qty">
+                            <button class="qty-btn qty-minus" data-id="${item.id}" aria-label="Decrease quantity">−</button>
+                            <span class="qty-value">${item.qty}</span>
+                            <button class="qty-btn qty-plus" data-id="${item.id}" aria-label="Increase quantity">+</button>
+                        </div>
+                        <div class="cart-item-total">
+                            <span>EGP ${(item.price * item.qty).toLocaleString()}</span>
+                            <button class="cart-item-remove" data-id="${item.id}" aria-label="Remove item">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    cartItemsList.appendChild(row);
+                });
+
+                // Update totals
+                cartSubtotal.textContent = `EGP ${subtotal.toLocaleString()}`;
+                const shipping = subtotal >= 2000 ? 0 : 80;
+                cartShipping.textContent = shipping === 0 ? 'Free' : `EGP ${shipping}`;
+                const total = subtotal + shipping;
+                cartTotal.textContent = `EGP ${total.toLocaleString()}`;
+
+                // Update COD payment total display
+                const codTotalDisplay = document.getElementById('cod-total-display');
+                if (codTotalDisplay) codTotalDisplay.textContent = total.toLocaleString();
+
+                // Bind quantity buttons
+                cartItemsList.querySelectorAll('.qty-minus').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.dataset.id;
+                        const cart = getCart();
+                        const item = cart.find(c => c.id === id);
+                        if (item) {
+                            updateQuantity(id, item.qty - 1);
+                            renderCart();
+                        }
+                    });
+                });
+
+                cartItemsList.querySelectorAll('.qty-plus').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.dataset.id;
+                        const cart = getCart();
+                        const item = cart.find(c => c.id === id);
+                        if (item) {
+                            updateQuantity(id, item.qty + 1);
+                            renderCart();
+                        }
+                    });
+                });
+
+                cartItemsList.querySelectorAll('.cart-item-remove').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        removeFromCart(btn.dataset.id);
+                        renderCart();
+                    });
+                });
+            }
+
+            // ---- Clear Cart ----
+            cartClearBtn.addEventListener('click', () => {
+                clearCart();
+                renderCart();
+            });
+
+            // ---- Checkout ----
+            document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(e.target);
+                const cart = getCart();
+                const subtotal = getCartTotal();
+                const shipping = subtotal >= 2000 ? 0 : 80;
+                const total = subtotal + shipping;
+
+                const orderData = {
+                    fullName: formData.get('full-name'),
+                    phone: formData.get('phone'),
+                    governorate: formData.get('governorate'),
+                    area: formData.get('area'),
+                    street: formData.get('street-name'),
+                    building: formData.get('building-number'),
+                    apartment: formData.get('apartment-number'),
+                    notes: formData.get('notes'),
+                    paymentMethod: document.querySelector('input[name="payment-method"]:checked')?.value || '',
+                    total,
+                    items: cart
+                };
+
+                const checkoutBtn = document.getElementById('checkout-btn');
+                const orderSuccess = document.getElementById('order-success');
+                const trackingNumEl = document.getElementById('order-tracking-number');
+                checkoutBtn.disabled = true;
+                checkoutBtn.innerText = 'Placing Order...';
+
+                try {
+                    const response = await fetch('/create-shipment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        checkoutBtn.style.display = 'none';
+                        trackingNumEl.textContent = result.trackingNumber;
+                        orderSuccess.style.display = 'flex';
+                    } else {
+                        checkoutBtn.innerText = 'Failed — Try Again';
+                        checkoutBtn.style.backgroundColor = '#8a2a2a';
+                        checkoutBtn.style.borderColor = '#8a2a2a';
+                        checkoutBtn.disabled = false;
+                        setTimeout(() => {
+                            checkoutBtn.innerText = 'Place Order';
+                            checkoutBtn.style.backgroundColor = '';
+                            checkoutBtn.style.borderColor = '';
+                        }, 3000);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    checkoutBtn.innerText = 'Failed — Try Again';
+                    checkoutBtn.style.backgroundColor = '#8a2a2a';
+                    checkoutBtn.style.borderColor = '#8a2a2a';
+                    checkoutBtn.disabled = false;
+                    setTimeout(() => {
+                        checkoutBtn.innerText = 'Place Order';
+                        checkoutBtn.style.backgroundColor = '';
+                        checkoutBtn.style.borderColor = '';
+                    }, 3000);
+                }
+            });
+
+            // Initial render
+            renderCart();
+        });
+    </script>
+</body>
+
+</html>

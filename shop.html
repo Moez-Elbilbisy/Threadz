@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop | Threadz Premium Streetwear</title>
+    <meta name="description"
+        content="Browse the full Threadz archive. Premium streetwear hoodies, t-shirts, and outerwear inspired by Egyptian culture.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="entering">
+    <!-- Main Store Content -->
+    <main id="store-content" class="store-content">
+
+        <!-- Navigation -->
+        <nav class="navbar scrolled" id="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html">
+                        <div class="logo-placeholder">
+                            <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html" class="active">Shop</a>
+                    <a href="collections.html">Collections</a>
+                    <a href="about.html">About</a>
+                    <a href="journal.html">Journal</a>
+                    <a href="track.html">Track</a>
+                </div>
+                <div class="nav-icons">
+                    <button aria-label="Search" class="icon-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="cart.html" aria-label="Cart" class="icon-btn cart-btn" style="text-decoration:none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <button class="mobile-menu-btn" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Subpage Header -->
+        <header class="subpage-header">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Shop</span>
+                </div>
+                <h1>THE ARCHIVE</h1>
+                <p>Premium streetwear blending ancient Egyptian aesthetics with contemporary minimalism, engineered for luxury.</p>
+            </div>
+        </header>
+
+        <!-- Product Listing Section -->
+        <section class="section" style="padding-top: 2rem;">
+            <div class="container">
+                
+                <!-- Filter and Sort Controls -->
+                <div class="shop-controls">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-category="all">All Products</button>
+                        <button class="filter-btn" data-category="hoodies">Hoodies</button>
+                        <button class="filter-btn" data-category="tees">Tees</button>
+                        <button class="filter-btn" data-category="outerwear">Outerwear</button>
+                        <button class="filter-btn" data-category="accessories">Accessories</button>
+                    </div>
+                    <div class="sort-select-wrapper">
+                        <select class="sort-select" id="sort-select" aria-label="Sort products">
+                            <option value="featured">Featured</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="product-grid" id="product-grid">
+                    <!-- Product 1 -->
+                    <div class="product-card fade-in-up visible" data-category="hoodies" data-price="1200" style="transition-delay: 0.1s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Oversized Obsidian Hoodie" class="product-img">
+                            <div class="product-badge">New</div>
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Oversized Obsidian Hoodie</h3>
+                            <p class="price">EGP 1,200</p>
+                        </div>
+                    </div>
+
+                    <!-- Product 2 -->
+                    <div class="product-card fade-in-up visible" data-category="tees" data-price="650" style="transition-delay: 0.2s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Dune Graphic Tee" class="product-img">
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Dune Graphic Tee</h3>
+                            <p class="price">EGP 650</p>
+                        </div>
+                    </div>
+
+                    <!-- Product 3 -->
+                    <div class="product-card fade-in-up visible" data-category="outerwear" data-price="2400" style="transition-delay: 0.3s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Pharaoh Bomber Jacket" class="product-img">
+                            <div class="product-badge">Limited</div>
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Pharaoh Bomber Jacket</h3>
+                            <p class="price">EGP 2,400</p>
+                        </div>
+                    </div>
+
+                    <!-- Product 4 -->
+                    <div class="product-card fade-in-up visible" data-category="tees" data-price="700" style="transition-delay: 0.4s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Scarab Heavyweight Tee" class="product-img">
+                            <div class="product-badge">New</div>
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Scarab Heavyweight Tee</h3>
+                            <p class="price">EGP 700</p>
+                        </div>
+                    </div>
+
+                    <!-- Product 5 -->
+                    <div class="product-card fade-in-up visible" data-category="outerwear" data-price="1800" style="transition-delay: 0.5s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Nile Utility Cargo Pants" class="product-img">
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Nile Utility Cargo Pants</h3>
+                            <p class="price">EGP 1,800</p>
+                        </div>
+                    </div>
+
+                    <!-- Product 6 -->
+                    <div class="product-card fade-in-up visible" data-category="accessories" data-price="450" style="transition-delay: 0.6s;">
+                        <div class="product-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                alt="Khepri Embroidered Cap" class="product-img">
+                            <button class="quick-add">Add to Cart</button>
+                        </div>
+                        <div class="product-info">
+                            <h3>Khepri Embroidered Cap</h3>
+                            <p class="price">EGP 450</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-placeholder" style="margin-bottom: 1rem;">
+                        <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                    </div>
+                    <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html">All Products</a></li>
+                        <li><a href="shop.html?cat=tees">T-Shirts</a></li>
+                        <li><a href="shop.html?cat=hoodies">Hoodies</a></li>
+                        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Join the Cult</h4>
+                    <p>Subscribe for exclusive drops and early access.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email Address" required>
+                        <button type="submit">→</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Threadz Egypt. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Mobile Menu Panel Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+        <div class="mobile-menu-header">
+            <div class="logo-placeholder">
+                <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-links">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="shop.html" class="mobile-link">Shop</a>
+            <a href="collections.html" class="mobile-link">Collections</a>
+            <a href="about.html" class="mobile-link">About</a>
+            <a href="journal.html" class="mobile-link">Journal</a>
+                    <a href="track.html" class="mobile-link">Track Order</a>
+                    <a href="cart.html" class="mobile-link">Cart</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <p class="tagline">Every Clothing Needs Threadz</p>
+            <div class="mobile-socials">
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+                <a href="#">Cairo Office</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="cart-data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Shop Page Product Filter & Sort Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const productGrid = document.getElementById('product-grid');
+            const products = Array.from(productGrid.querySelectorAll('.product-card'));
+            const sortSelect = document.getElementById('sort-select');
+
+            // Handle URL Parameters for filtering (e.g. from footer links)
+            const urlParams = new URLSearchParams(window.location.search);
+            const catParam = urlParams.get('cat');
+            if (catParam) {
+                const btn = document.querySelector(`.filter-btn[data-category="${catParam}"]`);
+                if (btn) {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterProducts(catParam);
+                }
+            }
+
+            // Filtering Action
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const category = btn.dataset.category;
+                    filterProducts(category);
+                });
+            });
+
+            function filterProducts(category) {
+                products.forEach((p, idx) => {
+                    const matchesCat = category === 'all' || p.dataset.category === category;
+                    if (matchesCat) {
+                        p.style.display = 'block';
+                        // Re-trigger fade-in-up nicely
+                        setTimeout(() => {
+                            p.classList.add('visible');
+                        }, 50 * idx);
+                    } else {
+                        p.style.display = 'none';
+                        p.classList.remove('visible');
+                    }
+                });
+            }
+
+            // Sorting Action
+            sortSelect.addEventListener('change', () => {
+                const criteria = sortSelect.value;
+                let sortedProducts = [...products];
+
+                if (criteria === 'price-low') {
+                    sortedProducts.sort((a, b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
+                } else if (criteria === 'price-high') {
+                    sortedProducts.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
+                } else {
+                    // default order (featured / DOM order)
+                    sortedProducts.sort((a, b) => products.indexOf(a) - products.indexOf(b));
+                }
+
+                // Empty and re-append sorted items
+                productGrid.innerHTML = '';
+                sortedProducts.forEach((p, idx) => {
+                    productGrid.appendChild(p);
+                    if (p.style.display !== 'none') {
+                        setTimeout(() => {
+                            p.classList.add('visible');
+                        }, 50 * idx);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

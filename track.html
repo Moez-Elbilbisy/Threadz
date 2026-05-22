@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order | Threadz Premium Streetwear</title>
+    <meta name="description" content="Track your Threadz order in real-time. Enter your tracking number to see the latest status and delivery timeline.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="entering">
+    <main id="store-content" class="store-content">
+
+        <!-- Navigation -->
+        <nav class="navbar scrolled" id="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html">
+                        <div class="logo-placeholder">
+                            <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="collections.html">Collections</a>
+                    <a href="about.html">About</a>
+                    <a href="journal.html">Journal</a>
+                    <a href="track.html" class="active">Track</a>
+                <div class="nav-icons">
+                    <button aria-label="Search" class="icon-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="cart.html" aria-label="Cart" class="icon-btn cart-btn" style="text-decoration:none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <button class="mobile-menu-btn" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Subpage Header -->
+        <header class="subpage-header">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Track</span>
+                </div>
+                <h1>TRACK YOUR ORDER</h1>
+                <p>Enter your tracking number to see real-time delivery updates.</p>
+            </div>
+        </header>
+
+        <!-- Tracking Section -->
+        <section class="section" style="padding-top: 2rem;">
+            <div class="container">
+                <div class="track-container">
+
+                    <!-- Tracking Form -->
+                    <div class="track-form-wrapper">
+                        <form id="track-form" class="track-form">
+                            <input type="text" id="tracking-input" class="form-input track-input" placeholder="Enter tracking number" required autocomplete="off">
+                            <button type="submit" class="btn btn-primary track-btn">Track</button>
+                        </form>
+                        <p class="track-hint">Your tracking number was provided in the order confirmation email.</p>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="track-loading" id="track-loading" style="display:none;">
+                        <div class="track-loading-spinner"></div>
+                        <p>Looking up your shipment...</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="track-error" id="track-error" style="display:none;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="15" y1="9" x2="9" y2="15"></line>
+                            <line x1="9" y1="9" x2="15" y2="15"></line>
+                        </svg>
+                        <h3>Shipment Not Found</h3>
+                        <p id="track-error-msg">We couldn't find a shipment with that tracking number. Please check and try again.</p>
+                    </div>
+
+                    <!-- Tracking Result -->
+                    <div class="track-result" id="track-result" style="display:none;">
+                        <!-- Status Header -->
+                        <div class="track-status-header" id="track-status-header">
+                            <div class="track-status-icon" id="track-status-icon">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="track-status-info">
+                                <span class="track-status-label" id="track-status-label">Delivered</span>
+                                <span class="track-status-date" id="track-status-date">Updated 2 hours ago</span>
+                            </div>
+                        </div>
+
+                        <!-- Tracking Timeline -->
+                        <div class="track-timeline" id="track-timeline">
+                            <!-- Timeline items injected by JS -->
+                        </div>
+
+                        <!-- Package Details -->
+                        <div class="track-details-grid">
+                            <div class="track-detail-card">
+                                <span class="track-detail-label">From</span>
+                                <span class="track-detail-value" id="track-from">Threadz Store, Cairo</span>
+                            </div>
+                            <div class="track-detail-card">
+                                <span class="track-detail-label">To</span>
+                                <span class="track-detail-value" id="track-to">—</span>
+                            </div>
+                            <div class="track-detail-card">
+                                <span class="track-detail-label">Tracking Number</span>
+                                <span class="track-detail-value" id="track-number" style="font-family:monospace;">—</span>
+                            </div>
+                            <div class="track-detail-card">
+                                <span class="track-detail-label">Payment</span>
+                                <span class="track-detail-value" id="track-payment">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-placeholder" style="margin-bottom: 1rem;">
+                        <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                    </div>
+                    <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html">All Products</a></li>
+                        <li><a href="shop.html?cat=tees">T-Shirts</a></li>
+                        <li><a href="shop.html?cat=hoodies">Hoodies</a></li>
+                        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Join the Cult</h4>
+                    <p>Subscribe for exclusive drops and early access.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email Address" required>
+                        <button type="submit">→</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Threadz Egypt. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Mobile Menu Panel Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+        <div class="mobile-menu-header">
+            <div class="logo-placeholder">
+                <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-links">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="shop.html" class="mobile-link">Shop</a>
+            <a href="collections.html" class="mobile-link">Collections</a>
+            <a href="about.html" class="mobile-link">About</a>
+            <a href="journal.html" class="mobile-link">Journal</a>
+            <a href="track.html" class="mobile-link">Track Order</a>
+            <a href="cart.html" class="mobile-link">Cart</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <p class="tagline">Every Clothing Needs Threadz</p>
+            <div class="mobile-socials">
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+                <a href="#">Cairo Office</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="cart-data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('track-form');
+            const input = document.getElementById('tracking-input');
+            const loading = document.getElementById('track-loading');
+            const error = document.getElementById('track-error');
+            const errorMsg = document.getElementById('track-error-msg');
+            const result = document.getElementById('track-result');
+            const statusLabel = document.getElementById('track-status-label');
+            const statusDate = document.getElementById('track-status-date');
+            const statusIcon = document.getElementById('track-status-icon');
+            const timeline = document.getElementById('track-timeline');
+            const trackNum = document.getElementById('track-number');
+            const trackFrom = document.getElementById('track-from');
+            const trackTo = document.getElementById('track-to');
+            const trackPayment = document.getElementById('track-payment');
+
+            const STATE_LABELS = {
+                'DELIVERED': { label: 'Delivered', icon: 'check' },
+                'OUT_FOR_DELIVERY': { label: 'Out for Delivery', icon: 'truck' },
+                'IN_TRANSIT': { label: 'In Transit', icon: 'package' },
+                'PICKED_UP': { label: 'Picked Up', icon: 'package' },
+                'SHIPMENT_CREATED': { label: 'Order Placed', icon: 'box' },
+                'CANCELLED': { label: 'Cancelled', icon: 'x' },
+                'RETURNED': { label: 'Returned', icon: 'x' },
+                'WAITING': { label: 'Waiting for Pickup', icon: 'clock' }
+            };
+
+            function getStateInfo(state) {
+                const s = (state || '').toUpperCase();
+                return STATE_LABELS[s] || { label: state || 'Unknown', icon: 'circle' };
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('en-EG', { month: 'short', day: 'numeric', year: 'numeric' }) +
+                    ', ' + d.toLocaleTimeString('en-EG', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function timeAgo(dateStr) {
+                if (!dateStr) return '';
+                const diff = Date.now() - new Date(dateStr).getTime();
+                const mins = Math.floor(diff / 60000);
+                if (mins < 1) return 'Just now';
+                if (mins < 60) return mins + 'm ago';
+                const hrs = Math.floor(mins / 60);
+                if (hrs < 24) return hrs + 'h ago';
+                const days = Math.floor(hrs / 24);
+                return days + 'd ago';
+            }
+
+            function getStatusIcon(state) {
+                const s = (state || '').toUpperCase();
+                const icons = {
+                    'DELIVERED': '<polyline points="20 6 9 17 4 12"></polyline>',
+                    'OUT_FOR_DELIVERY': '<rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 18a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"></path><path d="M15 18a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"></path>',
+                    'SHIPMENT_CREATED': '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>',
+                    'CANCELLED': '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>'
+                };
+                return icons[s] || '<circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path>';
+            }
+
+            function renderTimeline(events) {
+                timeline.innerHTML = '';
+                if (!events || events.length === 0) {
+                    timeline.innerHTML = '<div class="track-timeline-empty">No tracking updates available yet.</div>';
+                    return;
+                }
+                events.forEach((event, i) => {
+                    const isLast = i === 0;
+                    const info = getStateInfo(event.state);
+                    const item = document.createElement('div');
+                    item.className = 'track-timeline-item' + (isLast ? ' active' : '');
+                    item.innerHTML = `
+                        <div class="track-timeline-dot"></div>
+                        <div class="track-timeline-content">
+                            <span class="track-timeline-state">${info.label}</span>
+                            <span class="track-timeline-desc">${event.notes || event.state || ''}</span>
+                            <span class="track-timeline-date">${formatDate(event.date || event.createdAt || event.timestamp)}</span>
+                        </div>
+                    `;
+                    timeline.appendChild(item);
+                });
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const trackingNumber = input.value.trim();
+                if (!trackingNumber) return;
+
+                error.style.display = 'none';
+                result.style.display = 'none';
+                loading.style.display = 'block';
+
+                try {
+                    // Try Blobs first
+                    let res = await fetch(`/get-order?trackingNumber=${encodeURIComponent(trackingNumber)}`);
+
+                    if (res.status === 404) {
+                        // Fallback: try Bosta API directly
+                        res = await fetch(`/track-shipment?trackingNumber=${encodeURIComponent(trackingNumber)}`);
+                    }
+
+                    const data = await res.json();
+
+                    loading.style.display = 'none';
+
+                    if (!data.success) {
+                        errorMsg.textContent = data.error || data.details?.message || data.details?.error || 'We couldn\'t find a shipment with that tracking number.';
+                        error.style.display = 'flex';
+                        return;
+                    }
+
+                    const d = data.data?.data || data.data || data;
+                    const state = d.state || d.currentState || d.status || '';
+                    const info = getStateInfo(state);
+
+                    trackNum.textContent = trackingNumber;
+                    trackFrom.textContent = 'Threadz Store, Cairo';
+                    trackTo.textContent = [
+                        d.street,
+                        d.building ? `Bldg ${d.building}` : '',
+                        d.apartment ? `Apt ${d.apartment}` : '',
+                        d.area,
+                        d.governorate
+                    ].filter(Boolean).join(', ') || '—';
+                    trackPayment.textContent = d.paymentMethod === 'cod' ? 'Cash on Delivery' : d.paymentMethod === 'card' ? 'Card' : d.paymentMethod || '—';
+
+                    statusLabel.textContent = info.label;
+                    statusDate.textContent = data.status === 'created' ? 'Just created' : 'Updated ' + timeAgo(d.updatedAt || d.createdAt);
+                    statusIcon.innerHTML = getStatusIcon(state);
+
+                    const events = d.trackingEvents || d.history || d.states || [];
+                    renderTimeline(events);
+
+                    result.style.display = 'block';
+                } catch (err) {
+                    loading.style.display = 'none';
+                    errorMsg.textContent = 'Something went wrong. Please try again.';
+                    error.style.display = 'flex';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
