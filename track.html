@@ -12,6 +12,65 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Tracking page */
+        .track-page { max-width:720px; margin:0 auto; padding:0 1.5rem 3rem; }
+        .track-search-card { background:var(--bg-card); border:1px solid rgba(201,168,76,0.15); border-radius:8px; padding:2rem; text-align:center; margin-bottom:2rem; }
+        .track-search-card h2 { margin:0 0 0.35rem; font-family:var(--font-heading); font-weight:400; font-size:1.65rem; letter-spacing:0.03em; color:var(--gold); }
+        .track-search-card p { color:var(--text-secondary); font-size:0.85rem; margin:0 0 1.25rem; }
+        .track-search-card .track-form { display:flex; gap:0.5rem; max-width:480px; margin:0 auto; }
+        .track-search-card .track-form input { flex:1; padding:0.75rem 1rem; background:var(--bg-dark); border:1px solid rgba(201,168,76,0.2); border-radius:6px; font-size:0.95rem; outline:none; transition:border-color 0.2s; color:var(--text-primary); font-family:var(--font-body); }
+        .track-search-card .track-form input:focus { border-color:var(--gold); }
+        .track-search-card .track-form input::placeholder { color:var(--text-secondary); }
+        .track-search-card .track-form button { padding:0.75rem 1.75rem; border:none; border-radius:6px; background:var(--gold); color:var(--bg-dark); font-weight:600; font-size:0.9rem; cursor:pointer; font-family:var(--font-ui); transition:opacity 0.2s; }
+        .track-search-card .track-form button:hover { opacity:0.85; }
+        .track-loading { text-align:center; padding:3rem; color:var(--text-secondary); }
+        .track-loading .spinner { width:32px; height:32px; border:2px solid rgba(201,168,76,0.2); border-top-color:var(--gold); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 1rem; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .track-error { text-align:center; padding:2rem; background:var(--bg-card); border:1px solid rgba(201,168,76,0.15); border-radius:8px; }
+        .track-error svg { color:var(--gold-dim); margin-bottom:0.75rem; }
+        .track-error h3 { font-family:var(--font-heading); font-weight:400; font-size:1.3rem; margin:0 0 0.5rem; }
+        .track-error p { color:var(--text-secondary); font-size:0.85rem; margin:0; }
+
+        /* Stepper */
+        .stepper { display:flex; justify-content:space-between; margin-bottom:2.5rem; position:relative; padding:0.25rem 0; }
+        .stepper::before { content:''; position:absolute; top:20px; left:calc(12.5% + 16px); right:calc(12.5% + 16px); height:1px; background:rgba(201,168,76,0.2); z-index:0; }
+        .stepper .stepper-fill { position:absolute; top:20px; left:calc(12.5% + 16px); height:1px; background:var(--gold); z-index:1; transition:width 0.6s ease; }
+        .step { display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; flex:1; text-align:center; }
+        .step-circle { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:600; transition:all 0.3s; background:var(--bg-dark); border:1px solid rgba(201,168,76,0.2); color:var(--text-secondary); margin-bottom:0.5rem; font-family:var(--font-ui); }
+        .step.completed .step-circle { background:var(--gold); border-color:var(--gold); color:var(--bg-dark); }
+        .step.active .step-circle { border-color:var(--gold); color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
+        .step-label { font-size:0.7rem; font-weight:500; color:var(--text-secondary); max-width:80px; line-height:1.3; font-family:var(--font-ui); text-transform:uppercase; letter-spacing:0.04em; }
+        .step.completed .step-label { color:var(--gold); }
+        .step.active .step-label { color:var(--text-primary); }
+        .step-date { font-size:0.6rem; color:var(--text-secondary); margin-top:0.15rem; opacity:0.7; font-family:var(--font-body); }
+
+        /* Details Card */
+        .details-card { background:var(--bg-card); border:1px solid rgba(201,168,76,0.15); border-radius:8px; padding:1.5rem; margin-bottom:2rem; }
+        .details-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+        .details-grid .detail-item .d-label { font-size:0.7rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.2rem; font-family:var(--font-ui); }
+        .details-grid .detail-item .d-value { font-size:0.9rem; font-weight:500; font-family:var(--font-body); }
+        .details-grid .detail-item.full { grid-column:1/-1; }
+
+        /* Full Timeline */
+        .full-timeline { background:var(--bg-card); border:1px solid rgba(201,168,76,0.15); border-radius:8px; padding:1.5rem; }
+        .full-timeline h3 { margin:0 0 1rem; font-family:var(--font-heading); font-weight:400; font-size:1.15rem; color:var(--gold); letter-spacing:0.03em; }
+        .timeline-list { position:relative; padding-left:1.25rem; }
+        .timeline-list::before { content:''; position:absolute; left:5px; top:8px; bottom:8px; width:1px; background:rgba(201,168,76,0.2); }
+        .tl-item { position:relative; padding:0 0 1.25rem 1rem; }
+        .tl-item:last-child { padding-bottom:0; }
+        .tl-item::before { content:''; position:absolute; left:-1.25rem; top:6px; width:9px; height:9px; border-radius:50%; background:var(--bg-dark); border:1px solid rgba(201,168,76,0.2); z-index:1; }
+        .tl-item.active::before { background:var(--gold); border-color:var(--gold); }
+        .tl-item .tl-state { font-weight:600; font-size:0.85rem; font-family:var(--font-body); }
+        .tl-item .tl-notes { font-size:0.78rem; color:var(--text-secondary); margin:0.1rem 0; font-family:var(--font-body); }
+        .tl-item .tl-date { font-size:0.72rem; color:var(--text-secondary); opacity:0.7; font-family:var(--font-body); }
+        @media (max-width:600px) {
+            .details-grid { grid-template-columns:1fr; }
+            .step-label { font-size:0.6rem; max-width:60px; }
+            .stepper::before { left:calc(12.5% + 12px); right:calc(12.5% + 12px); }
+            .step-circle { width:32px; height:32px; font-size:0.7rem; }
+        }
+    </style>
 </head>
 
 <body class="entering">
@@ -34,6 +93,7 @@
                     <a href="about.html">About</a>
                     <a href="journal.html">Journal</a>
                     <a href="track.html" class="active">Track</a>
+                    <a href="account.html">Account</a>
                 <div class="nav-icons">
                     <button aria-label="Search" class="icon-btn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -77,77 +137,95 @@
         </header>
 
         <!-- Tracking Section -->
-        <section class="section" style="padding-top: 2rem;">
-            <div class="container">
-                <div class="track-container">
+        <section class="section" style="padding-top:2rem;">
+            <div class="track-page">
 
-                    <!-- Tracking Form -->
-                    <div class="track-form-wrapper">
-                        <form id="track-form" class="track-form">
-                            <input type="text" id="tracking-input" class="form-input track-input" placeholder="Enter tracking number" required autocomplete="off">
-                            <button type="submit" class="btn btn-primary track-btn">Track</button>
-                        </form>
-                        <p class="track-hint">Your tracking number was provided in the order confirmation email.</p>
+                <!-- Search Card -->
+                <div class="track-search-card">
+                    <h2>Track Your Shipment</h2>
+                    <p>Enter your tracking number to see real-time delivery updates.</p>
+                    <form class="track-form" id="track-form">
+                        <input type="text" id="tracking-input" placeholder="Tracking number" required autocomplete="off">
+                        <button type="submit">Track</button>
+                    </form>
+                </div>
+
+                <!-- Loading -->
+                <div class="track-loading" id="track-loading" style="display:none;">
+                    <div class="spinner"></div>
+                    <p>Looking up your shipment...</p>
+                </div>
+
+                <!-- Error -->
+                <div class="track-error" id="track-error" style="display:none;">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    <h3>Shipment Not Found</h3>
+                    <p id="track-error-msg">We couldn't find a shipment with that tracking number.</p>
+                </div>
+
+                <!-- Result -->
+                <div id="track-result" style="display:none;">
+
+                    <!-- Stepper -->
+                    <div class="stepper" id="stepper">
+                        <div class="stepper-fill" id="stepper-fill" style="width:0%"></div>
+                        <div class="step" data-step="1">
+                            <div class="step-circle" id="s1">1</div>
+                            <div class="step-label">Order is placed</div>
+                            <div class="step-date" id="s1-date"></div>
+                        </div>
+                        <div class="step" data-step="2">
+                            <div class="step-circle" id="s2">2</div>
+                            <div class="step-label">Order is picked up</div>
+                            <div class="step-date" id="s2-date"></div>
+                        </div>
+                        <div class="step" data-step="3">
+                            <div class="step-circle" id="s3">3</div>
+                            <div class="step-label">Out for delivery</div>
+                            <div class="step-date" id="s3-date"></div>
+                        </div>
+                        <div class="step" data-step="4">
+                            <div class="step-circle" id="s4">4</div>
+                            <div class="step-label">Delivered</div>
+                            <div class="step-date" id="s4-date"></div>
+                        </div>
                     </div>
 
-                    <!-- Loading State -->
-                    <div class="track-loading" id="track-loading" style="display:none;">
-                        <div class="track-loading-spinner"></div>
-                        <p>Looking up your shipment...</p>
+                    <!-- Details Card -->
+                    <div class="details-card">
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <div class="d-label">From</div>
+                                <div class="d-value" id="track-from">Threadz Store, Cairo</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="d-label">To</div>
+                                <div class="d-value" id="track-to">—</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="d-label">Tracking Number</div>
+                                <div class="d-value" id="track-number" style="font-family:monospace;">—</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="d-label">Payment</div>
+                                <div class="d-value" id="track-payment">—</div>
+                            </div>
+                            <div class="detail-item full">
+                                <div class="d-label">Last Update</div>
+                                <div class="d-value" id="track-last-update">—</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Error State -->
-                    <div class="track-error" id="track-error" style="display:none;">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="15" y1="9" x2="9" y2="15"></line>
-                            <line x1="9" y1="9" x2="15" y2="15"></line>
-                        </svg>
-                        <h3>Shipment Not Found</h3>
-                        <p id="track-error-msg">We couldn't find a shipment with that tracking number. Please check and try again.</p>
-                    </div>
-
-                    <!-- Tracking Result -->
-                    <div class="track-result" id="track-result" style="display:none;">
-                        <!-- Status Header -->
-                        <div class="track-status-header" id="track-status-header">
-                            <div class="track-status-icon" id="track-status-icon">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </div>
-                            <div class="track-status-info">
-                                <span class="track-status-label" id="track-status-label">Delivered</span>
-                                <span class="track-status-date" id="track-status-date">Updated 2 hours ago</span>
-                            </div>
-                        </div>
-
-                        <!-- Tracking Timeline -->
-                        <div class="track-timeline" id="track-timeline">
-                            <!-- Timeline items injected by JS -->
-                        </div>
-
-                        <!-- Package Details -->
-                        <div class="track-details-grid">
-                            <div class="track-detail-card">
-                                <span class="track-detail-label">From</span>
-                                <span class="track-detail-value" id="track-from">Threadz Store, Cairo</span>
-                            </div>
-                            <div class="track-detail-card">
-                                <span class="track-detail-label">To</span>
-                                <span class="track-detail-value" id="track-to">â€”</span>
-                            </div>
-                            <div class="track-detail-card">
-                                <span class="track-detail-label">Tracking Number</span>
-                                <span class="track-detail-value" id="track-number" style="font-family:monospace;">â€”</span>
-                            </div>
-                            <div class="track-detail-card">
-                                <span class="track-detail-label">Payment</span>
-                                <span class="track-detail-value" id="track-payment">â€”</span>
-                            </div>
-                        </div>
+                    <!-- Full Timeline -->
+                    <div class="full-timeline">
+                        <h3>Tracking History</h3>
+                        <div class="timeline-list" id="track-timeline"></div>
                     </div>
                 </div>
+
             </div>
         </section>
 
@@ -173,6 +251,7 @@
                     <h4>Support</h4>
                     <ul>
                         <li><a href="track.html">Track Order</a></li>
+                        <li><a href="account.html">My Account</a></li>
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Shipping & Returns</a></li>
                         <li><a href="#">Contact Us</a></li>
@@ -183,7 +262,7 @@
                     <p>Subscribe for exclusive drops and early access.</p>
                     <form class="newsletter-form">
                         <input type="email" placeholder="Email Address" required>
-                        <button type="submit">â†’</button>
+                        <button type="submit">?</button>
                     </form>
                 </div>
             </div>
@@ -214,6 +293,7 @@
             <a href="about.html" class="mobile-link">About</a>
             <a href="journal.html" class="mobile-link">Journal</a>
             <a href="track.html" class="mobile-link">Track Order</a>
+            <a href="account.html" class="mobile-link">My Account</a>
             <a href="cart.html" class="mobile-link">Cart</a>
         </div>
         <div class="mobile-menu-footer">
@@ -236,29 +316,27 @@
             const error = document.getElementById('track-error');
             const errorMsg = document.getElementById('track-error-msg');
             const result = document.getElementById('track-result');
-            const statusLabel = document.getElementById('track-status-label');
-            const statusDate = document.getElementById('track-status-date');
-            const statusIcon = document.getElementById('track-status-icon');
-            const timeline = document.getElementById('track-timeline');
             const trackNum = document.getElementById('track-number');
             const trackFrom = document.getElementById('track-from');
             const trackTo = document.getElementById('track-to');
             const trackPayment = document.getElementById('track-payment');
+            const trackLastUpdate = document.getElementById('track-last-update');
+            const timeline = document.getElementById('track-timeline');
+            const stepperFill = document.getElementById('stepper-fill');
 
-            const STATE_LABELS = {
-                'DELIVERED': { label: 'Delivered', icon: 'check' },
-                'OUT_FOR_DELIVERY': { label: 'Out for Delivery', icon: 'truck' },
-                'IN_TRANSIT': { label: 'In Transit', icon: 'package' },
-                'PICKED_UP': { label: 'Picked Up', icon: 'package' },
-                'SHIPMENT_CREATED': { label: 'Order Placed', icon: 'box' },
-                'CANCELLED': { label: 'Cancelled', icon: 'x' },
-                'RETURNED': { label: 'Returned', icon: 'x' },
-                'WAITING': { label: 'Waiting for Pickup', icon: 'clock' }
+            const STATE_MAP = {
+                'created': 1, 'SHIPMENT_CREATED': 1,
+                'picked_up': 2, 'PICKED_UP': 2,
+                'in_transit': 2.5,
+                'out_for_delivery': 3, 'OUT_FOR_DELIVERY': 3,
+                'delivered': 4, 'DELIVERED': 4,
+                'cancelled': -1, 'CANCELLED': -1,
+                'returned': -1, 'RETURNED': -1,
             };
 
-            function getStateInfo(state) {
+            function getStep(state) {
                 const s = (state || '').toUpperCase();
-                return STATE_LABELS[s] || { label: state || 'Unknown', icon: 'circle' };
+                return STATE_MAP[s] || STATE_MAP[state] || 0;
             }
 
             function formatDate(dateStr) {
@@ -268,47 +346,58 @@
                     ', ' + d.toLocaleTimeString('en-EG', { hour: '2-digit', minute: '2-digit' });
             }
 
-            function timeAgo(dateStr) {
-                if (!dateStr) return '';
-                const diff = Date.now() - new Date(dateStr).getTime();
-                const mins = Math.floor(diff / 60000);
-                if (mins < 1) return 'Just now';
-                if (mins < 60) return mins + 'm ago';
-                const hrs = Math.floor(mins / 60);
-                if (hrs < 24) return hrs + 'h ago';
-                const days = Math.floor(hrs / 24);
-                return days + 'd ago';
-            }
+            function updateStepper(currentStep, events) {
+                const steps = [1, 2, 3, 4];
+                steps.forEach(n => {
+                    const circle = document.getElementById('s' + n);
+                    const stepEl = circle.closest('.step');
+                    const dateEl = document.getElementById('s' + n + '-date');
+                    stepEl.classList.remove('completed', 'active');
+                    circle.textContent = n;
 
-            function getStatusIcon(state) {
-                const s = (state || '').toUpperCase();
-                const icons = {
-                    'DELIVERED': '<polyline points="20 6 9 17 4 12"></polyline>',
-                    'OUT_FOR_DELIVERY': '<rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 18a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"></path><path d="M15 18a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"></path>',
-                    'SHIPMENT_CREATED': '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>',
-                    'CANCELLED': '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>'
-                };
-                return icons[s] || '<circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path>';
+                    if (n < currentStep) {
+                        stepEl.classList.add('completed');
+                        circle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                    } else if (n === currentStep) {
+                        stepEl.classList.add('active');
+                    }
+                });
+
+                // Show dates on completed steps from events
+                if (events && events.length) {
+                    const stepDates = { 1: null, 2: null, 3: null, 4: null };
+                    const evCopy = [...events].reverse();
+                    evCopy.forEach(ev => {
+                        const s = getStep(ev.state || ev.stateCode);
+                        if (s >= 1 && s <= 4 && !stepDates[Math.floor(s)]) {
+                            stepDates[Math.floor(s)] = ev.date || ev.timestamp || ev.createdAt;
+                        }
+                    });
+                    [1, 2, 3, 4].forEach(n => {
+                        const el = document.getElementById('s' + n + '-date');
+                        if (stepDates[n]) el.textContent = formatDate(stepDates[n]);
+                    });
+                }
+
+                const pct = currentStep <= 0 ? 0 : Math.min((currentStep - 1) / 3 * 100, 100);
+                stepperFill.style.width = pct + '%';
             }
 
             function renderTimeline(events) {
                 timeline.innerHTML = '';
                 if (!events || events.length === 0) {
-                    timeline.innerHTML = '<div class="track-timeline-empty">No tracking updates available yet.</div>';
+                    timeline.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;">No tracking updates yet.</div>';
                     return;
                 }
-                events.forEach((event, i) => {
-                    const isLast = i === 0;
-                    const info = getStateInfo(event.state);
+                events.forEach((ev, i) => {
+                    const isFirst = i === 0;
                     const item = document.createElement('div');
-                    item.className = 'track-timeline-item' + (isLast ? ' active' : '');
+                    item.className = 'tl-item' + (isFirst ? ' active' : '');
+                    const stateLabel = ev.state || ev.stateCode || '';
                     item.innerHTML = `
-                        <div class="track-timeline-dot"></div>
-                        <div class="track-timeline-content">
-                            <span class="track-timeline-state">${info.label}</span>
-                            <span class="track-timeline-desc">${event.notes || event.state || ''}</span>
-                            <span class="track-timeline-date">${formatDate(event.date || event.createdAt || event.timestamp)}</span>
-                        </div>
+                        <div class="tl-state">${stateLabel.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                        <div class="tl-notes">${ev.notes || ''}</div>
+                        <div class="tl-date">${formatDate(ev.date || ev.timestamp || ev.createdAt)}</div>
                     `;
                     timeline.appendChild(item);
                 });
@@ -316,61 +405,57 @@
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const trackingNumber = input.value.trim();
-                if (!trackingNumber) return;
+                const tn = input.value.trim();
+                if (!tn) return;
 
                 error.style.display = 'none';
                 result.style.display = 'none';
                 loading.style.display = 'block';
 
                 try {
-                    // Try Blobs first
-                    let res = await fetch(`/get-order?trackingNumber=${encodeURIComponent(trackingNumber)}`);
-
+                    let res = await fetch(`/get-order?trackingNumber=${encodeURIComponent(tn)}`);
                     if (res.status === 404) {
-                        // Fallback: try Bosta API directly
-                        res = await fetch(`/track-shipment?trackingNumber=${encodeURIComponent(trackingNumber)}`);
+                        res = await fetch(`/track-shipment?trackingNumber=${encodeURIComponent(tn)}`);
                     }
 
                     const data = await res.json();
-
                     loading.style.display = 'none';
 
                     if (!data.success) {
-                        errorMsg.textContent = data.error || data.details?.message || data.details?.error || 'We couldn\'t find a shipment with that tracking number.';
-                        error.style.display = 'flex';
+                        errorMsg.textContent = data.error || data.details?.message || data.details?.error || 'Shipment not found.';
+                        error.style.display = 'block';
                         return;
                     }
 
                     const d = data.data?.data || data.data || data;
                     const state = d.state || d.currentState || d.status || '';
-                    const info = getStateInfo(state);
-
-                    trackNum.textContent = trackingNumber;
-                    trackFrom.textContent = 'Threadz Store, Cairo';
-                    trackTo.textContent = [
-                        d.street,
-                        d.building ? `Bldg ${d.building}` : '',
-                        d.apartment ? `Apt ${d.apartment}` : '',
-                        d.area,
-                        d.governorate
-                    ].filter(Boolean).join(', ') || 'â€”';
-                    trackPayment.textContent = d.paymentMethod === 'cod' ? 'Cash on Delivery' : d.paymentMethod === 'card' ? 'Card' : d.paymentMethod || 'â€”';
-
-                    statusLabel.textContent = info.label;
-                    statusDate.textContent = data.status === 'created' ? 'Just created' : 'Updated ' + timeAgo(d.updatedAt || d.createdAt);
-                    statusIcon.innerHTML = getStatusIcon(state);
-
+                    const step = getStep(state);
                     const events = d.trackingEvents || d.history || d.states || [];
-                    renderTimeline(events);
 
+                    trackNum.textContent = tn;
+                    trackFrom.textContent = 'Threadz Store, Cairo';
+                    trackTo.textContent = [d.street, d.building ? 'Bldg ' + d.building : '', d.apartment ? 'Apt ' + d.apartment : '', d.area, d.governorate].filter(Boolean).join(', ') || '—';
+                    trackPayment.textContent = d.paymentMethod === 'cod' ? 'Cash on Delivery' : d.paymentMethod === 'card' ? 'Card' : d.paymentMethod || '—';
+                    trackLastUpdate.textContent = d.updatedAt || d.createdAt ? formatDate(d.updatedAt || d.createdAt) : '—';
+
+                    updateStepper(step, events);
+                    renderTimeline(events);
                     result.style.display = 'block';
+
                 } catch (err) {
                     loading.style.display = 'none';
                     errorMsg.textContent = 'Something went wrong. Please try again.';
-                    error.style.display = 'flex';
+                    error.style.display = 'block';
                 }
             });
+
+            // Auto-submit from URL param
+            const params = new URLSearchParams(window.location.search);
+            const autoTn = params.get('tracking');
+            if (autoTn) {
+                input.value = autoTn;
+                form.dispatchEvent(new Event('submit'));
+            }
         });
     </script>
 </body>

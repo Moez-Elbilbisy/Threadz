@@ -35,6 +35,7 @@
                     <a href="about.html">About</a>
                     <a href="journal.html">Journal</a>
                     <a href="track.html">Track</a>
+                    <a href="account.html">Account</a>
                 </div>
                 <div class="nav-icons">
                     <button aria-label="Search" class="icon-btn">
@@ -140,6 +141,17 @@
                             <h3 class="cart-summary-title">Shipping Details</h3>
 
                             <form id="checkout-form" novalidate>
+
+                                <div class="address-toggle" id="addr-toggle">
+                                    <label class="addr-toggle-option" id="addr-opt-saved">
+                                        <input type="radio" name="addr-source" value="saved" checked>
+                                        <span>Use Saved Address</span>
+                                    </label>
+                                    <label class="addr-toggle-option" id="addr-opt-manual">
+                                        <input type="radio" name="addr-source" value="manual">
+                                        <span>Enter New Address</span>
+                                    </label>
+                                </div>
 
                                 <div class="form-group">
                                     <label for="full-name">Full Name</label>
@@ -322,10 +334,16 @@
                                         </svg>
                                     </div>
                                     <h4>Order Placed!</h4>
-                                    <p>Tracking number: <strong id="order-tracking-number"></strong></p>
+                                    <p style="display:flex; align-items:center; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+                                        Tracking number: <strong id="order-tracking-number"></strong>
+                                        <button id="copy-tracking-btn" onclick="copyTrackingNumber()" style="background:none; border:1px solid currentColor; border-radius:4px; padding:2px 8px; cursor:pointer; font-size:0.75rem; opacity:0.7; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Copy</button>
+                                    </p>
                                     <a href="track.html" class="btn btn-outline btn-sm" style="margin-top:0.5rem;">Track Your Order</a>
                                 </div>
-                                <p class="checkout-note">Free shipping on orders above EGP 2,000 â€¢ All prices in EGP</p>
+                                <div id="order-error" style="display:none; color:#dc3545; font-size:0.9rem; margin-bottom:0.75rem; text-align:center; background:rgba(220,53,69,0.08); padding:0.5rem 0.75rem; border-radius:6px;">
+                                    <span id="order-error-msg"></span>
+                                </div>
+                                <p class="checkout-note">Free shipping on orders above EGP 2,000 • All prices in EGP</p>
                             </form>
                         </div>
                     </div>
@@ -355,6 +373,7 @@
                     <h4>Support</h4>
                     <ul>
                         <li><a href="track.html">Track Order</a></li>
+                        <li><a href="account.html">My Account</a></li>
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Shipping & Returns</a></li>
                         <li><a href="#">Contact Us</a></li>
@@ -365,7 +384,7 @@
                     <p>Subscribe for exclusive drops and early access.</p>
                     <form class="newsletter-form">
                         <input type="email" placeholder="Email Address" required>
-                        <button type="submit">â†’</button>
+                        <button type="submit">?</button>
                     </form>
                 </div>
             </div>
@@ -396,6 +415,7 @@
             <a href="about.html" class="mobile-link">About</a>
             <a href="journal.html" class="mobile-link">Journal</a>
                     <a href="track.html" class="mobile-link">Track Order</a>
+                    <a href="account.html" class="mobile-link">My Account</a>
                     <a href="cart.html" class="mobile-link">Cart</a>
         </div>
         <div class="mobile-menu-footer">
@@ -471,6 +491,7 @@
                     input.value = value;
                     input.dataset.selected = 'true';
                     closeDropdown();
+                    hidden.dispatchEvent(new Event('change', { bubbles: true }));
                     if (onSelect) onSelect(value);
                 }
 
@@ -546,7 +567,11 @@
 
                 function getValue() { return hidden.value; }
 
-                return { setDisabled, setOptions, getValue, closeDropdown, openDropdown };
+                function setValue(value) {
+                    if (allOptions.includes(value)) selectOption(value);
+                }
+
+                return { setDisabled, setOptions, getValue, setValue, closeDropdown, openDropdown };
             }
 
             // ---- Governorate Searchable Select ----
@@ -649,7 +674,7 @@
                             </div>
                         </div>
                         <div class="cart-item-qty">
-                            <button class="qty-btn qty-minus" data-id="${item.id}" aria-label="Decrease quantity">âˆ’</button>
+                            <button class="qty-btn qty-minus" data-id="${item.id}" aria-label="Decrease quantity">-</button>
                             <span class="qty-value">${item.qty}</span>
                             <button class="qty-btn qty-plus" data-id="${item.id}" aria-label="Increase quantity">+</button>
                         </div>
@@ -716,6 +741,174 @@
                 renderCart();
             });
 
+            // ---- Address persistence ----
+            const ADDRESS_KEY = 'threadz_address';
+
+            function saveAddressLocal() {
+                try {
+                    localStorage.setItem(ADDRESS_KEY, JSON.stringify({
+                        fullName: document.getElementById('full-name').value,
+                        phone: document.getElementById('phone').value,
+                        governorate: document.getElementById('gov-value').value,
+                        area: document.getElementById('area-value').value,
+                        street: document.getElementById('street-name').value,
+                        building: document.getElementById('building-number').value,
+                        apartment: document.getElementById('apartment-number').value,
+                    }));
+                } catch {}
+            }
+
+            function loadAddressLocal() {
+                try {
+                    const raw = localStorage.getItem(ADDRESS_KEY);
+                    if (!raw) return;
+                    const addr = JSON.parse(raw);
+                    if (addr.fullName) document.getElementById('full-name').value = addr.fullName;
+                    if (addr.phone) document.getElementById('phone').value = addr.phone;
+                    if (addr.street) document.getElementById('street-name').value = addr.street;
+                    if (addr.building) document.getElementById('building-number').value = addr.building;
+                    if (addr.apartment) document.getElementById('apartment-number').value = addr.apartment;
+                    if (addr.governorate) {
+                        govSelect.setValue(addr.governorate);
+                    }
+                    if (addr.governorate && addr.area) {
+                        const areas = GOVERNORATES[addr.governorate];
+                        if (areas) {
+                            areaSearch.setOptions(areas);
+                            areaSearch.setDisabled(false);
+                            document.getElementById('area-search').placeholder = 'Search area...';
+                            areaSearch.setValue(addr.area);
+                        }
+                    }
+                    validateForm();
+                } catch {}
+            }
+
+            function fillFormFromAddress(addr) {
+                if (!addr) return;
+                if (addr.fullName) document.getElementById('full-name').value = addr.fullName;
+                if (addr.phone) document.getElementById('phone').value = addr.phone;
+                if (addr.street) document.getElementById('street-name').value = addr.street;
+                if (addr.building) document.getElementById('building-number').value = addr.building;
+                if (addr.apartment) document.getElementById('apartment-number').value = addr.apartment;
+                if (addr.governorate) {
+                    govSelect.setValue(addr.governorate);
+                }
+                if (addr.governorate && addr.area) {
+                    const areas = GOVERNORATES[addr.governorate];
+                    if (areas) {
+                        areaSearch.setOptions(areas);
+                        areaSearch.setDisabled(false);
+                        document.getElementById('area-search').placeholder = 'Search area...';
+                        areaSearch.setValue(addr.area);
+                    }
+                }
+            }
+
+            // Try loading address from API (if logged in), fall back to localStorage
+            async function loadSavedAddress() {
+                const token = localStorage.getItem('threadz_token');
+                if (token) {
+                    try {
+                        const res = await fetch('/api/auth/address', {
+                            headers: { 'Authorization': 'Bearer ' + token },
+                        });
+                        const data = await res.json();
+                        if (data.success && data.address) {
+                            fillFormFromAddress(data.address);
+                            validateForm();
+                            return true;
+                        }
+                    } catch {}
+                }
+                loadAddressLocal();
+                const raw = localStorage.getItem(ADDRESS_KEY);
+                return raw ? true : false;
+            }
+
+            function setAddressMode(mode) {
+                const wrapper = document.getElementById('addr-toggle').closest('.cart-shipping-panel');
+                if (mode === 'saved') {
+                    document.getElementById('addr-opt-saved').querySelector('input').checked = true;
+                    wrapper.classList.add('addr-fields-disabled');
+                } else {
+                    document.getElementById('addr-opt-manual').querySelector('input').checked = true;
+                    wrapper.classList.remove('addr-fields-disabled');
+                }
+            }
+
+            loadSavedAddress().then(hasAddress => {
+                if (hasAddress) {
+                    setAddressMode('saved');
+                } else {
+                    document.getElementById('addr-opt-saved').classList.add('disabled');
+                    setAddressMode('manual');
+                }
+            });
+
+            document.querySelectorAll('input[name="addr-source"]').forEach(r => {
+                r.addEventListener('change', () => {
+                    if (r.value === 'saved') {
+                        loadSavedAddress().then(hasAddress => {
+                            if (hasAddress) {
+                                setAddressMode('saved');
+                            } else {
+                                document.getElementById('addr-opt-saved').classList.add('disabled');
+                                setAddressMode('manual');
+                                document.getElementById('addr-opt-saved').querySelector('input').checked = false;
+                            }
+                        });
+                    } else {
+                        setAddressMode('manual');
+                    }
+                });
+            });
+
+            // Autosave to localStorage on input
+            ['full-name', 'phone', 'street-name', 'building-number', 'apartment-number'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', saveAddressLocal);
+            });
+            ['gov-value', 'area-value'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', saveAddressLocal);
+            });
+
+            // Autosave to API (debounced) for logged-in users
+            let saveApiTimer = null;
+            async function saveAddressToApi() {
+                const token = localStorage.getItem('threadz_token');
+                if (!token) return;
+                const payload = {
+                    fullName: document.getElementById('full-name').value,
+                    phone: document.getElementById('phone').value,
+                    governorate: document.getElementById('gov-value').value,
+                    area: document.getElementById('area-value').value,
+                    street: document.getElementById('street-name').value,
+                    building: document.getElementById('building-number').value,
+                    apartment: document.getElementById('apartment-number').value,
+                };
+                try {
+                    await fetch('/api/auth/address', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify(payload),
+                    });
+                } catch {}
+            }
+            function debouncedSaveApi() {
+                clearTimeout(saveApiTimer);
+                saveApiTimer = setTimeout(saveAddressToApi, 800);
+            }
+            ['full-name', 'phone', 'street-name', 'building-number', 'apartment-number'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', debouncedSaveApi);
+            });
+            ['gov-value', 'area-value'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', debouncedSaveApi);
+            });
+
             // ---- Checkout ----
             document.getElementById('checkout-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -729,6 +922,7 @@
                 const orderData = {
                     fullName: formData.get('full-name'),
                     phone: formData.get('phone'),
+                    email: (() => { try { const t = localStorage.getItem('threadz_token'); if (t) { const p = JSON.parse(atob(t.split('.')[1])); return p.email; } } catch {} return ''; })(),
                     governorate: formData.get('governorate'),
                     area: formData.get('area'),
                     street: formData.get('street-name'),
@@ -740,11 +934,12 @@
                     items: cart
                 };
 
-                const checkoutBtn = document.getElementById('checkout-btn');
                 const orderSuccess = document.getElementById('order-success');
+                const orderError = document.getElementById('order-error-msg');
                 const trackingNumEl = document.getElementById('order-tracking-number');
                 checkoutBtn.disabled = true;
                 checkoutBtn.innerText = 'Placing Order...';
+                if (orderError) orderError.textContent = '';
 
                 try {
                     const response = await fetch('/create-shipment', {
@@ -757,10 +952,17 @@
 
                     if (result.success) {
                         checkoutBtn.style.display = 'none';
-                        trackingNumEl.textContent = result.trackingNumber;
+                        trackingNumEl.textContent = result.trackingNumber || result.data?.trackingNumber || result.data?.data?.referenceNumber || result.data?.data?._id || '—';
                         orderSuccess.style.display = 'flex';
+                        clearCart();
+                        saveAddressLocal();
                     } else {
-                        checkoutBtn.innerText = 'Failed â€” Try Again';
+                        const msg = result.error?.message || result.error || 'Unknown error';
+                        if (orderError) {
+                            orderError.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg);
+                            document.getElementById('order-error').style.display = 'block';
+                        }
+                        checkoutBtn.innerText = 'Failed — Try Again';
                         checkoutBtn.style.backgroundColor = '#8a2a2a';
                         checkoutBtn.style.borderColor = '#8a2a2a';
                         checkoutBtn.disabled = false;
@@ -772,7 +974,11 @@
                     }
                 } catch (err) {
                     console.error(err);
-                    checkoutBtn.innerText = 'Failed â€” Try Again';
+                    if (orderError) {
+                        orderError.textContent = err.message || 'Network error';
+                        document.getElementById('order-error').style.display = 'block';
+                    }
+                    checkoutBtn.innerText = 'Failed — Try Again';
                     checkoutBtn.style.backgroundColor = '#8a2a2a';
                     checkoutBtn.style.borderColor = '#8a2a2a';
                     checkoutBtn.disabled = false;
@@ -787,6 +993,24 @@
             // Initial render
             renderCart();
         });
+
+        function copyTrackingNumber() {
+            const num = document.getElementById('order-tracking-number').textContent;
+            if (!num || num === '—') return;
+            navigator.clipboard.writeText(num).then(() => {
+                const btn = document.getElementById('copy-tracking-btn');
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = orig, 2000);
+            }).catch(() => {
+                const range = document.createRange();
+                const el = document.getElementById('order-tracking-number');
+                range.selectNodeContents(el);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            });
+        }
     </script>
 </body>
 

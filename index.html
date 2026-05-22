@@ -62,6 +62,7 @@
                     <a href="about.html">About</a>
                     <a href="journal.html">Journal</a>
                     <a href="track.html">Track</a>
+                    <a href="account.html">Account</a>
                 </div>
                 <div class="nav-icons">
                     <button aria-label="Search" class="icon-btn">
@@ -195,6 +196,7 @@
                     <h4>Support</h4>
                     <ul>
                         <li><a href="track.html">Track Order</a></li>
+                        <li><a href="account.html">My Account</a></li>
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Shipping & Returns</a></li>
                         <li><a href="#">Contact Us</a></li>
@@ -205,7 +207,7 @@
                     <p>Subscribe for exclusive drops and early access.</p>
                     <form class="newsletter-form">
                         <input type="email" placeholder="Email Address" required>
-                        <button type="submit">→</button>
+                        <button type="submit">?</button>
                     </form>
                 </div>
             </div>
@@ -236,6 +238,7 @@
             <a href="about.html" class="mobile-link">About</a>
             <a href="journal.html" class="mobile-link">Journal</a>
                     <a href="track.html" class="mobile-link">Track Order</a>
+                    <a href="account.html" class="mobile-link">My Account</a>
                     <a href="cart.html" class="mobile-link">Cart</a>
         </div>
         <div class="mobile-menu-footer">
@@ -251,7 +254,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script>
-        // ── SCENE SETUP ──────────────────────────────────────────────────────
+        // -- SCENE SETUP ------------------------------------------------------
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), antialias: true, alpha: false });
         renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
         renderer.setSize(innerWidth, innerHeight);
@@ -283,7 +286,7 @@
         shadowCatch.rotation.x = -Math.PI / 2; shadowCatch.position.y = -2.8; shadowCatch.receiveShadow = true;
         scene.add(shadowCatch);
 
-        // ── NEEDLE ───────────────────────────────────────────────────────────
+        // -- NEEDLE -----------------------------------------------------------
         const FALL_START_Y = 9, LAND_Y = 0;
         const FALL_DURATION = 3.0;
         let needle = null, needleLoaded = false;
@@ -322,11 +325,11 @@
             }, null, () => buildNeedle());
         } catch (e) { buildNeedle(); }
 
-        // ── RIBBON CANVAS ────────────────────────────────────────────────────
+        // -- RIBBON CANVAS ----------------------------------------------------
         const rc = document.getElementById('ribbon-canvas');
         const rctx = rc.getContext('2d');
         rc.width = innerWidth; rc.height = innerHeight;
-        const RIBBON_TEXT = '  EVERY CLOTHING NEEDS  THREADZ  ·  ';
+        const RIBBON_TEXT = '  EVERY CLOTHING NEEDS  THREADZ  �  ';
 
         function drawRibbon(prog, alpha) {
             rctx.clearRect(0, 0, rc.width, rc.height);
@@ -403,7 +406,7 @@
             rctx.restore();
         }
 
-// ── ANIMATION LOOP ───────────────────────────────────────────────────
+// -- ANIMATION LOOP ---------------------------------------------------
         let phase = 0, impactTime = 0, welcomeShown = false, finalShown = false;
         let ribbonProg = 0, ribbonAlpha = 0, ribbonFadeOut = false, totalTime = 0;
         const clock = new THREE.Clock();
@@ -427,7 +430,7 @@
             totalTime += dt;
             if (!needleLoaded) { renderer.render(scene, camera); return; }
 
-            // ── Phase 0: Needle eases down smoothly ──
+            // -- Phase 0: Needle eases down smoothly --
             if (phase === 0 && !landed) {
                 fallTime += dt;
                 const t = Math.min(1, fallTime / FALL_DURATION);
@@ -444,7 +447,7 @@
                 ribbonAlpha = Math.min(0.7, fp * 1.4);
                 drawRibbon(ribbonProg, ribbonAlpha);
 
-                // Subtle gentle sway — slower frequency (0.3 instead of 0.5)
+                // Subtle gentle sway � slower frequency (0.3 instead of 0.5)
                 needle.rotation.z = Math.sin(totalTime * 0.3) * 0.03 * (1 - t);
 
                 if (t >= 1) {
@@ -460,7 +463,7 @@
             // Settle key light glow
             if (keyLight.intensity > 8) keyLight.intensity = Math.max(8, keyLight.intensity - 30 * dt);
 
-            // ── Ribbon: grows continuously 0→1 across the whole intro ──
+            // -- Ribbon: grows continuously 0?1 across the whole intro --
             // Slower majestic ribbon growth (takes 10s instead of 6s)
             const RIBBON_TOTAL = 6.0;
             if (!ribbonFadeOut && phase < 3) {

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account | Threadz Premium Streetwear</title>
+    <meta name="description" content="Manage your Threadz account, view order history, and track shipments.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .account-container { max-width:640px; margin:0 auto; }
+        .auth-tabs { display:flex; gap:0; margin-bottom:2rem; border-bottom:2px solid var(--border); }
+        .auth-tab { flex:1; padding:0.75rem; text-align:center; cursor:pointer; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.2s; background:none; border-top:none; border-left:none; border-right:none; font-size:1rem; }
+        .auth-tab.active { color:var(--text-primary); border-bottom-color:var(--gold); }
+        .auth-form { display:none; }
+        .auth-form.active { display:block; }
+        .auth-form .form-group { margin-bottom:1rem; }
+        .auth-form label { display:block; margin-bottom:0.35rem; font-size:0.85rem; font-weight:500; color:var(--muted); }
+        .auth-form .form-input { width:100%; }
+        .auth-form .btn { width:100%; margin-top:0.5rem; }
+        .auth-error { color:#dc3545; font-size:0.85rem; margin-top:0.5rem; display:none; }
+        .auth-success { color:#28a745; font-size:0.85rem; margin-top:0.5rem; display:none; }
+        .user-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+        .user-header h2 { margin:0; }
+        .order-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1rem; }
+        .order-card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem; }
+        .order-card-header strong { font-size:1rem; }
+        .order-status { font-size:0.75rem; padding:0.2rem 0.6rem; border-radius:20px; background:var(--bg); text-transform:capitalize; }
+        .order-status.created { background:#e3f2fd; color:#1565c0; }
+        .order-status.in_transit { background:#fff3e0; color:#e65100; }
+        .order-status.out_for_delivery { background:#f3e5f5; color:#7b1fa2; }
+        .order-status.delivered { background:#e8f5e9; color:#2e7d32; }
+        .order-status.cancelled { background:#ffebee; color:#c62828; }
+        .order-card-items { font-size:0.85rem; color:var(--muted); margin-bottom:0.35rem; }
+        .order-card-meta { font-size:0.8rem; color:var(--muted); }
+        .order-card-actions { margin-top:0.5rem; }
+        .account-loading { text-align:center; padding:3rem; color:var(--muted); }
+        .no-orders { text-align:center; padding:2rem; color:var(--muted); }
+        .addr-card { background:var(--bg-card); border:1px solid rgba(201,168,76,0.15); border-radius:8px; padding:1.25rem; margin-bottom:1.5rem; }
+        .addr-card h3 { font-family:var(--font-heading); font-weight:400; font-size:1.1rem; color:var(--gold); margin:0 0 0.75rem; letter-spacing:0.03em; }
+        .addr-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .addr-grid .form-group { margin-bottom:0; }
+        .addr-grid .form-group label { display:block; font-size:0.7rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.2rem; font-family:var(--font-ui); }
+        .addr-grid .form-group input,.addr-grid .form-group select { width:100%; padding:0.6rem 0.75rem; background:var(--bg-dark); border:1px solid rgba(201,168,76,0.2); border-radius:5px; color:var(--text-primary); font-size:0.85rem; outline:none; font-family:var(--font-body); transition:border-color 0.2s; }
+        .addr-grid .form-group input:focus { border-color:var(--gold); }
+        .addr-grid .full { grid-column:1/-1; }
+        .addr-actions { margin-top:1rem; display:flex; gap:0.5rem; }
+        .search-select { position:relative; }
+        .search-select-trigger { display:flex; align-items:center; }
+        .search-select-trigger .search-select-input { width:100%; padding:0.6rem 0.75rem; background:var(--bg-dark); border:1px solid rgba(201,168,76,0.2); border-radius:5px; color:var(--text-primary); font-size:0.85rem; outline:none; font-family:var(--font-body); transition:border-color 0.2s; }
+        .search-select-trigger .search-select-input:focus { border-color:var(--gold); }
+        .search-select-trigger .search-select-input:disabled { opacity:0.4; }
+        .search-select-arrow { position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--text-secondary); }
+        .search-select-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1px solid rgba(201,168,76,0.2); border-top:none; border-radius:0 0 5px 5px; max-height:180px; overflow-y:auto; display:none; z-index:10; }
+        .search-select.open .search-select-dropdown { display:block; }
+        .search-select-option { padding:0.5rem 0.75rem; cursor:pointer; font-size:0.85rem; color:var(--text-primary); transition:background 0.15s; }
+        .search-select-option:hover,.search-select-option.active { background:rgba(201,168,76,0.1); }
+        .search-select-empty-msg { padding:0.75rem; text-align:center; color:var(--text-secondary); font-size:0.8rem; }
+    </style>
+</head>
+<body class="entering">
+    <main id="store-content" class="store-content">
+
+        <!-- Navigation -->
+        <nav class="navbar scrolled" id="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html">
+                        <div class="logo-placeholder">
+                            <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="collections.html">Collections</a>
+                    <a href="about.html">About</a>
+                    <a href="journal.html">Journal</a>
+                    <a href="track.html">Track</a>
+                    <a href="account.html" class="active">Account</a>
+                </div>
+                <div class="nav-icons">
+                    <button aria-label="Search" class="icon-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="cart.html" aria-label="Cart" class="icon-btn cart-btn" style="text-decoration:none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <button class="mobile-menu-btn" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Subpage Header -->
+        <header class="subpage-header">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Account</span>
+                </div>
+                <h1>MY ACCOUNT</h1>
+                <p>Manage your orders and account details.</p>
+            </div>
+        </header>
+
+        <!-- Account Content -->
+        <section class="section" style="padding-top:2rem;">
+            <div class="container">
+                <div class="account-container" id="account-app">
+
+                    <!-- Auth Section -->
+                    <div id="auth-section">
+                        <div class="auth-tabs">
+                            <button class="auth-tab active" data-tab="login">Sign In</button>
+                            <button class="auth-tab" data-tab="register">Create Account</button>
+                        </div>
+
+                        <form id="login-form" class="auth-form active" autocomplete="off">
+                            <div class="form-group">
+                                <label for="login-email">Email</label>
+                                <input type="email" id="login-email" class="form-input" placeholder="your@email.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="login-password">Password</label>
+                                <input type="password" id="login-password" class="form-input" placeholder="Enter password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                            <div class="auth-error" id="login-error"></div>
+                            <div class="auth-success" id="login-success"></div>
+                        </form>
+
+                        <form id="register-form" class="auth-form" autocomplete="off">
+                            <div class="form-group">
+                                <label for="reg-name">Full Name</label>
+                                <input type="text" id="reg-name" class="form-input" placeholder="Your full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-email">Email</label>
+                                <input type="email" id="reg-email" class="form-input" placeholder="your@email.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-password">Password (min 6 characters)</label>
+                                <input type="password" id="reg-password" class="form-input" placeholder="Create a password" minlength="6" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                            <div class="auth-error" id="register-error"></div>
+                            <div class="auth-success" id="register-success"></div>
+                        </form>
+                    </div>
+
+                    <!-- Dashboard Section -->
+                    <div id="dashboard-section" style="display:none;">
+                        <div class="user-header">
+                            <div>
+                                <h2 id="dashboard-user-name"></h2>
+                                <p style="color:var(--muted); font-size:0.85rem;" id="dashboard-user-email"></p>
+                            </div>
+                            <button class="btn btn-outline btn-sm" id="logout-btn">Sign Out</button>
+                        </div>
+
+                        <div class="addr-card">
+                            <h3>Delivery Address</h3>
+                            <div class="addr-grid">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="addr-name" placeholder="Full name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone</label>
+                                    <input type="tel" id="addr-phone" placeholder="Phone number">
+                                </div>
+                                <div class="form-group">
+                                    <label>Governorate</label>
+                                    <div class="search-select" id="addr-gov-wrapper">
+                                        <div class="search-select-trigger">
+                                            <input type="text" id="addr-gov-search" class="form-input search-select-input" placeholder="Search governorate..." autocomplete="off">
+                                            <span class="search-select-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <div class="search-select-dropdown" id="addr-gov-dropdown"></div>
+                                    </div>
+                                    <input type="hidden" id="addr-gov" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label>Area</label>
+                                    <div class="search-select" id="addr-area-wrapper">
+                                        <div class="search-select-trigger">
+                                            <input type="text" id="addr-area-search" class="form-input search-select-input" placeholder="Select governorate first" autocomplete="off" disabled>
+                                            <span class="search-select-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                                        </div>
+                                        <div class="search-select-dropdown" id="addr-area-dropdown"></div>
+                                    </div>
+                                    <input type="hidden" id="addr-area" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label>Street</label>
+                                    <input type="text" id="addr-street" placeholder="Street name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Building</label>
+                                    <input type="text" id="addr-building" placeholder="Building number">
+                                </div>
+                                <div class="form-group full">
+                                    <label>Apartment</label>
+                                    <input type="text" id="addr-apartment" placeholder="Apartment number">
+                                </div>
+                            </div>
+                            <div class="addr-actions">
+                                <button class="btn btn-primary btn-sm" id="save-addr-btn">Save Address</button>
+                                <span id="addr-saved-msg" style="color:var(--gold); font-size:0.8rem; display:none; align-self:center;">Saved</span>
+                            </div>
+                        </div>
+
+                        <h3 style="margin-bottom:1rem;">Order History</h3>
+                        <div id="orders-list">
+                            <div class="account-loading">Loading your orders...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-placeholder" style="margin-bottom:1rem;">
+                        <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                    </div>
+                    <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html">All Products</a></li>
+                        <li><a href="shop.html?cat=tees">T-Shirts</a></li>
+                        <li><a href="shop.html?cat=hoodies">Hoodies</a></li>
+                        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="account.html">My Account</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Join the Cult</h4>
+                    <p>Subscribe for exclusive drops and early access.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email Address" required>
+                        <button type="submit">?</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Threadz Egypt. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+        <div class="mobile-menu-header">
+            <div class="logo-placeholder">
+                <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-links">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="shop.html" class="mobile-link">Shop</a>
+            <a href="collections.html" class="mobile-link">Collections</a>
+            <a href="about.html" class="mobile-link">About</a>
+            <a href="journal.html" class="mobile-link">Journal</a>
+            <a href="track.html" class="mobile-link">Track Order</a>
+            <a href="account.html" class="mobile-link">My Account</a>
+            <a href="cart.html" class="mobile-link">Cart</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <p class="tagline">Every Clothing Needs Threadz</p>
+            <div class="mobile-socials">
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+                <a href="#">Cairo Office</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="cart-data.js"></script>
+    <script src="script.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const TOKEN_KEY = 'threadz_token';
+        let currentUser = null;
+
+        const authSection = document.getElementById('auth-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const ordersList = document.getElementById('orders-list');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginError = document.getElementById('login-error');
+        const loginSuccess = document.getElementById('login-success');
+        const registerError = document.getElementById('register-error');
+        const registerSuccess = document.getElementById('register-success');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userName = document.getElementById('dashboard-user-name');
+        const userEmail = document.getElementById('dashboard-user-email');
+
+        // ---- Searchable Select Factory ----
+        function createSearchSelect(wrapperId, inputId, dropdownId, hiddenId, options, onSelect) {
+            const wrapper = document.getElementById(wrapperId);
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            const hidden = document.getElementById(hiddenId);
+            let allOptions = [...options];
+            let filteredOptions = [...options];
+            let selectedValue = '';
+            let open = false;
+
+            function renderDropdown() {
+                dropdown.innerHTML = '';
+                if (filteredOptions.length === 0) {
+                    const msg = document.createElement('div');
+                    msg.className = 'search-select-empty-msg';
+                    msg.textContent = 'No results found';
+                    dropdown.appendChild(msg);
+                    return;
+                }
+                filteredOptions.forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'search-select-option';
+                    if (opt === selectedValue) div.classList.add('active');
+                    div.textContent = opt;
+                    div.addEventListener('mousedown', (e) => { e.preventDefault(); selectOption(opt); });
+                    dropdown.appendChild(div);
+                });
+            }
+
+            function selectOption(value) {
+                selectedValue = value;
+                hidden.value = value;
+                input.value = value;
+                input.dataset.selected = 'true';
+                closeDropdown();
+                hidden.dispatchEvent(new Event('change', { bubbles: true }));
+                if (onSelect) onSelect(value);
+            }
+
+            function openDropdown() {
+                open = true;
+                wrapper.classList.add('open');
+                filterOptions(input.value);
+                renderDropdown();
+            }
+
+            function closeDropdown() {
+                open = false;
+                wrapper.classList.remove('open');
+                if (!input.dataset.selected && selectedValue) {
+                    input.value = selectedValue;
+                } else if (!input.dataset.selected && !selectedValue) {
+                    input.value = '';
+                }
+            }
+
+            function filterOptions(query) {
+                const lower = query.toLowerCase();
+                filteredOptions = allOptions.filter(o => o.toLowerCase().includes(lower));
+                renderDropdown();
+            }
+
+            input.addEventListener('focus', () => { openDropdown(); });
+            input.addEventListener('input', () => { input.dataset.selected = ''; if (!open) openDropdown(); filterOptions(input.value); });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeDropdown();
+                if (e.key === 'Enter' && open && filteredOptions.length > 0) { e.preventDefault(); selectOption(filteredOptions[0]); }
+            });
+            document.addEventListener('click', (e) => { if (!wrapper.contains(e.target)) closeDropdown(); });
+
+            function setDisabled(disabled) {
+                input.disabled = disabled;
+                if (disabled) { input.placeholder = 'Select governorate first'; input.value = ''; hidden.value = ''; selectedValue = ''; }
+            }
+
+            function setOptions(newOptions) {
+                allOptions = [...newOptions];
+                filteredOptions = [...newOptions];
+                selectedValue = '';
+                hidden.value = '';
+                input.value = '';
+                input.dataset.selected = '';
+                renderDropdown();
+            }
+
+            function setValue(value) {
+                if (allOptions.includes(value)) selectOption(value);
+            }
+
+            return { setDisabled, setOptions, setValue, getValue: () => hidden.value, closeDropdown, openDropdown };
+        }
+
+        // ---- Governorate & Area Dropdowns ----
+        const govNames = Object.keys(GOVERNORATES).sort();
+        const addrGovSelect = createSearchSelect('addr-gov-wrapper', 'addr-gov-search', 'addr-gov-dropdown', 'addr-gov', govNames, (gov) => {
+            addrAreaSelect.setOptions(GOVERNORATES[gov]);
+            addrAreaSelect.setDisabled(false);
+            document.getElementById('addr-area-search').placeholder = 'Search area...';
+        });
+
+        const addrAreaSelect = createSearchSelect('addr-area-wrapper', 'addr-area-search', 'addr-area-dropdown', 'addr-area', [], () => {});
+        addrAreaSelect.setDisabled(true);
+
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + '-form').classList.add('active');
+                [loginError, loginSuccess, registerError, registerSuccess].forEach(el => el.style.display = 'none');
+            });
+        });
+
+        function setError(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+        function getToken() { return localStorage.getItem(TOKEN_KEY); }
+
+        function saveToken(token) { localStorage.setItem(TOKEN_KEY, token); }
+
+        function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+
+        async function apiCall(url, options = {}) {
+            const token = getToken();
+            const headers = { ...options.headers };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+            const res = await fetch(url, { ...options, headers });
+            return res.json();
+        }
+
+        async function checkSession() {
+            const token = getToken();
+            if (!token) { showLoggedOut(); return; }
+            const result = await apiCall('/api/auth/me');
+            if (result.success) {
+                currentUser = result.user;
+                showLoggedIn(result.user, result.orders);
+            } else {
+                clearToken();
+                showLoggedOut();
+            }
+        }
+
+        function showLoggedOut() {
+            authSection.style.display = 'block';
+            dashboardSection.style.display = 'none';
+        }
+
+        function showLoggedIn(user, orders) {
+            authSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            userName.textContent = user.fullName;
+            userEmail.textContent = user.email;
+
+            // Fill address fields
+            if (user.address) {
+                document.getElementById('addr-name').value = user.address.fullName || '';
+                document.getElementById('addr-phone').value = user.address.phone || '';
+                document.getElementById('addr-street').value = user.address.street || '';
+                document.getElementById('addr-building').value = user.address.building || '';
+                document.getElementById('addr-apartment').value = user.address.apartment || '';
+
+                if (user.address.governorate) {
+                    addrGovSelect.setValue(user.address.governorate);
+                }
+                if (user.address.area && user.address.governorate) {
+                    const areas = GOVERNORATES[user.address.governorate];
+                    if (areas) {
+                        addrAreaSelect.setOptions(areas);
+                        addrAreaSelect.setDisabled(false);
+                        document.getElementById('addr-area-search').placeholder = 'Search area...';
+                        addrAreaSelect.setValue(user.address.area);
+                    }
+                }
+            }
+
+            if (!orders || orders.length === 0) {
+                ordersList.innerHTML = '<div class="no-orders">No orders yet. <a href="cart.html" style="color:var(--gold);">Start shopping</a></div>';
+                return;
+            }
+
+            ordersList.innerHTML = orders.map(o => {
+                const items = o.items?.map(i => `${i.name} x${i.qty}`).join(', ') || '';
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : '';
+                return `<div class="order-card">
+                    <div class="order-card-header">
+                        <strong>#${o.trackingNumber || '—'}</strong>
+                        <span class="order-status ${o.status || ''}">${o.status || 'Unknown'}</span>
+                    </div>
+                    <div class="order-card-items">${items}</div>
+                    <div class="order-card-meta">${date} &middot; EGP ${(o.total || 0).toLocaleString()} &middot; ${o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || '—'}</div>
+                    <div class="order-card-actions">
+                        <a href="track.html?tracking=${o.trackingNumber}" class="btn btn-outline btn-sm">Track Order</a>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Save address
+        document.getElementById('save-addr-btn').addEventListener('click', async () => {
+            const address = {
+                fullName: document.getElementById('addr-name').value,
+                phone: document.getElementById('addr-phone').value,
+                governorate: document.getElementById('addr-gov').value,
+                area: document.getElementById('addr-area').value,
+                street: document.getElementById('addr-street').value,
+                building: document.getElementById('addr-building').value,
+                apartment: document.getElementById('addr-apartment').value,
+            };
+            const result = await apiCall('/api/auth/address', {
+                method: 'POST',
+                body: JSON.stringify({ address }),
+            });
+            if (result.success) {
+                const msg = document.getElementById('addr-saved-msg');
+                msg.style.display = 'inline';
+                setTimeout(() => { msg.style.display = 'none'; }, 2500);
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginError.style.display = 'none';
+            loginSuccess.style.display = 'none';
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const btn = loginForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+            const result = await apiCall('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password }),
+            });
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+            if (result.success) {
+                saveToken(result.token);
+                currentUser = result.user;
+                const r = await apiCall('/api/auth/me');
+                showLoggedIn(r.user, r.orders);
+            } else {
+                setError(loginError, result.error || 'Login failed');
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            registerError.style.display = 'none';
+            registerSuccess.style.display = 'none';
+            const fullName = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const btn = registerForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+            const result = await apiCall('/api/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ email, password, fullName }),
+            });
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+            if (result.success) {
+                saveToken(result.token);
+                currentUser = result.user;
+                const r = await apiCall('/api/auth/me');
+                showLoggedIn(r.user, r.orders);
+            } else {
+                setError(registerError, result.error || 'Registration failed');
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            clearToken();
+            currentUser = null;
+            showLoggedOut();
+        });
+
+        checkSession();
+    });
+    </script>
+</body>
+</html>

@@ -44,7 +44,7 @@ window.addEventListener('load', () => {
     }, 4500); // Trigger after the 3D animation finishes and fade-in starts
 });
 
-// Cart Interaction â€” localStorage-backed via cart-data.js
+// Cart Interaction â?? localStorage-backed via cart-data.js
 const addButtons = document.querySelectorAll('.quick-add');
 const cartCountElement = document.querySelector('.cart-count');
 const cartBtn = document.querySelector('.cart-btn');
@@ -163,7 +163,7 @@ if (mobileBtn && mobileMenuOverlay && mobileMenuPanel) {
     mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
 }
 
-// Internal navigation detection â€” set flag when clicking links to homepage
+// Internal navigation detection â?? set flag when clicking links to homepage
 document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (!link) return;
@@ -178,7 +178,7 @@ document.addEventListener('click', (e) => {
     } catch (_) {}
 });
 
-// â”€â”€ Custom Cursor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â??â?? Custom Cursor â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 (function() {
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
 
@@ -203,5 +203,5 @@ document.addEventListener('click', (e) => {
     document.body.classList.add('custom-cursor');
 })();
 
-// â”€â”€ Prevent Right-Click â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â??â?? Prevent Right-Click â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 document.addEventListener('contextmenu', (e) => e.preventDefault());
