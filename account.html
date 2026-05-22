@@ -521,11 +521,11 @@
                 const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : '';
                 return `<div class="order-card">
                     <div class="order-card-header">
-                        <strong>#${o.trackingNumber || '—'}</strong>
+                        <strong>#${o.trackingNumber || 'ï¿½'}</strong>
                         <span class="order-status ${o.status || ''}">${o.status || 'Unknown'}</span>
                     </div>
                     <div class="order-card-items">${items}</div>
-                    <div class="order-card-meta">${date} &middot; EGP ${(o.total || 0).toLocaleString()} &middot; ${o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || '—'}</div>
+                    <div class="order-card-meta">${date} &middot; EGP ${(o.total || 0).toLocaleString()} &middot; ${o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || 'ï¿½'}</div>
                     <div class="order-card-actions">
                         <a href="track.html?tracking=${o.trackingNumber}" class="btn btn-outline btn-sm">Track Order</a>
                     </div>
@@ -570,7 +570,7 @@
             });
             btn.disabled = false;
             btn.textContent = 'Sign In';
-            if (result.success) {
+            if (result.token) {
                 saveToken(result.token);
                 currentUser = result.user;
                 const r = await apiCall('/api/auth/me');
@@ -596,7 +596,7 @@
             });
             btn.disabled = false;
             btn.textContent = 'Create Account';
-            if (result.success) {
+            if (result.token) {
                 saveToken(result.token);
                 currentUser = result.user;
                 const r = await apiCall('/api/auth/me');
