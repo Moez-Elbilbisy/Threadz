@@ -528,6 +528,7 @@
                     <div class="order-card-meta">${date} &middot; EGP ${(o.total || 0).toLocaleString()} &middot; ${o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || '�'}</div>
                     <div class="order-card-actions">
                         <a href="track.html?tracking=${o.trackingNumber}" class="btn btn-outline btn-sm">Track Order</a>
+                        <button class="btn btn-outline btn-sm" style="color:var(--gold-dim);border-color:rgba(201,168,76,0.2);" onclick="deleteOrder('${o.trackingNumber}')">Delete</button>
                     </div>
                 </div>`;
             }).join('');
@@ -611,6 +612,20 @@
             currentUser = null;
             showLoggedOut();
         });
+
+        window.deleteOrder = async function(trackingNumber) {
+            if (!confirm('Remove this order from your history?')) return;
+            const result = await apiCall('/api/auth/orders', {
+                method: 'DELETE',
+                body: JSON.stringify({ trackingNumber }),
+            });
+            if (result.success) {
+                const r = await apiCall('/api/auth/me');
+                showLoggedIn(r.user, r.orders);
+            } else {
+                alert(result.error || 'Failed to delete order');
+            }
+        };
 
         checkSession();
     });
