@@ -41,7 +41,7 @@ export async function onRequest(context) {
     // Cancel in Bosta
     if (order.shipmentId && context.env.BOSTA_API_KEY) {
       const bostaRes = await fetch(
-        `https://app.bosta.co/api/v2/deliveries/${order.shipmentId}/cancel`,
+        `https://app.bosta.co/api/v2/deliveries/${order.shipmentId}/cancel-delivery`,
         {
           method: "POST",
           headers: {
