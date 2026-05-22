@@ -38,29 +38,29 @@ export async function onRequest(context) {
       }), { status: 400 });
     }
 
-    // Cancel in Bosta
+    // Try cancelling on Bosta (non-blocking — local cancel always happens)
     if (order.shipmentId && context.env.BOSTA_API_KEY) {
-      const bostaRes = await fetch(
-        `https://app.bosta.co/api/v2/deliveries/${order.shipmentId}/cancel-delivery`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: context.env.BOSTA_API_KEY,
-            "Content-Type": "application/json"
+      try {
+        const bostaRes = await fetch(
+          `https://app.bosta.co/api/v2/deliveries/${order.shipmentId}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: context.env.BOSTA_API_KEY,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ state: "cancelled" })
           }
-        }
-      );
-      const rawText = await bostaRes.text();
-      console.log("BOSTA STATUS:", bostaRes.status);
-      console.log("BOSTA RESPONSE:", rawText);
-
-      if (!bostaRes.ok) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: "Bosta cancellation failed",
-          status: bostaRes.status,
-          response: rawText
-        }), { status: 500 });
+        );
+        const rawText = await bostaRes.text();
+        console.log("BOSTA PATCH STATUS:", bostaRes.status);
+        console.log("BOSTA PATCH RESPONSE:", rawText);
+        order.bostaResponse = rawText;
+        order.bostaStatus = bostaRes.status;
+        order.bostaCancelled = bostaRes.ok;
+      } catch (bostaErr) {
+        console.error("Bosta PATCH network error:", bostaErr);
+        order.bostaError = bostaErr.message;
       }
     }
 
