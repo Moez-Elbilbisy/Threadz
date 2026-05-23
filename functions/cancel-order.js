@@ -42,11 +42,12 @@ export async function onRequest(context) {
     if (order.shipmentId && context.env.BOSTA_API_KEY) {
       try {
         const bostaRes = await fetch(
-          `https://app.bosta.co/api/v2/deliveries/${order.shipmentId}`,
+          `https://app.bosta.co/api/v1/deliveries/${order.shipmentId}`,
           {
             method: "DELETE",
             headers: {
               Authorization: context.env.BOSTA_API_KEY,
+              "Content-Type": "application/json",
             },
           }
         );
