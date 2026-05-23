@@ -435,8 +435,8 @@
 
                 try {
                     let res = await fetch(`/get-order?trackingNumber=${encodeURIComponent(tn)}`);
-                    let isKvOrder = res.status !== 404;
-                    if (res.status === 404) {
+                    let foundInKv = res.ok;
+                    if (!foundInKv) {
                         res = await fetch(`/track-shipment?trackingNumber=${encodeURIComponent(tn)}`);
                     }
 
@@ -457,7 +457,9 @@
                     currentTrackingTn = tn;
                     currentOrderStatus = (state || '').toLowerCase();
                     const isActive = currentOrderStatus !== 'delivered' && currentOrderStatus !== 'cancelled';
-                    trackCancelContainer.style.display = (isActive && isKvOrder) ? 'block' : 'none';
+                    const canCancel = isActive && foundInKv;
+
+                    trackCancelContainer.style.display = canCancel ? 'block' : 'none';
 
                     trackNum.textContent = tn;
                     trackFrom.textContent = 'Threadz Store, Cairo';
