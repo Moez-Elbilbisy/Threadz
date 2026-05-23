@@ -44,22 +44,20 @@ export async function onRequest(context) {
         const bostaRes = await fetch(
           `https://app.bosta.co/api/v2/deliveries/${order.shipmentId}`,
           {
-            method: "PATCH",
+            method: "DELETE",
             headers: {
               Authorization: context.env.BOSTA_API_KEY,
-              "Content-Type": "application/json"
             },
-            body: JSON.stringify({ state: "cancelled" })
           }
         );
         const rawText = await bostaRes.text();
-        console.log("BOSTA PATCH STATUS:", bostaRes.status);
-        console.log("BOSTA PATCH RESPONSE:", rawText);
+        console.log("BOSTA DELETE STATUS:", bostaRes.status);
+        console.log("BOSTA DELETE RESPONSE:", rawText);
         order.bostaResponse = rawText;
         order.bostaStatus = bostaRes.status;
         order.bostaCancelled = bostaRes.ok;
       } catch (bostaErr) {
-        console.error("Bosta PATCH network error:", bostaErr);
+        console.error("Bosta delete network error:", bostaErr);
         order.bostaError = bostaErr.message;
       }
     }
