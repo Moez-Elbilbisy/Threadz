@@ -219,6 +219,27 @@
                             </div>
                             <div class="detail-item">
                                 <div class="d-label">To</div>
+                                <div class="d-value" id="track-to">?</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="d-label">Tracking Number</div>
+                                <div class="d-value" id="track-number" style="font-family:monospace;">?</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="d-label">Payment</div>
+                                <div class="d-value" id="track-payment">?</div>
+                            </div>
+                            <div class="detail-item full">
+                                <div class="d-label">Last Update</div>
+                                <div class="d-value" id="track-last-update">?</div>
+                            </div>
+                        </div>
+                        <div id="track-cancel-container" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(201,168,76,0.1);display:none;">
+                            <button class="btn btn-outline btn-sm" style="color:#8a2a2a;border-color:#8a2a2a;" id="track-cancel-btn">Cancel Order</button>
+                        </div>
+                    </div>
+                            <div class="detail-item">
+                                <div class="d-label">To</div>
                                 <div class="d-value" id="track-to">�</div>
                             </div>
                             <div class="detail-item">
@@ -342,6 +363,10 @@
             const orderListHeader = document.getElementById('order-list-header');
             const trackSearchCard = document.getElementById('track-search-card');
             const trackBack = document.getElementById('track-back');
+            const trackCancelContainer = document.getElementById('track-cancel-container');
+            const trackCancelBtn = document.getElementById('track-cancel-btn');
+            let currentTrackingTn = '';
+            let currentOrderStatus = '';
 
             const STATE_MAP = {
                 'created': 1, 'SHIPMENT_CREATED': 1,
@@ -446,6 +471,11 @@
                     const step = getStep(state);
                     const events = d.trackingEvents || d.history || d.states || [];
 
+                    currentTrackingTn = tn;
+                    currentOrderStatus = (state || '').toLowerCase();
+                    const isActive = currentOrderStatus !== 'delivered' && currentOrderStatus !== 'cancelled';
+                    trackCancelContainer.style.display = isActive ? 'block' : 'none';
+
                     trackNum.textContent = tn;
                     trackFrom.textContent = 'Threadz Store, Cairo';
                     trackTo.textContent = [d.street, d.building ? 'Bldg ' + d.building : '', d.apartment ? 'Apt ' + d.apartment : '', d.area, d.governorate].filter(Boolean).join(', ') || '?';
@@ -510,6 +540,23 @@
                     trackSearchCard.style.display = 'block';
                 }
             };
+
+            trackCancelBtn.addEventListener('click', async () => {
+                if (!currentTrackingTn) return;
+                if (!confirm('Are you sure you want to cancel this order?')) return;
+                const token = localStorage.getItem('threadz_token');
+                const res = await fetch('/cancel-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
+                    body: JSON.stringify({ trackingNumber: currentTrackingTn }),
+                });
+                const result = await res.json();
+                if (result.success) {
+                    await showTracking(currentTrackingTn);
+                } else {
+                    alert(result.error || 'Failed to cancel order');
+                }
+            });
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
