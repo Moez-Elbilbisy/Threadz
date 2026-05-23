@@ -604,7 +604,8 @@
                 } else if (pm === 'instapay') {
                     paymentValid = document.getElementById('instapay-ref').value.trim().length > 0;
                 }
-                checkoutBtn.disabled = !(name && phone && gov && area && street && building && apt && paymentValid);
+                const hasItems = getCart().length > 0;
+                checkoutBtn.disabled = !(name && phone && gov && area && street && building && apt && paymentValid && hasItems);
             }
 
             // Bind validation to all inputs
@@ -913,6 +914,11 @@
 
                 const formData = new FormData(e.target);
                 const cart = getCart();
+                if (cart.length === 0) {
+                    document.getElementById('order-error-msg').textContent = 'Your cart is empty. Add items before placing an order.';
+                    document.getElementById('order-error').style.display = 'block';
+                    return;
+                }
                 const subtotal = getCartTotal();
                 const shipping = subtotal >= 2000 ? 0 : 80;
                 const total = subtotal + shipping;
