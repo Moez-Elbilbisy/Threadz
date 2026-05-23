@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Threadz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-page { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 3rem; }
+        .admin-login-card { background: var(--bg-card); border: 1px solid rgba(201,168,76,0.15); border-radius: 8px; padding: 3rem; max-width: 400px; margin: 2rem auto; text-align: center; }
+        .admin-login-card h2 { font-family: var(--font-heading); font-weight: 400; font-size: 1.5rem; margin: 0 0 0.5rem; color: var(--gold); }
+        .admin-login-card p { color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 1.5rem; }
+        .admin-login-card input { width: 100%; padding: 0.75rem 1rem; background: var(--bg-dark); border: 1px solid rgba(201,168,76,0.2); border-radius: 6px; font-size: 1rem; color: var(--text-primary); outline: none; text-align: center; letter-spacing: 0.3em; font-family: var(--font-ui); box-sizing: border-box; }
+        .admin-login-card input:focus { border-color: var(--gold); }
+        .admin-login-card button { width: 100%; margin-top: 1rem; padding: 0.75rem; border: none; border-radius: 6px; background: var(--gold); color: var(--bg-dark); font-weight: 600; font-size: 0.9rem; cursor: pointer; font-family: var(--font-ui); transition: opacity 0.2s; }
+        .admin-login-card button:hover { opacity: 0.85; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+        .admin-header h2 { font-family: var(--font-heading); font-weight: 400; font-size: 1.4rem; color: var(--gold); margin: 0; }
+        .admin-header span { font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-body); }
+        .admin-header button { background: none; border: 1px solid rgba(201,168,76,0.3); color: var(--text-secondary); padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-family: var(--font-ui); font-size: 0.8rem; transition: all 0.2s; }
+        .admin-header button:hover { border-color: var(--gold); color: var(--gold); }
+        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-card); border: 1px solid rgba(201,168,76,0.15); border-radius: 8px; padding: 1.25rem; text-align: center; }
+        .stat-card .stat-num { font-size: 1.75rem; font-weight: 600; color: var(--gold); font-family: var(--font-heading); }
+        .stat-card .stat-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.25rem; font-family: var(--font-ui); }
+        .admin-orders-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid rgba(201,168,76,0.15); border-radius: 8px; overflow: hidden; font-size: 0.8rem; }
+        .admin-orders-table th { background: rgba(201,168,76,0.08); padding: 0.75rem 0.6rem; text-align: left; font-family: var(--font-ui); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); font-size: 0.65rem; border-bottom: 1px solid rgba(201,168,76,0.1); }
+        .admin-orders-table td { padding: 0.65rem 0.6rem; border-bottom: 1px solid rgba(201,168,76,0.06); color: var(--text-primary); font-family: var(--font-body); vertical-align: middle; }
+        .admin-orders-table tr:last-child td { border-bottom: none; }
+        .admin-orders-table tr:hover td { background: rgba(201,168,76,0.03); }
+        .status-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+        .status-created { background: rgba(201,168,76,0.1); color: var(--gold); }
+        .status-delivered { background: rgba(76, 201, 120, 0.1); color: #4cc978; }
+        .status-cancelled { background: rgba(201, 76, 76, 0.1); color: #c94c4c; }
+        .status-out-for-delivery { background: rgba(76, 150, 201, 0.1); color: #4c96c9; }
+        .status-in-transit { background: rgba(201, 168, 76, 0.1); color: var(--gold); }
+        .admin-orders-table .cancel-btn { background: none; border: 1px solid rgba(201,76,76,0.4); color: #c94c4c; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.65rem; font-family: var(--font-ui); transition: all 0.2s; }
+        .admin-orders-table .cancel-btn:hover { background: rgba(201,76,76,0.1); border-color: #c94c4c; }
+        .admin-orders-table .cancel-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .admin-loading { text-align: center; padding: 3rem; color: var(--text-secondary); }
+        .admin-loading .spinner { width: 28px; height: 28px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+        .admin-scroll { overflow-x: auto; }
+        @media (max-width: 768px) {
+            .admin-orders-table { font-size: 0.7rem; }
+            .admin-orders-table th, .admin-orders-table td { padding: 0.5rem 0.4rem; }
+            .admin-login-card { padding: 2rem 1.5rem; }
+        }
+    </style>
+</head>
+
+<body class="entering">
+    <main id="store-content" class="store-content">
+        <nav class="navbar" id="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html">
+                        <div class="logo-placeholder">
+                            <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="collections.html">Collections</a>
+                    <a href="about.html">About</a>
+                    <a href="journal.html">Journal</a>
+                    <a href="track.html">Orders</a>
+                    <a href="account.html">Account</a>
+                <div class="nav-icons">
+                    <button aria-label="Search" class="icon-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="cart.html" aria-label="Cart" class="icon-btn cart-btn" style="text-decoration:none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <button class="mobile-menu-btn" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <header class="subpage-header">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Admin</span>
+                </div>
+                <h1>ADMIN PANEL</h1>
+                <p>Manage orders and view store activity.</p>
+            </div>
+        </header>
+
+        <section class="admin-page">
+            <div id="admin-login" class="admin-login-card" style="display:block;">
+                <h2>Access Required</h2>
+                <p>Enter the admin access code to continue.</p>
+                <input type="password" id="admin-code-input" placeholder="Access Code" maxlength="10" autocomplete="off">
+                <button id="admin-login-btn">Authenticate</button>
+            </div>
+
+            <div id="admin-panel" style="display:none;">
+                <div class="admin-header">
+                    <div>
+                        <h2>Orders Dashboard</h2>
+                        <span id="admin-order-count"></span>
+                    </div>
+                    <button id="admin-refresh-btn">Refresh</button>
+                </div>
+
+                <div class="admin-stats" id="admin-stats"></div>
+
+                <div id="admin-orders-loading" class="admin-loading" style="display:none;">
+                    <div class="spinner"></div>
+                    <p>Loading orders...</p>
+                </div>
+
+                <div class="admin-scroll">
+                    <table class="admin-orders-table" id="admin-orders-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Tracking</th>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-orders-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-placeholder" style="margin-bottom: 1rem;">
+                        <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                    </div>
+                    <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html">All Products</a></li>
+                        <li><a href="shop.html?cat=tees">T-Shirts</a></li>
+                        <li><a href="shop.html?cat=hoodies">Hoodies</a></li>
+                        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="track.html">My Orders</a></li>
+                        <li><a href="account.html">My Account</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Join the Cult</h4>
+                    <p>Subscribe for exclusive drops and early access.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email Address" required>
+                        <button type="submit">→</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Threadz Egypt. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+        <div class="mobile-menu-header">
+            <div class="logo-placeholder">
+                <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-links">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="account.html" class="mobile-link">Account</a>
+            <a href="track.html" class="mobile-link">Orders</a>
+            <a href="shop.html" class="mobile-link">Shop</a>
+            <a href="collections.html" class="mobile-link">Collections</a>
+            <a href="about.html" class="mobile-link">About</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <p class="tagline">Every Clothing Needs Threadz</p>
+            <div class="mobile-socials">
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+                <a href="#">Cairo Office</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let adminToken = sessionStorage.getItem('admin_token');
+        const loginEl = document.getElementById('admin-login');
+        const panelEl = document.getElementById('admin-panel');
+        const codeInput = document.getElementById('admin-code-input');
+        const loginBtn = document.getElementById('admin-login-btn');
+        const ordersBody = document.getElementById('admin-orders-body');
+        const ordersTable = document.getElementById('admin-orders-table');
+        const ordersLoading = document.getElementById('admin-orders-loading');
+        const orderCount = document.getElementById('admin-order-count');
+        const statsEl = document.getElementById('admin-stats');
+        const refreshBtn = document.getElementById('admin-refresh-btn');
+
+        async function authenticate(code) {
+            try {
+                const res = await fetch('/admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const data = await res.json();
+                if (data.success && data.token) {
+                    adminToken = data.token;
+                    sessionStorage.setItem('admin_token', adminToken);
+                    showPanel();
+                    loadOrders();
+                } else {
+                    alert('Invalid access code');
+                }
+            } catch {
+                alert('Connection error');
+            }
+        }
+
+        async function loadOrders() {
+            ordersLoading.style.display = 'block';
+            ordersTable.style.display = 'none';
+            try {
+                const res = await fetch('/admin?token=' + encodeURIComponent(adminToken));
+                const data = await res.json();
+                if (data.success) {
+                    renderOrders(data.orders);
+                } else {
+                    if (data.error === 'Invalid or expired token') {
+                        sessionStorage.removeItem('admin_token');
+                        adminToken = null;
+                        showLogin();
+                    }
+                }
+            } catch {
+                alert('Failed to load orders');
+            }
+            ordersLoading.style.display = 'none';
+        }
+
+        function renderOrders(orders) {
+            ordersTable.style.display = 'table';
+            ordersBody.innerHTML = '';
+            orderCount.textContent = orders.length + ' total order' + (orders.length !== 1 ? 's' : '');
+
+            const statusCounts = {};
+            let totalRevenue = 0;
+            orders.forEach(o => {
+                const s = (o.status || 'unknown').toLowerCase().replace(/\s+/g, '-');
+                statusCounts[s] = (statusCounts[s] || 0) + 1;
+                totalRevenue += Number(o.total || 0);
+            });
+
+            statsEl.innerHTML = Object.entries({
+                total: orders.length,
+                ...statusCounts,
+                revenue: 'EGP ' + totalRevenue.toLocaleString()
+            }).map(([k, v]) =>
+                `<div class="stat-card"><div class="stat-num">${v}</div><div class="stat-label">${k.replace(/-/g, ' ')}</div></div>`
+            ).join('');
+
+            if (orders.length === 0) {
+                ordersBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-secondary);">No orders found</td></tr>';
+                return;
+            }
+
+            orders.forEach(o => {
+                const tr = document.createElement('tr');
+                const statusClass = (o.status || 'unknown').toLowerCase().replace(/\s+/g, '-');
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+                const cancelable = !['cancelled', 'delivered'].includes((o.status || '').toLowerCase());
+
+                tr.innerHTML = `
+                    <td style="font-family:monospace;font-size:0.7rem;">${o.trackingNumber || '—'}</td>
+                    <td>${o.fullName || '—'}</td>
+                    <td>${o.phone || '—'}</td>
+                    <td>EGP ${(o.total || 0).toLocaleString()}</td>
+                    <td><span class="status-badge status-${statusClass}">${o.status || 'Unknown'}</span></td>
+                    <td style="font-size:0.7rem;color:var(--text-secondary);">${date}</td>
+                    <td>${cancelable ? `<button class="cancel-btn" data-tracking="${o.trackingNumber}" data-shipment="${o.shipmentId || ''}">Cancel</button>` : '—'}</td>
+                `;
+                ordersBody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const tracking = btn.dataset.tracking;
+                    const shipmentId = btn.dataset.shipment;
+                    if (!confirm('Cancel order ' + tracking + '?')) return;
+                    btn.disabled = true;
+                    btn.textContent = '...';
+                    try {
+                        const res = await fetch('/cancel-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ trackingNumber: tracking, shipmentId })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            loadOrders();
+                        } else {
+                            alert(data.error || 'Failed to cancel');
+                            btn.disabled = false;
+                            btn.textContent = 'Cancel';
+                        }
+                    } catch {
+                        alert('Network error');
+                        btn.disabled = false;
+                        btn.textContent = 'Cancel';
+                    }
+                });
+            });
+        }
+
+        function showPanel() {
+            loginEl.style.display = 'none';
+            panelEl.style.display = 'block';
+        }
+
+        function showLogin() {
+            loginEl.style.display = 'block';
+            panelEl.style.display = 'none';
+        }
+
+        loginBtn.addEventListener('click', () => {
+            const code = codeInput.value.trim();
+            if (code) authenticate(code);
+        });
+
+        codeInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+
+        refreshBtn.addEventListener('click', loadOrders);
+
+        if (adminToken) {
+            showPanel();
+            loadOrders();
+        }
+    </script>
+</body>
+
+</html>
