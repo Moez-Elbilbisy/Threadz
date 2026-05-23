@@ -16,7 +16,7 @@
         .admin-login-card { background: var(--bg-card); border: 1px solid rgba(201,168,76,0.15); border-radius: 8px; padding: 3rem; max-width: 400px; margin: 2rem auto; text-align: center; }
         .admin-login-card h2 { font-family: var(--font-heading); font-weight: 400; font-size: 1.5rem; margin: 0 0 0.5rem; color: var(--gold); }
         .admin-login-card p { color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 1.5rem; }
-        .admin-login-card input { width: 100%; padding: 0.75rem 1rem; background: var(--bg-dark); border: 1px solid rgba(201,168,76,0.2); border-radius: 6px; font-size: 1rem; color: var(--text-primary); outline: none; text-align: center; letter-spacing: 0.3em; font-family: var(--font-ui); box-sizing: border-box; }
+        .admin-login-card input { width: 100%; padding: 0.75rem 1rem; background: var(--bg-dark); border: 1px solid rgba(201,168,76,0.2); border-radius: 6px; font-size: 1rem; color: var(--text-primary); outline: none; text-align: center; letter-spacing: 0.3em; font-family: var(--font-ui); box-sizing: border-box; text-transform: uppercase; }
         .admin-login-card input:focus { border-color: var(--gold); }
         .admin-login-card button { width: 100%; margin-top: 1rem; padding: 0.75rem; border: none; border-radius: 6px; background: var(--gold); color: var(--bg-dark); font-weight: 600; font-size: 0.9rem; cursor: pointer; font-family: var(--font-ui); transition: opacity 0.2s; }
         .admin-login-card button:hover { opacity: 0.85; }
@@ -115,7 +115,7 @@
             <div id="admin-login" class="admin-login-card" style="display:block;">
                 <h2>Access Required</h2>
                 <p>Enter the admin access code to continue.</p>
-                <input type="password" id="admin-code-input" placeholder="Access Code" maxlength="10" autocomplete="off">
+                <input type="text" id="admin-code-input" placeholder="Access Code" maxlength="10" autocomplete="off" autocapitalize="characters">
                 <button id="admin-login-btn">Authenticate</button>
             </div>
 
@@ -368,8 +368,12 @@
         }
 
         loginBtn.addEventListener('click', () => {
-            const code = codeInput.value.trim();
+            const code = codeInput.value.trim().toUpperCase();
             if (code) authenticate(code);
+        });
+
+        codeInput.addEventListener('input', () => {
+            codeInput.value = codeInput.value.toUpperCase();
         });
 
         codeInput.addEventListener('keydown', (e) => {
