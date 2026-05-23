@@ -157,6 +157,23 @@
                         <tbody id="admin-orders-body"></tbody>
                     </table>
                 </div>
+
+                <div style="margin-top:2rem;">
+                    <h2 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;color:var(--gold);margin:0 0 0.75rem;">Accounts</h2>
+                    <span id="admin-account-count" style="font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-body);"></span>
+                    <div class="admin-scroll" style="margin-top:0.75rem;">
+                        <table class="admin-orders-table" id="admin-accounts-table" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-accounts-body"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -246,6 +263,9 @@
         const orderCount = document.getElementById('admin-order-count');
         const statsEl = document.getElementById('admin-stats');
         const refreshBtn = document.getElementById('admin-refresh-btn');
+        const accountsBody = document.getElementById('admin-accounts-body');
+        const accountsTable = document.getElementById('admin-accounts-table');
+        const accountCount = document.getElementById('admin-account-count');
 
         async function authenticate(code) {
             try {
@@ -270,11 +290,13 @@
         async function loadOrders() {
             ordersLoading.style.display = 'block';
             ordersTable.style.display = 'none';
+            accountsTable.style.display = 'none';
             try {
                 const res = await fetch('/api/admin?token=' + encodeURIComponent(adminToken));
                 const data = await res.json();
                 if (data.success) {
                     renderOrders(data.orders);
+                    renderAccounts(data.accounts || []);
                 } else {
                     if (data.error === 'Invalid or expired token') {
                         sessionStorage.removeItem('admin_token');
@@ -359,6 +381,24 @@
                         btn.textContent = 'Cancel';
                     }
                 });
+            });
+        }
+
+        function renderAccounts(accounts) {
+            accountsTable.style.display = 'table';
+            accountsBody.innerHTML = '';
+            accountCount.textContent = accounts.length + ' total account' + (accounts.length !== 1 ? 's' : '');
+
+            if (accounts.length === 0) {
+                accountsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-secondary);">No accounts found</td></tr>';
+                return;
+            }
+
+            accounts.forEach(a => {
+                const tr = document.createElement('tr');
+                const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-EG', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                tr.innerHTML = `<td>${a.fullName || '—'}</td><td style="font-family:monospace;font-size:0.7rem;">${a.email || '—'}</td><td style="font-size:0.7rem;color:var(--text-secondary);">${date}</td>`;
+                accountsBody.appendChild(tr);
             });
         }
 

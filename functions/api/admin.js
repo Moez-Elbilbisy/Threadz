@@ -29,21 +29,25 @@ export async function onRequestGet(context) {
     }
 
     const orderList = [];
+    const accountList = [];
     const cursorKV = await env.ORDERS.list({ prefix: "" });
 
     for (const key of cursorKV.keys) {
-      if (key.name.startsWith("user:") || key.name.startsWith("user-orders:")) continue;
       const raw = await env.ORDERS.get(key.name);
-      if (raw) {
-        try {
+      if (!raw) continue;
+      try {
+        if (key.name.startsWith("user:")) {
+          accountList.push(JSON.parse(raw));
+        } else if (!key.name.startsWith("user-orders:")) {
           orderList.push(JSON.parse(raw));
-        } catch {}
-      }
+        }
+      } catch {}
     }
 
     orderList.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    accountList.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
-    return json({ success: true, orders: orderList, total: orderList.length });
+    return json({ success: true, orders: orderList, total: orderList.length, accounts: accountList });
   } catch (error) {
     console.error(error);
     return json({ success: false, error: error.message }, 500);
