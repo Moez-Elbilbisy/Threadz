@@ -680,7 +680,7 @@ canvas {
     transition: opacity 1.5s ease;
 }
 
-/* Center glow � where needle stops */
+/* Center glow - where needle stops */
 #center-glow {
     position: fixed;
     top: 50%;

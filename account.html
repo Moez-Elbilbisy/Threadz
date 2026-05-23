@@ -519,11 +519,11 @@
                 const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : '';
                 return `<div class="order-card">
                     <div class="order-card-header">
-                        <strong>#${o.trackingNumber || '�'}</strong>
+                        <strong>#${o.trackingNumber || '—'}</strong>
                         <span class="order-status ${o.status || ''}">${o.status || 'Unknown'}</span>
                     </div>
                     <div class="order-card-items">${items}</div>
-                    <div class="order-card-meta">${date} &middot; EGP ${(o.total || 0).toLocaleString()} &middot; ${o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || '�'}</div>
+                    <div class="order-card-meta">${date} &middot; EGP ${(o.total || 0).toLocaleString()} &middot; ${o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || '—'}</div>
                     <div class="order-card-actions">
                         <a href="track.html?tracking=${o.trackingNumber}" class="btn btn-outline btn-sm">Track Order</a>
                         ${o.status !== 'delivered' && o.status !== 'cancelled' ? `<button class="btn btn-outline btn-sm" style="color:#8a2a2a;border-color:#8a2a2a;" onclick="cancelOrder('${o.trackingNumber}')">Cancel</button>` : ''}

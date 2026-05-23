@@ -327,7 +327,7 @@
         const rc = document.getElementById('ribbon-canvas');
         const rctx = rc.getContext('2d');
         rc.width = innerWidth; rc.height = innerHeight;
-        const RIBBON_TEXT = '  EVERY CLOTHING NEEDS  THREADZ  �  ';
+        const RIBBON_TEXT = '  EVERY CLOTHING NEEDS  THREADZ  \u2022  ';
 
         function drawRibbon(prog, alpha) {
             rctx.clearRect(0, 0, rc.width, rc.height);
@@ -445,7 +445,7 @@
                 ribbonAlpha = Math.min(0.7, fp * 1.4);
                 drawRibbon(ribbonProg, ribbonAlpha);
 
-                // Subtle gentle sway � slower frequency (0.3 instead of 0.5)
+                // Subtle gentle sway - slower frequency (0.3 instead of 0.5)
                 needle.rotation.z = Math.sin(totalTime * 0.3) * 0.03 * (1 - t);
 
                 if (t >= 1) {

@@ -343,7 +343,7 @@
                                 <div id="order-error" style="display:none; color:#dc3545; font-size:0.9rem; margin-bottom:0.75rem; text-align:center; background:rgba(220,53,69,0.08); padding:0.5rem 0.75rem; border-radius:6px;">
                                     <span id="order-error-msg"></span>
                                 </div>
-                                <p class="checkout-note">Free shipping on orders above EGP 2,000 � All prices in EGP</p>
+                                <p class="checkout-note">Free shipping on orders above EGP 2,000 &mdash; All prices in EGP</p>
                             </form>
                         </div>
                     </div>
@@ -950,7 +950,7 @@
 
                     if (result.success) {
                         checkoutBtn.style.display = 'none';
-                        trackingNumEl.textContent = result.trackingNumber || '�';
+                        trackingNumEl.textContent = result.trackingNumber || '—';
                         orderSuccess.style.display = 'flex';
                         clearCart();
                         saveAddressLocal();
@@ -960,7 +960,7 @@
                             orderError.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg);
                             document.getElementById('order-error').style.display = 'block';
                         }
-                        checkoutBtn.innerText = 'Failed � Try Again';
+checkoutBtn.innerText = 'Failed — Try Again';
                         checkoutBtn.style.backgroundColor = '#8a2a2a';
                         checkoutBtn.style.borderColor = '#8a2a2a';
                         checkoutBtn.disabled = false;
@@ -976,7 +976,7 @@
                         orderError.textContent = err.message || 'Network error';
                         document.getElementById('order-error').style.display = 'block';
                     }
-                    checkoutBtn.innerText = 'Failed � Try Again';
+                    checkoutBtn.innerText = 'Failed — Try Again';
                     checkoutBtn.style.backgroundColor = '#8a2a2a';
                     checkoutBtn.style.borderColor = '#8a2a2a';
                     checkoutBtn.disabled = false;
@@ -994,7 +994,7 @@
 
         function copyTrackingNumber() {
             const num = document.getElementById('order-tracking-number').textContent;
-            if (!num || num === '�') return;
+            if (!num || num === '—') return;
             navigator.clipboard.writeText(num).then(() => {
                 const btn = document.getElementById('copy-tracking-btn');
                 const orig = btn.textContent;
