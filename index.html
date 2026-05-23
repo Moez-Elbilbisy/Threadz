@@ -61,7 +61,7 @@
                     <a href="collections.html">Collections</a>
                     <a href="about.html">About</a>
                     <a href="journal.html">Journal</a>
-                    <a href="track.html">Track</a>
+                    <a href="track.html">Orders</a>
                     <a href="account.html">Account</a>
                 </div>
                 <div class="nav-icons">
@@ -195,7 +195,7 @@
                 <div class="footer-links">
                     <h4>Support</h4>
                     <ul>
-                        <li><a href="track.html">Track Order</a></li>
+                        <li><a href="track.html">My Orders</a></li>
                         <li><a href="account.html">My Account</a></li>
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Shipping & Returns</a></li>
@@ -237,7 +237,7 @@
             <a href="collections.html" class="mobile-link">Collections</a>
             <a href="about.html" class="mobile-link">About</a>
             <a href="journal.html" class="mobile-link">Journal</a>
-                    <a href="track.html" class="mobile-link">Track Order</a>
+                    <a href="track.html" class="mobile-link">My Orders</a>
                     <a href="account.html" class="mobile-link">My Account</a>
                     <a href="cart.html" class="mobile-link">Cart</a>
         </div>
@@ -329,7 +329,7 @@
         const rc = document.getElementById('ribbon-canvas');
         const rctx = rc.getContext('2d');
         rc.width = innerWidth; rc.height = innerHeight;
-        const RIBBON_TEXT = '  EVERY CLOTHING NEEDS  THREADZ  ·  ';
+        const RIBBON_TEXT = '  EVERY CLOTHING NEEDS  THREADZ  ï¿½  ';
 
         function drawRibbon(prog, alpha) {
             rctx.clearRect(0, 0, rc.width, rc.height);
@@ -447,7 +447,7 @@
                 ribbonAlpha = Math.min(0.7, fp * 1.4);
                 drawRibbon(ribbonProg, ribbonAlpha);
 
-                // Subtle gentle sway — slower frequency (0.3 instead of 0.5)
+                // Subtle gentle sway ï¿½ slower frequency (0.3 instead of 0.5)
                 needle.rotation.z = Math.sin(totalTime * 0.3) * 0.03 * (1 - t);
 
                 if (t >= 1) {
