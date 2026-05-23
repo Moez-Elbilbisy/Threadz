@@ -475,10 +475,12 @@
                         div.className = 'search-select-option';
                         if (opt === selectedValue) div.classList.add('active');
                         div.textContent = opt;
-                        div.addEventListener('mousedown', (e) => {
+                        function pickOption(e) {
                             e.preventDefault();
                             selectOption(opt);
-                        });
+                        }
+                        div.addEventListener('mousedown', pickOption);
+                        div.addEventListener('touchstart', pickOption, { passive: false });
                         dropdown.appendChild(div);
                     });
                 }
@@ -961,7 +963,9 @@
                         clearCart();
                         saveAddressLocal();
                     } else {
-                        const msg = result.error?.message || result.error || 'Unknown error';
+                        const detailMsg = result.details?.message || result.details?.error || '';
+                        const detailStr = detailMsg ? `: ${detailMsg}` : '';
+                        const msg = result.error + detailStr || 'Unknown error';
                         if (orderError) {
                             orderError.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg);
                             document.getElementById('order-error').style.display = 'block';
