@@ -1,3 +1,5 @@
+import { sendWhatsApp } from "./api/_utils.js";
+
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -114,6 +116,8 @@ export async function onRequestPost(context) {
     } catch (kvErr) {
       console.error("KV store error (non-fatal):", kvErr);
     }
+
+    sendWhatsApp(env, data.phone, [data.fullName, trackingNumber, "EGP " + (data.total || 0), "https://threadzeg.pages.dev/track.html"]);
 
     return new Response(JSON.stringify({
       success: true,
