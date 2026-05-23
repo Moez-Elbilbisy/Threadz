@@ -243,7 +243,7 @@
 
         async function authenticate(code) {
             try {
-                const res = await fetch('/admin', {
+                const res = await fetch('/api/admin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code })
@@ -266,7 +266,7 @@
             ordersLoading.style.display = 'block';
             ordersTable.style.display = 'none';
             try {
-                const res = await fetch('/admin?token=' + encodeURIComponent(adminToken));
+                const res = await fetch('/api/admin?token=' + encodeURIComponent(adminToken));
                 const data = await res.json();
                 if (data.success) {
                     renderOrders(data.orders);

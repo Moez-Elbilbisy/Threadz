@@ -1,4 +1,4 @@
-import { createJWT, verifyJWT, json } from "./api/_utils.js";
+import { createJWT, verifyJWT, json } from "./_utils.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -30,9 +30,8 @@ export async function onRequestGet(context) {
 
     const orderList = [];
     const cursorKV = await env.ORDERS.list({ prefix: "" });
-    const keys = cursorKV.keys;
 
-    for (const key of keys) {
+    for (const key of cursorKV.keys) {
       if (key.name.startsWith("user:") || key.name.startsWith("user-orders:")) continue;
       const raw = await env.ORDERS.get(key.name);
       if (raw) {
