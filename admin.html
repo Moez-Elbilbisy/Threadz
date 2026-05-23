@@ -46,6 +46,9 @@
         .admin-loading { text-align: center; padding: 3rem; color: var(--text-secondary); }
         .admin-loading .spinner { width: 28px; height: 28px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
         .admin-scroll { overflow-x: auto; }
+        .admin-page .fade-box { transition: opacity 0.5s ease, visibility 0.5s ease; }
+        .admin-page .fade-box.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .admin-page .fade-box.visible { opacity: 1; visibility: visible; pointer-events: auto; }
         @media (max-width: 768px) {
             .admin-orders-table { font-size: 0.7rem; }
             .admin-orders-table th, .admin-orders-table td { padding: 0.5rem 0.4rem; }
@@ -112,20 +115,23 @@
         </header>
 
         <section class="admin-page">
-            <div id="admin-login" class="admin-login-card" style="display:block;">
+            <div id="admin-login" class="admin-login-card fade-box visible">
                 <h2>Access Required</h2>
                 <p>Enter the admin access code to continue.</p>
                 <input type="text" id="admin-code-input" placeholder="Access Code" maxlength="10" autocomplete="off" autocapitalize="characters">
                 <button id="admin-login-btn">Authenticate</button>
             </div>
 
-            <div id="admin-panel" style="display:none;">
+            <div id="admin-panel" class="fade-box hidden">
                 <div class="admin-header">
                     <div>
                         <h2>Orders Dashboard</h2>
                         <span id="admin-order-count"></span>
                     </div>
-                    <button id="admin-refresh-btn">Refresh</button>
+                    <div style="display:flex;gap:0.5rem;">
+                        <button id="admin-refresh-btn">Refresh</button>
+                        <button id="admin-logout-btn">Logout</button>
+                    </div>
                 </div>
 
                 <div class="admin-stats" id="admin-stats"></div>
@@ -253,7 +259,6 @@
                     adminToken = data.token;
                     sessionStorage.setItem('admin_token', adminToken);
                     showPanel();
-                    loadOrders();
                 } else {
                     alert('Invalid access code');
                 }
@@ -358,13 +363,24 @@
         }
 
         function showPanel() {
-            loginEl.style.display = 'none';
-            panelEl.style.display = 'block';
+            loginEl.classList.remove('visible');
+            loginEl.classList.add('hidden');
+            setTimeout(() => {
+                panelEl.classList.remove('hidden');
+                panelEl.classList.add('visible');
+                loadOrders();
+            }, 400);
         }
 
         function showLogin() {
-            loginEl.style.display = 'block';
-            panelEl.style.display = 'none';
+            panelEl.classList.remove('visible');
+            panelEl.classList.add('hidden');
+            setTimeout(() => {
+                loginEl.classList.remove('hidden');
+                loginEl.classList.add('visible');
+                codeInput.value = '';
+                codeInput.focus();
+            }, 400);
         }
 
         loginBtn.addEventListener('click', () => {
@@ -382,9 +398,14 @@
 
         refreshBtn.addEventListener('click', loadOrders);
 
+        document.getElementById('admin-logout-btn').addEventListener('click', () => {
+            sessionStorage.removeItem('admin_token');
+            adminToken = null;
+            showLogin();
+        });
+
         if (adminToken) {
             showPanel();
-            loadOrders();
         }
     </script>
 </body>
