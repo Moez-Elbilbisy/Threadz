@@ -102,17 +102,30 @@
             </div>
         </nav>
 
-        <section class="admin-page" style="margin-top:2rem;">
+        <header class="subpage-header">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Admin</span>
+                </div>
+                <h1>ADMIN PANEL</h1>
+                <p>Manage orders and view store activity.</p>
+            </div>
+        </header>
+
+        <section class="admin-page">
             <div id="admin-login" class="admin-login-card fade-box visible">
-                <h2>Restricted</h2>
-                <p>Enter code to continue.</p>
+                <h2>Access Required</h2>
+                <p>Enter the admin access code to continue.</p>
                 <input type="password" id="admin-code-input" placeholder="Access Code" maxlength="10" autocomplete="off" autocapitalize="characters">
-                <button id="admin-login-btn">Enter</button>
+                <button id="admin-login-btn">Authenticate</button>
             </div>
 
             <div id="admin-panel" class="fade-box hidden">
                 <div class="admin-header">
                     <div>
+                        <h2>Orders Dashboard</h2>
                         <span id="admin-order-count"></span>
                     </div>
                     <div style="display:flex;gap:0.5rem;">
