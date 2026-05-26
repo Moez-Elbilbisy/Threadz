@@ -35,7 +35,7 @@ export async function onRequestPost(context) {
     }
 
     const body = await request.json();
-    const { name, price, category, image, sizes, badge, description } = body;
+    const { name, price, category, image, sizes, badge, description, featured } = body;
 
     if (!name || !price || !category || !image) {
       return json({ success: false, error: "Missing required fields: name, price, category, image" }, 400);
@@ -51,6 +51,7 @@ export async function onRequestPost(context) {
       sizes: Array.isArray(sizes) ? sizes : ["S", "M", "L", "XL"],
       badge: badge || "",
       description: description || "",
+      featured: featured === true,
       createdAt: new Date().toISOString(),
     };
 
@@ -75,7 +76,7 @@ export async function onRequestPut(context) {
     }
 
     const body = await request.json();
-    const { id, name, price, category, image, sizes, badge, description } = body;
+    const { id, name, price, category, image, sizes, badge, description, featured } = body;
     if (!id) {
       return json({ success: false, error: "Missing product id" }, 400);
     }
@@ -95,6 +96,7 @@ export async function onRequestPut(context) {
       sizes: sizes ?? existing.sizes,
       badge: badge !== undefined ? badge : existing.badge,
       description: description !== undefined ? description : existing.description,
+      featured: featured !== undefined ? featured === true : existing.featured,
     };
 
     await env.ORDERS.put(`product:${id}`, JSON.stringify(updated));

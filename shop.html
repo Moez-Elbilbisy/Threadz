@@ -189,15 +189,6 @@
     <script src="cart-data.js"></script>
     <script src="script.js"></script>
     <script>
-        const DEFAULT_PRODUCTS = [
-            { id: "oversized-obsidian-hoodie", name: "Oversized Obsidian Hoodie", price: 1200, category: "hoodies", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "New", sizes: ["S", "M", "L", "XL"] },
-            { id: "dune-graphic-tee", name: "Dune Graphic Tee", price: 650, category: "tees", image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "", sizes: ["S", "M", "L", "XL"] },
-            { id: "pharaoh-bomber-jacket", name: "Pharaoh Bomber Jacket", price: 2400, category: "outerwear", image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "Limited", sizes: ["S", "M", "L", "XL"] },
-            { id: "scarab-heavyweight-tee", name: "Scarab Heavyweight Tee", price: 700, category: "tees", image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "New", sizes: ["S", "M", "L", "XL"] },
-            { id: "nile-utility-cargo-pants", name: "Nile Utility Cargo Pants", price: 1800, category: "outerwear", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "", sizes: ["S", "M", "L", "XL"] },
-            { id: "khepri-embroidered-cap", name: "Khepri Embroidered Cap", price: 450, category: "accessories", image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "", sizes: ["One Size"] },
-        ];
-
         let allProducts = [];
 
         function createProductCard(product, delay) {
@@ -329,11 +320,12 @@
                 const data = await res.json();
                 if (data.success && data.products.length > 0) {
                     renderProducts(data.products);
-                } else {
-                    renderProducts(DEFAULT_PRODUCTS);
                 }
-            } catch {
-                renderProducts(DEFAULT_PRODUCTS);
+            } catch (e) {
+                console.error('Failed to load products:', e);
+            }
+            if (allProducts.length === 0) {
+                document.getElementById('product-grid').innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-secondary);font-family:var(--font-body);">No products yet — check back soon.</p>';
             }
 
             const urlParams = new URLSearchParams(window.location.search);

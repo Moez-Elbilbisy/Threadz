@@ -84,36 +84,7 @@
 
         <!-- Collections Spreads -->
         <section class="section" style="padding-top: 5rem;">
-            <div class="container">
-
-                <!-- Spread 1: Obsidian -->
-                <div class="collections-spread fade-in-up visible">
-                    <div class="spread-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1503342394128-c104d54dba01?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                            alt="Obsidian Collection lookbook model in shadows" class="spread-img" data-site-image="collection-obsidian">
-                    </div>
-                    <div class="spread-content">
-                        <span class="spread-tag">THE SIGNATURE DROP</span>
-                        <h2>THE OBSIDIAN NARRATIVE</h2>
-                        <p>Designed for the shadows of Cairo's concrete core. Crafted with premium heavyweight Egyptian cotton, our signature drop focuses on oversized drape cuts, layered obsidian black stitching, and golden embroidered trims that catch the setting sun. Every piece stands as a quiet monument of luxury street styling.</p>
-                        <a href="shop.html?cat=hoodies" class="btn btn-primary">Shop Obsidian Drop</a>
-                    </div>
-                </div>
-
-                <!-- Spread 2: Anubis -->
-                <div class="collections-spread reverse fade-in-up visible" style="transition-delay: 0.2s;">
-                    <div class="spread-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                            alt="Anubis Collection lookbook in warm lighting" class="spread-img" data-site-image="collection-anubis">
-                    </div>
-                    <div class="spread-content">
-                        <span class="spread-tag">THE HERITAGE DROP</span>
-                        <h2>THE ANUBIS SPREAD</h2>
-                        <p>An editorial capsule inspired by desert sand dunes, dry linen textures, and the sentinel lines of Ancient Egypt. Blending minimal streetwear silhouettes with high-contrast graphic back-prints of guardians, this drop redefines cultural armor. Tailored to be lightweight, yet structurally robust for summer nights.</p>
-                        <a href="shop.html?cat=tees" class="btn btn-outline">Explore Anubis Drop</a>
-                    </div>
-                </div>
-
+            <div class="container" id="collections-container">
             </div>
         </section>
 
@@ -192,6 +163,60 @@
         </div>
     </div>
 
+    <script>
+        const DEFAULT_COLLECTIONS = [
+            {
+                id: "obsidian-narrative",
+                name: "THE OBSIDIAN NARRATIVE",
+                tag: "THE SIGNATURE DROP",
+                description: "Designed for the shadows of Cairo's concrete core. Crafted with premium heavyweight Egyptian cotton, our signature drop focuses on oversized drape cuts, layered obsidian black stitching, and golden embroidered trims that catch the setting sun. Every piece stands as a quiet monument of luxury street styling.",
+                image: "https://images.unsplash.com/photo-1503342394128-c104d54dba01?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                link: "shop.html?cat=hoodies"
+            },
+            {
+                id: "anubis-spread",
+                name: "THE ANUBIS SPREAD",
+                tag: "THE HERITAGE DROP",
+                description: "An editorial capsule inspired by desert sand dunes, dry linen textures, and the sentinel lines of Ancient Egypt. Blending minimal streetwear silhouettes with high-contrast graphic back-prints of guardians, this drop redefines cultural armor. Tailored to be lightweight, yet structurally robust for summer nights.",
+                image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                link: "shop.html?cat=tees"
+            }
+        ];
+
+        function renderCollection(c, index) {
+            const reverse = index % 2 !== 0;
+            const div = document.createElement('div');
+            div.className = 'collections-spread' + (reverse ? ' reverse' : '') + ' fade-in-up visible';
+            if (index > 0) div.style.transitionDelay = (index * 0.2) + 's';
+            div.innerHTML = `
+                <div class="spread-img-wrapper">
+                    <img src="${c.image}" alt="${c.name}" class="spread-img">
+                </div>
+                <div class="spread-content">
+                    <span class="spread-tag">${c.tag || ''}</span>
+                    <h2>${c.name}</h2>
+                    <p>${c.description || ''}</p>
+                    <a href="${c.link || 'shop.html'}" class="btn ${reverse ? 'btn-outline' : 'btn-primary'}">${reverse ? 'Explore' : 'Shop'} ${(c.name || '').replace(/^THE\s+/i, '')}</a>
+                </div>
+            `;
+            return div;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('collections-container');
+            try {
+                const res = await fetch('/api/collections');
+                const data = await res.json();
+                if (data.success && data.collections.length > 0) {
+                    data.collections.forEach((c, i) => container.appendChild(renderCollection(c, i)));
+                } else {
+                    DEFAULT_COLLECTIONS.forEach((c, i) => container.appendChild(renderCollection(c, i)));
+                }
+            } catch {
+                DEFAULT_COLLECTIONS.forEach((c, i) => container.appendChild(renderCollection(c, i)));
+            }
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 

@@ -171,6 +171,7 @@
                         <button class="admin-tab active" data-tab="orders">Orders</button>
                         <button class="admin-tab" data-tab="products">Products</button>
                         <button class="admin-tab" data-tab="images">Site Images</button>
+                        <button class="admin-tab" data-tab="collections">Collections</button>
                     </div>
                     <div style="display:flex;gap:0.5rem;">
                         <button id="admin-refresh-btn">Refresh</button>
@@ -266,8 +267,11 @@
                                 <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Sizes (comma-separated)</label>
                                 <input type="text" id="prod-sizes" class="admin-input" placeholder="S, M, L, XL">
                             </div>
-                            <div style="display:flex;align-items:end;">
-                                <button type="submit" id="admin-add-product-btn" style="padding:0.75rem 1.5rem;border:none;border-radius:6px;background:var(--gold);color:var(--bg-dark);font-weight:600;font-size:0.8rem;cursor:pointer;font-family:var(--font-ui);transition:opacity 0.2s;width:100%;">Add Product</button>
+                            <div style="display:flex;align-items:end;gap:0.75rem;">
+                                <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text-secondary);font-family:var(--font-ui);cursor:pointer;white-space:nowrap;">
+                                    <input type="checkbox" id="prod-featured" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;"> Featured
+                                </label>
+                                <button type="submit" id="admin-add-product-btn" style="padding:0.75rem 1.5rem;border:none;border-radius:6px;background:var(--gold);color:var(--bg-dark);font-weight:600;font-size:0.8rem;cursor:pointer;font-family:var(--font-ui);transition:opacity 0.2s;flex:1;">Add Product</button>
                             </div>
                         </form>
                     </div>
@@ -336,6 +340,54 @@
                             <button type="submit" id="admin-save-settings-btn" style="padding:0.75rem 1.5rem;border:none;border-radius:6px;background:var(--gold);color:var(--bg-dark);font-weight:600;font-size:0.8rem;cursor:pointer;font-family:var(--font-ui);transition:opacity 0.2s;width:100%;">Save All Images</button>
                         </div>
                     </form>
+                </div>
+
+                <!-- Collections Tab -->
+                <div class="admin-tab-content" id="tab-collections">
+                    <div style="background:var(--bg-card);border:1px solid rgba(201,168,76,0.15);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;">
+                        <h3 style="font-family:var(--font-ui);font-weight:400;font-size:0.9rem;color:var(--text-primary);margin:0 0 1rem;">Add New Collection</h3>
+                        <form id="admin-collection-form" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Name</label>
+                                <input type="text" id="col-name" class="admin-input" required placeholder="Collection name">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Tag</label>
+                                <input type="text" id="col-tag" class="admin-input" placeholder="e.g. THE SIGNATURE DROP">
+                            </div>
+                            <div class="full" style="grid-column:1/-1;">
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Description</label>
+                                <textarea id="col-description" class="admin-input" rows="3" placeholder="Collection description" style="resize:vertical;font-family:var(--font-body);"></textarea>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Link URL</label>
+                                <input type="text" id="col-link" class="admin-input" placeholder="shop.html?cat=hoodies">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Image</label>
+                                <div class="admin-img-row">
+                                    <div class="inputs">
+                                        <input type="url" id="col-image" class="admin-input" required placeholder="https://images.unsplash.com/...">
+                                        <div class="file-btn-wrap">
+                                            <input type="file" id="col-image-file" accept="image/*">
+                                            <span class="file-label">Choose File</span>
+                                        </div>
+                                    </div>
+                                    <div class="preview" id="col-image-preview"><span class="no-img">No<br>Image</span></div>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:end;">
+                                <button type="submit" id="admin-add-collection-btn" style="padding:0.75rem 1.5rem;border:none;border-radius:6px;background:var(--gold);color:var(--bg-dark);font-weight:600;font-size:0.8rem;cursor:pointer;font-family:var(--font-ui);transition:opacity 0.2s;width:100%;">Add Collection</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="admin-collections-loading" class="admin-loading" style="display:none;">
+                        <div class="spinner"></div>
+                        <p>Loading collections...</p>
+                    </div>
+
+                    <div class="admin-product-grid" id="admin-collection-grid"></div>
                 </div>
             </div>
         </section>
@@ -610,7 +662,7 @@
             });
         });
 
-        refreshBtn.addEventListener('click', () => { loadOrders(); loadProducts(); loadSettings(); });
+        refreshBtn.addEventListener('click', () => { loadOrders(); loadProducts(); loadSettings(); loadCollections(); });
 
         document.getElementById('admin-logout-btn').addEventListener('click', () => {
             sessionStorage.removeItem('admin_token');
@@ -653,7 +705,7 @@
                     <div class="admin-product-card-body">
                         <h4>${p.name}</h4>
                         <div class="price">EGP ${(p.price || 0).toLocaleString()}</div>
-                        <div class="meta">${p.category}${p.badge ? ' &middot; ' + p.badge : ''} &middot; ${Array.isArray(p.sizes) ? p.sizes.join(', ') : ''}</div>
+                        <div class="meta">${p.category}${p.badge ? ' &middot; ' + p.badge : ''}${p.featured ? ' &middot; ★ Featured' : ''} &middot; ${Array.isArray(p.sizes) ? p.sizes.join(', ') : ''}</div>
                         <div class="admin-product-card-actions">
                             <button class="admin-product-edit-btn" data-id="${p.id}">Edit</button>
                             <button class="admin-product-delete-btn" data-id="${p.id}">Delete</button>
@@ -666,7 +718,12 @@
                         <div><label>Badge</label><input class="admin-input edit-badge" value="${p.badge || ''}"></div>
                         <div class="full"><label>Image</label><div class="admin-img-row"><div class="inputs"><input class="admin-input edit-image" id="edit-image-${p.id}" value="${p.image.replace(/"/g, '&quot;')}"><div class="file-btn-wrap"><input type="file" class="edit-image-file" id="edit-image-file-${p.id}" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="edit-image-preview-${p.id}"><span class="no-img">No<br>Image</span></div></div></div>
                         <div><label>Sizes (comma)</label><input class="admin-input edit-sizes" value="${Array.isArray(p.sizes) ? p.sizes.join(', ') : ''}"></div>
-                        <div style="display:flex;align-items:end;"><button class="save-btn" data-id="${p.id}">Save</button></div>
+                        <div style="display:flex;align-items:end;gap:0.5rem;">
+                            <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.7rem;color:var(--text-secondary);font-family:var(--font-ui);cursor:pointer;white-space:nowrap;">
+                                <input type="checkbox" class="edit-featured" ${p.featured ? 'checked' : ''} style="accent-color:var(--gold);width:14px;height:14px;cursor:pointer;"> Featured
+                            </label>
+                            <button class="save-btn" data-id="${p.id}" style="flex:1;">Save</button>
+                        </div>
                     </div>
                 `;
 
@@ -713,6 +770,7 @@
 
                     if (!name || !price || !image) { alert('Name, price, and image are required'); return; }
                     const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L', 'XL'];
+                    const featured = formEl.querySelector('.edit-featured').checked;
 
                     e.target.disabled = true;
                     e.target.textContent = '...';
@@ -720,7 +778,7 @@
                         const res = await fetch('/api/products?token=' + encodeURIComponent(adminToken), {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id, name, price: Number(price), category, image, badge, sizes })
+                            body: JSON.stringify({ id, name, price: Number(price), category, image, badge, sizes, featured })
                         });
                         const data = await res.json();
                         if (data.success) {
@@ -758,6 +816,7 @@
             }
 
             const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L', 'XL'];
+            const featured = document.getElementById('prod-featured').checked;
             const btn = document.getElementById('admin-add-product-btn');
             btn.disabled = true;
             btn.textContent = 'Adding...';
@@ -766,7 +825,7 @@
                 const res = await fetch('/api/products?token=' + encodeURIComponent(adminToken), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, price: Number(price), category, image, badge, sizes })
+                    body: JSON.stringify({ name, price: Number(price), category, image, badge, sizes, featured })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -791,6 +850,7 @@
                 loadOrders();
                 loadProducts();
                 loadSettings();
+                loadCollections();
             }, 400);
         };
 
@@ -883,8 +943,170 @@
             settingsSaveBtn.disabled = false;
         });
 
+        // ---- Collection Management ----
+        const collectionForm = document.getElementById('admin-collection-form');
+        const collectionGrid = document.getElementById('admin-collection-grid');
+        const collectionsLoading = document.getElementById('admin-collections-loading');
+
+        async function loadCollections() {
+            collectionsLoading.style.display = 'block';
+            try {
+                const res = await fetch('/api/collections');
+                const data = await res.json();
+                if (data.success) {
+                    renderCollections(data.collections);
+                }
+            } catch {
+                collectionsLoading.innerHTML = '<p style="color:var(--text-secondary);">Failed to load collections</p>';
+            }
+            collectionsLoading.style.display = 'none';
+        }
+
+        function renderCollections(collections) {
+            collectionGrid.innerHTML = '';
+
+            if (collections.length === 0) {
+                collectionGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-secondary);">No collections added yet</p>';
+                return;
+            }
+
+            collections.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'admin-product-card';
+                card.innerHTML = `
+                    <img src="${c.image}" alt="${c.name}" class="admin-product-card-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22 fill=%22%23333%22%3E%3Crect width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23666%22 font-size=%2214%22 font-family=%22sans-serif%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+                    <div class="admin-product-card-body">
+                        <h4>${c.name}</h4>
+                        <div style="font-size:0.7rem;color:var(--gold);font-family:var(--font-ui);margin:0 0 0.25rem;">${c.tag || ''}</div>
+                        <div class="meta">${c.description ? c.description.substring(0, 100) + (c.description.length > 100 ? '...' : '') : ''}</div>
+                        <div class="admin-product-card-actions">
+                            <button class="admin-product-edit-btn" data-id="${c.id}">Edit</button>
+                            <button class="admin-product-delete-btn" data-id="${c.id}">Delete</button>
+                        </div>
+                    </div>
+                    <div class="admin-product-edit-form" data-id="${c.id}">
+                        <div class="full"><label>Name</label><input class="admin-input edit-name" value="${c.name.replace(/"/g, '&quot;')}"></div>
+                        <div><label>Tag</label><input class="admin-input edit-tag" value="${(c.tag || '').replace(/"/g, '&quot;')}"></div>
+                        <div><label>Link URL</label><input class="admin-input edit-link" value="${(c.link || '').replace(/"/g, '&quot;')}"></div>
+                        <div class="full"><label>Description</label><textarea class="admin-input edit-description" rows="2" style="resize:vertical;font-family:var(--font-body);">${(c.description || '').replace(/"/g, '&quot;')}</textarea></div>
+                        <div class="full"><label>Image</label><div class="admin-img-row"><div class="inputs"><input class="admin-input edit-image" id="edit-col-image-${c.id}" value="${c.image.replace(/"/g, '&quot;')}"><div class="file-btn-wrap"><input type="file" class="edit-image-file" id="edit-col-image-file-${c.id}" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="edit-col-image-preview-${c.id}"><span class="no-img">No<br>Image</span></div></div></div>
+                        <div style="display:flex;align-items:end;"><button class="save-btn" data-id="${c.id}">Save</button></div>
+                    </div>
+                `;
+
+                card.querySelector('.admin-product-edit-btn').addEventListener('click', () => {
+                    const form = card.querySelector('.admin-product-edit-form');
+                    form.classList.toggle('open');
+                });
+
+                card.querySelector('.admin-product-delete-btn').addEventListener('click', async (e) => {
+                    const id = e.target.dataset.id;
+                    if (!confirm('Delete collection "' + c.name + '"?')) return;
+                    e.target.disabled = true;
+                    e.target.textContent = '...';
+                    try {
+                        const res = await fetch('/api/collections?token=' + encodeURIComponent(adminToken), {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            loadCollections();
+                        } else {
+                            alert(data.error || 'Failed to delete');
+                            e.target.disabled = false;
+                            e.target.textContent = 'Delete';
+                        }
+                    } catch {
+                        alert('Network error');
+                        e.target.disabled = false;
+                        e.target.textContent = 'Delete';
+                    }
+                });
+
+                card.querySelector('.save-btn').addEventListener('click', async (e) => {
+                    const id = e.target.dataset.id;
+                    const formEl = card.querySelector('.admin-product-edit-form');
+                    const name = formEl.querySelector('.edit-name').value.trim();
+                    const tag = formEl.querySelector('.edit-tag').value.trim();
+                    const link = formEl.querySelector('.edit-link').value.trim();
+                    const description = formEl.querySelector('.edit-description').value.trim();
+                    const image = formEl.querySelector('.edit-image').value.trim();
+
+                    if (!name || !image) { alert('Name and image are required'); return; }
+
+                    e.target.disabled = true;
+                    e.target.textContent = '...';
+                    try {
+                        const res = await fetch('/api/collections?token=' + encodeURIComponent(adminToken), {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, name, tag, description, image, link })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            formEl.classList.remove('open');
+                            loadCollections();
+                        } else {
+                            alert(data.error || 'Failed to update');
+                            e.target.disabled = false;
+                            e.target.textContent = 'Save';
+                        }
+                    } catch {
+                        alert('Network error');
+                        e.target.disabled = false;
+                        e.target.textContent = 'Save';
+                    }
+                });
+
+                collectionGrid.appendChild(card);
+                setupImageUpload('edit-col-image-file-' + c.id, 'edit-col-image-' + c.id, 'edit-col-image-preview-' + c.id);
+            });
+        }
+
+        collectionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('col-name').value.trim();
+            const tag = document.getElementById('col-tag').value.trim();
+            const description = document.getElementById('col-description').value.trim();
+            const image = document.getElementById('col-image').value.trim();
+            const link = document.getElementById('col-link').value.trim();
+
+            if (!name || !image) {
+                alert('Please fill in name and image URL');
+                return;
+            }
+
+            const btn = document.getElementById('admin-add-collection-btn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            try {
+                const res = await fetch('/api/collections?token=' + encodeURIComponent(adminToken), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, tag, description, image, link })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    collectionForm.reset();
+                    loadCollections();
+                } else {
+                    alert(data.error || 'Failed to add collection');
+                }
+            } catch {
+                alert('Network error');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Add Collection';
+        });
+
         // Wire up image upload for Add Product form
         setupImageUpload('prod-image-file', 'prod-image', 'prod-image-preview');
+
+        // Wire up image upload for Add Collection form
+        setupImageUpload('col-image-file', 'col-image', 'col-image-preview');
 
         // Wire up image upload for all site settings fields
         Object.keys(SETTING_FIELDS).forEach(function(inputId) {
