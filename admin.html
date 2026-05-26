@@ -46,6 +46,12 @@
         .admin-orders-table .cancel-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .admin-loading { text-align: center; padding: 3rem; color: var(--text-secondary); }
         .admin-loading .spinner { width: 28px; height: 28px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+        .admin-input { width:100%; padding:0.6rem 0.75rem; background:var(--bg-dark); border:1px solid rgba(201,168,76,0.2); border-radius:6px; font-size:0.85rem; color:var(--text-primary); outline:none; font-family:var(--font-ui); box-sizing:border-box; }
+        .admin-input:focus { border-color:var(--gold); }
+        .admin-input::placeholder { color:var(--text-secondary); opacity:0.5; }
+        select.admin-input { cursor:pointer; -webkit-appearance:none; -moz-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%23c9a84c'%3E%3Cpath d='M0 0l6 8 6-8z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:2rem; }
+        .admin-delete-btn { background:none; border:1px solid rgba(201,76,76,0.4); color:#c94c4c; padding:0.3rem 0.8rem; border-radius:4px; cursor:pointer; font-size:0.65rem; font-family:var(--font-ui); transition:all 0.2s; }
+        .admin-delete-btn:hover { background:rgba(201,76,76,0.1); border-color:#c94c4c; }
         .admin-scroll { overflow-x: auto; }
         .admin-page .fade-box { transition: opacity 0.5s ease, visibility 0.5s ease; }
         .admin-page .fade-box.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -172,6 +178,69 @@
                                 </tr>
                             </thead>
                             <tbody id="admin-accounts-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top:2rem;border-top:1px solid rgba(201,168,76,0.15);padding-top:2rem;">
+                    <h2 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;color:var(--gold);margin:0 0 0.75rem;">Products</h2>
+
+                    <div style="background:var(--bg-card);border:1px solid rgba(201,168,76,0.15);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;">
+                        <h3 style="font-family:var(--font-ui);font-weight:400;font-size:0.9rem;color:var(--text-primary);margin:0 0 1rem;">Add New Product</h3>
+                        <form id="admin-product-form" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Name</label>
+                                <input type="text" id="prod-name" class="admin-input" required placeholder="Product name">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Price (EGP)</label>
+                                <input type="number" id="prod-price" class="admin-input" required placeholder="1200" min="1">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Category</label>
+                                <select id="prod-category" class="admin-input">
+                                    <option value="hoodies">Hoodies</option>
+                                    <option value="tees">Tees</option>
+                                    <option value="outerwear">Outerwear</option>
+                                    <option value="accessories">Accessories</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Badge (optional)</label>
+                                <input type="text" id="prod-badge" class="admin-input" placeholder="e.g. New, Limited">
+                            </div>
+                            <div style="grid-column:1/-1;">
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Image URL</label>
+                                <input type="url" id="prod-image" class="admin-input" required placeholder="https://images.unsplash.com/...">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Sizes (comma-separated)</label>
+                                <input type="text" id="prod-sizes" class="admin-input" placeholder="S, M, L, XL">
+                            </div>
+                            <div style="display:flex;align-items:end;">
+                                <button type="submit" id="admin-add-product-btn" style="padding:0.75rem 1.5rem;border:none;border-radius:6px;background:var(--gold);color:var(--bg-dark);font-weight:600;font-size:0.8rem;cursor:pointer;font-family:var(--font-ui);transition:opacity 0.2s;width:100%;">Add Product</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="admin-products-loading" class="admin-loading" style="display:none;">
+                        <div class="spinner"></div>
+                        <p>Loading products...</p>
+                    </div>
+
+                    <span id="admin-product-count" style="font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-body);"></span>
+                    <div class="admin-scroll" style="margin-top:0.75rem;">
+                        <table class="admin-orders-table" id="admin-products-table" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Category</th>
+                                    <th>Sizes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-products-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -437,13 +506,136 @@
             if (e.key === 'Enter') loginBtn.click();
         });
 
-        refreshBtn.addEventListener('click', loadOrders);
+        refreshBtn.addEventListener('click', () => { loadOrders(); loadProducts(); });
 
         document.getElementById('admin-logout-btn').addEventListener('click', () => {
             sessionStorage.removeItem('admin_token');
             adminToken = null;
             showLogin();
         });
+
+        // ---- Product Management ----
+        const productForm = document.getElementById('admin-product-form');
+        const productsBody = document.getElementById('admin-products-body');
+        const productsTable = document.getElementById('admin-products-table');
+        const productsLoading = document.getElementById('admin-products-loading');
+        const productCount = document.getElementById('admin-product-count');
+
+        async function loadProducts() {
+            productsLoading.style.display = 'block';
+            productsTable.style.display = 'none';
+            try {
+                const res = await fetch('/api/products');
+                const data = await res.json();
+                if (data.success) {
+                    renderProducts(data.products);
+                }
+            } catch {
+                productsLoading.innerHTML = '<p style="color:var(--text-secondary);">Failed to load products</p>';
+            }
+            productsLoading.style.display = 'none';
+        }
+
+        function renderProducts(products) {
+            productsTable.style.display = 'table';
+            productsBody.innerHTML = '';
+            productCount.textContent = products.length + ' total product' + (products.length !== 1 ? 's' : '');
+
+            if (products.length === 0) {
+                productsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary);">No products added yet</td></tr>';
+                return;
+            }
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${p.name}</td>
+                    <td>EGP ${(p.price || 0).toLocaleString()}</td>
+                    <td style="text-transform:capitalize;">${p.category || '—'}</td>
+                    <td>${Array.isArray(p.sizes) ? p.sizes.join(', ') : '—'}</td>
+                    <td><button class="admin-delete-btn" data-id="${p.id}">Delete</button></td>
+                `;
+                productsBody.appendChild(tr);
+            });
+
+            productsBody.querySelectorAll('.admin-delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    if (!confirm('Delete this product?')) return;
+                    btn.disabled = true;
+                    btn.textContent = '...';
+                    try {
+                        const res = await fetch('/api/products?token=' + encodeURIComponent(adminToken), {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            loadProducts();
+                        } else {
+                            alert(data.error || 'Failed to delete');
+                            btn.disabled = false;
+                            btn.textContent = 'Delete';
+                        }
+                    } catch {
+                        alert('Network error');
+                        btn.disabled = false;
+                        btn.textContent = 'Delete';
+                    }
+                });
+            });
+        }
+
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('prod-name').value.trim();
+            const price = document.getElementById('prod-price').value.trim();
+            const category = document.getElementById('prod-category').value;
+            const image = document.getElementById('prod-image').value.trim();
+            const badge = document.getElementById('prod-badge').value.trim();
+            const sizesRaw = document.getElementById('prod-sizes').value.trim();
+
+            if (!name || !price || !image) {
+                alert('Please fill in name, price, and image URL');
+                return;
+            }
+
+            const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L', 'XL'];
+            const btn = document.getElementById('admin-add-product-btn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            try {
+                const res = await fetch('/api/products?token=' + encodeURIComponent(adminToken), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, price: Number(price), category, image, badge, sizes })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    productForm.reset();
+                    loadProducts();
+                } else {
+                    alert(data.error || 'Failed to add product');
+                }
+            } catch {
+                alert('Network error');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Add Product';
+        });
+
+        showPanel = function() {
+            loginEl.classList.remove('visible');
+            loginEl.classList.add('hidden');
+            setTimeout(() => {
+                panelEl.classList.remove('hidden');
+                panelEl.classList.add('visible');
+                loadOrders();
+                loadProducts();
+            }, 400);
+        };
 
         if (adminToken) {
             showPanel();

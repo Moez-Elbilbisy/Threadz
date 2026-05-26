@@ -38,7 +38,7 @@ export async function onRequestGet(context) {
       try {
         if (key.name.startsWith("user:")) {
           accountList.push(JSON.parse(raw));
-        } else if (!key.name.startsWith("user-orders:")) {
+        } else if (!key.name.startsWith("user-orders:") && !key.name.startsWith("product:")) {
           orderList.push(JSON.parse(raw));
         }
       } catch {}

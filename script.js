@@ -44,13 +44,14 @@ window.addEventListener('load', () => {
     }, 4500); // Trigger after the 3D animation finishes and fade-in starts
 });
 
-// Cart Interaction â?? localStorage-backed via cart-data.js
+// Cart Interaction ï¿½?? localStorage-backed via cart-data.js
 const addButtons = document.querySelectorAll('.quick-add');
 const cartCountElement = document.querySelector('.cart-count');
 const cartBtn = document.querySelector('.cart-btn');
 
 addButtons.forEach(button => {
     button.addEventListener('click', function(e) {
+        if (this.closest('.quick-add-wrapper')) return;
         e.preventDefault();
         
         // Visual feedback on button
@@ -66,16 +67,13 @@ addButtons.forEach(button => {
         const price = parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 0;
         const imgEl = card ? card.querySelector('.product-img') : null;
         const image = imgEl ? imgEl.src : '';
-        // Create a simple ID from the name
         const id = name.toLowerCase().replace(/\s+/g, '-');
         
-        // Add to localStorage cart (uses cart-data.js if loaded)
         if (typeof addToCart === 'function') {
             addToCart({ id, name, price, image });
         }
         
         if (cartBtn && cartCountElement) {
-            // Create flying dot
             const dot = document.createElement('div');
             dot.classList.add('flying-dot');
             document.body.appendChild(dot);
@@ -83,14 +81,9 @@ addButtons.forEach(button => {
             const btnRect = this.getBoundingClientRect();
             const cartRect = cartBtn.getBoundingClientRect();
             
-            // Start position
             dot.style.left = (btnRect.left + btnRect.width / 2 - 10) + 'px';
             dot.style.top = (btnRect.top + btnRect.height / 2 - 10) + 'px';
-            
-            // Force reflow
             void dot.offsetWidth;
-            
-            // End position
             dot.style.left = (cartRect.left + cartRect.width / 2 - 10) + 'px';
             dot.style.top = (cartRect.top + cartRect.height / 2 - 10) + 'px';
             dot.style.transform = 'scale(0.2)';
@@ -99,11 +92,9 @@ addButtons.forEach(button => {
             setTimeout(() => {
                 dot.remove();
                 
-                // Update cart counter from localStorage
                 const count = typeof getCartCount === 'function' ? getCartCount() : 0;
                 cartCountElement.innerText = count;
                 
-                // Animate cart icon
                 cartBtn.classList.remove('cart-animating');
                 cartCountElement.classList.remove('cart-count-animating');
                 void cartBtn.offsetWidth;
@@ -116,7 +107,6 @@ addButtons.forEach(button => {
             cartCountElement.innerText = count;
         }
         
-        // Reset button
         setTimeout(() => {
             this.innerText = originalText;
             this.style.backgroundColor = '';
@@ -163,7 +153,7 @@ if (mobileBtn && mobileMenuOverlay && mobileMenuPanel) {
     mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
 }
 
-// Internal navigation detection â?? set flag when clicking links to homepage
+// Internal navigation detection ï¿½?? set flag when clicking links to homepage
 document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (!link) return;
@@ -178,7 +168,7 @@ document.addEventListener('click', (e) => {
     } catch (_) {}
 });
 
-// â??â?? Custom Cursor â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½?? Custom Cursor ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 (function() {
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
 
@@ -203,5 +193,5 @@ document.addEventListener('click', (e) => {
     document.body.classList.add('custom-cursor');
 })();
 
-// â??â?? Prevent Right-Click â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½?? Prevent Right-Click ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 document.addEventListener('contextmenu', (e) => e.preventDefault());

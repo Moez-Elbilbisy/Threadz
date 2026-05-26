@@ -670,6 +670,7 @@
                             <div class="cart-item-details">
                                 <h4 class="cart-item-name">${item.name}</h4>
                                 <p class="cart-item-price">EGP ${item.price.toLocaleString()}</p>
+                                ${item.size ? `<p class="cart-item-size">Size: ${item.size}</p>` : ''}
                             </div>
                         </div>
                         <div class="cart-item-qty">

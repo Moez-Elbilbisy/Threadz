@@ -105,86 +105,6 @@
 
                 <!-- Product Grid -->
                 <div class="product-grid" id="product-grid">
-                    <!-- Product 1 -->
-                    <div class="product-card fade-in-up visible" data-category="hoodies" data-price="1200" style="transition-delay: 0.1s;">
-                        <div class="product-img-wrapper">
-                            <img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="Oversized Obsidian Hoodie" class="product-img">
-                            <div class="product-badge">New</div>
-                            <button class="quick-add">Add to Cart</button>
-                        </div>
-                        <div class="product-info">
-                            <h3>Oversized Obsidian Hoodie</h3>
-                            <p class="price">EGP 1,200</p>
-                        </div>
-                    </div>
-
-                    <!-- Product 2 -->
-                    <div class="product-card fade-in-up visible" data-category="tees" data-price="650" style="transition-delay: 0.2s;">
-                        <div class="product-img-wrapper">
-                            <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="Dune Graphic Tee" class="product-img">
-                            <button class="quick-add">Add to Cart</button>
-                        </div>
-                        <div class="product-info">
-                            <h3>Dune Graphic Tee</h3>
-                            <p class="price">EGP 650</p>
-                        </div>
-                    </div>
-
-                    <!-- Product 3 -->
-                    <div class="product-card fade-in-up visible" data-category="outerwear" data-price="2400" style="transition-delay: 0.3s;">
-                        <div class="product-img-wrapper">
-                            <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="Pharaoh Bomber Jacket" class="product-img">
-                            <div class="product-badge">Limited</div>
-                            <button class="quick-add">Add to Cart</button>
-                        </div>
-                        <div class="product-info">
-                            <h3>Pharaoh Bomber Jacket</h3>
-                            <p class="price">EGP 2,400</p>
-                        </div>
-                    </div>
-
-                    <!-- Product 4 -->
-                    <div class="product-card fade-in-up visible" data-category="tees" data-price="700" style="transition-delay: 0.4s;">
-                        <div class="product-img-wrapper">
-                            <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="Scarab Heavyweight Tee" class="product-img">
-                            <div class="product-badge">New</div>
-                            <button class="quick-add">Add to Cart</button>
-                        </div>
-                        <div class="product-info">
-                            <h3>Scarab Heavyweight Tee</h3>
-                            <p class="price">EGP 700</p>
-                        </div>
-                    </div>
-
-                    <!-- Product 5 -->
-                    <div class="product-card fade-in-up visible" data-category="outerwear" data-price="1800" style="transition-delay: 0.5s;">
-                        <div class="product-img-wrapper">
-                            <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="Nile Utility Cargo Pants" class="product-img">
-                            <button class="quick-add">Add to Cart</button>
-                        </div>
-                        <div class="product-info">
-                            <h3>Nile Utility Cargo Pants</h3>
-                            <p class="price">EGP 1,800</p>
-                        </div>
-                    </div>
-
-                    <!-- Product 6 -->
-                    <div class="product-card fade-in-up visible" data-category="accessories" data-price="450" style="transition-delay: 0.6s;">
-                        <div class="product-img-wrapper">
-                            <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="Khepri Embroidered Cap" class="product-img">
-                            <button class="quick-add">Add to Cart</button>
-                        </div>
-                        <div class="product-info">
-                            <h3>Khepri Embroidered Cap</h3>
-                            <p class="price">EGP 450</p>
-                        </div>
-                    </div>
                 </div>
 
             </div>
@@ -268,14 +188,153 @@
     <script src="cart-data.js"></script>
     <script src="script.js"></script>
     <script>
-        // Shop Page Product Filter & Sort Logic
-        document.addEventListener('DOMContentLoaded', () => {
-            const filterButtons = document.querySelectorAll('.filter-btn');
+        const DEFAULT_PRODUCTS = [
+            { id: "oversized-obsidian-hoodie", name: "Oversized Obsidian Hoodie", price: 1200, category: "hoodies", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "New", sizes: ["S", "M", "L", "XL"] },
+            { id: "dune-graphic-tee", name: "Dune Graphic Tee", price: 650, category: "tees", image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "", sizes: ["S", "M", "L", "XL"] },
+            { id: "pharaoh-bomber-jacket", name: "Pharaoh Bomber Jacket", price: 2400, category: "outerwear", image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "Limited", sizes: ["S", "M", "L", "XL"] },
+            { id: "scarab-heavyweight-tee", name: "Scarab Heavyweight Tee", price: 700, category: "tees", image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "New", sizes: ["S", "M", "L", "XL"] },
+            { id: "nile-utility-cargo-pants", name: "Nile Utility Cargo Pants", price: 1800, category: "outerwear", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "", sizes: ["S", "M", "L", "XL"] },
+            { id: "khepri-embroidered-cap", name: "Khepri Embroidered Cap", price: 450, category: "accessories", image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "", sizes: ["One Size"] },
+        ];
+
+        let allProducts = [];
+
+        function createProductCard(product, delay) {
+            const card = document.createElement('div');
+            card.className = 'product-card fade-in-up visible';
+            card.dataset.category = product.category;
+            card.dataset.price = product.price;
+            card.style.transitionDelay = delay + 's';
+
+            const sizeOptions = (product.sizes || ["S", "M", "L", "XL"]).map(s =>
+                `<option value="${s}">${s}</option>`
+            ).join('');
+
+            card.innerHTML = `
+                <div class="product-img-wrapper">
+                    <img src="${product.image}" alt="${product.name}" class="product-img" loading="lazy">
+                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+                    <div class="quick-add-wrapper">
+                        <select class="size-select" aria-label="Size">
+                            ${sizeOptions}
+                        </select>
+                        <button class="quick-add">Add to Cart</button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p class="price">EGP ${product.price.toLocaleString()}</p>
+                </div>
+            `;
+
+            const addBtn = card.querySelector('.quick-add');
+            const sizeSelect = card.querySelector('.size-select');
+
+            addBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const size = sizeSelect ? sizeSelect.value : 'M';
+                const originalText = this.innerText;
+                this.innerText = 'Added!';
+                this.style.backgroundColor = 'var(--gold)';
+                this.style.color = 'var(--bg-dark)';
+
+                if (typeof addToCart === 'function') {
+                    addToCart({ id: product.id + '-' + size, name: product.name + ' (' + size + ')', price: product.price, image: product.image, size: size });
+                }
+
+                const cartBtn = document.querySelector('.cart-btn');
+                const cartCountElement = document.querySelector('.cart-count');
+                if (cartBtn && cartCountElement) {
+                    const dot = document.createElement('div');
+                    dot.classList.add('flying-dot');
+                    document.body.appendChild(dot);
+                    const btnRect = this.getBoundingClientRect();
+                    const cartRect = cartBtn.getBoundingClientRect();
+                    dot.style.left = (btnRect.left + btnRect.width / 2 - 10) + 'px';
+                    dot.style.top = (btnRect.top + btnRect.height / 2 - 10) + 'px';
+                    void dot.offsetWidth;
+                    dot.style.left = (cartRect.left + cartRect.width / 2 - 10) + 'px';
+                    dot.style.top = (cartRect.top + cartRect.height / 2 - 10) + 'px';
+                    dot.style.transform = 'scale(0.2)';
+                    dot.style.opacity = '0.5';
+                    setTimeout(() => {
+                        dot.remove();
+                        const count = typeof getCartCount === 'function' ? getCartCount() : 0;
+                        cartCountElement.innerText = count;
+                        cartBtn.classList.remove('cart-animating');
+                        cartCountElement.classList.remove('cart-count-animating');
+                        void cartBtn.offsetWidth;
+                        cartBtn.classList.add('cart-animating');
+                        cartCountElement.classList.add('cart-count-animating');
+                    }, 600);
+                } else if (cartCountElement) {
+                    const count = typeof getCartCount === 'function' ? getCartCount() : 0;
+                    cartCountElement.innerText = count;
+                }
+
+                setTimeout(() => {
+                    this.innerText = originalText;
+                    this.style.backgroundColor = '';
+                    this.style.color = '';
+                }, 2000);
+            });
+
+            return card;
+        }
+
+        function renderProducts(products) {
             const productGrid = document.getElementById('product-grid');
-            const products = Array.from(productGrid.querySelectorAll('.product-card'));
+            productGrid.innerHTML = '';
+            allProducts = products;
+            products.forEach((p, i) => {
+                productGrid.appendChild(createProductCard(p, 0.1 + i * 0.1));
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const sortSelect = document.getElementById('sort-select');
+            const productGrid = document.getElementById('product-grid');
+            const cards = Array.from(productGrid.querySelectorAll('.product-card'));
+
+            const activeCat = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
+            const sortBy = sortSelect?.value || 'featured';
+
+            let filtered = cards.filter(c => {
+                return activeCat === 'all' || c.dataset.category === activeCat;
+            });
+
+            if (sortBy === 'price-low') {
+                filtered.sort((a, b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
+            } else if (sortBy === 'price-high') {
+                filtered.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
+            }
+
+            cards.forEach(c => { c.style.display = 'none'; c.classList.remove('visible'); });
+            filtered.forEach((c, i) => {
+                c.style.display = 'block';
+                setTimeout(() => c.classList.add('visible'), 50 * i);
+                productGrid.appendChild(c);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const filterButtons = document.querySelectorAll('.filter-btn');
             const sortSelect = document.getElementById('sort-select');
 
-            // Handle URL Parameters for filtering (e.g. from footer links)
+            try {
+                const res = await fetch('/api/products');
+                const data = await res.json();
+                if (data.success && data.products.length > 0) {
+                    renderProducts(data.products);
+                } else {
+                    renderProducts(DEFAULT_PRODUCTS);
+                }
+            } catch {
+                renderProducts(DEFAULT_PRODUCTS);
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const catParam = urlParams.get('cat');
             if (catParam) {
@@ -283,61 +342,18 @@
                 if (btn) {
                     filterButtons.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    filterProducts(catParam);
                 }
             }
 
-            // Filtering Action
             filterButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     filterButtons.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    const category = btn.dataset.category;
-                    filterProducts(category);
+                    applyFilters();
                 });
             });
 
-            function filterProducts(category) {
-                products.forEach((p, idx) => {
-                    const matchesCat = category === 'all' || p.dataset.category === category;
-                    if (matchesCat) {
-                        p.style.display = 'block';
-                        // Re-trigger fade-in-up nicely
-                        setTimeout(() => {
-                            p.classList.add('visible');
-                        }, 50 * idx);
-                    } else {
-                        p.style.display = 'none';
-                        p.classList.remove('visible');
-                    }
-                });
-            }
-
-            // Sorting Action
-            sortSelect.addEventListener('change', () => {
-                const criteria = sortSelect.value;
-                let sortedProducts = [...products];
-
-                if (criteria === 'price-low') {
-                    sortedProducts.sort((a, b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
-                } else if (criteria === 'price-high') {
-                    sortedProducts.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
-                } else {
-                    // default order (featured / DOM order)
-                    sortedProducts.sort((a, b) => products.indexOf(a) - products.indexOf(b));
-                }
-
-                // Empty and re-append sorted items
-                productGrid.innerHTML = '';
-                sortedProducts.forEach((p, idx) => {
-                    productGrid.appendChild(p);
-                    if (p.style.display !== 'none') {
-                        setTimeout(() => {
-                            p.classList.add('visible');
-                        }, 50 * idx);
-                    }
-                });
-            });
+            sortSelect.addEventListener('change', applyFilters);
         });
     </script>
 </body>
