@@ -82,6 +82,15 @@
         .admin-product-edit-form .admin-input { padding:0.4rem 0.6rem; font-size:0.75rem; }
         .admin-product-edit-form .save-btn { padding:0.4rem; border:none; border-radius:4px; background:var(--gold); color:var(--bg-dark); font-size:0.65rem; font-family:var(--font-ui); cursor:pointer; text-transform:uppercase; letter-spacing:0.05em; transition:opacity 0.2s; }
         .admin-product-edit-form .save-btn:hover { opacity:0.85; }
+        .admin-img-row { display:flex; gap:0.75rem; align-items:start; }
+        .admin-img-row .inputs { flex:1; display:flex; flex-direction:column; gap:0.4rem; }
+        .admin-img-row .file-btn-wrap { position:relative; }
+        .admin-img-row .file-btn-wrap input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; z-index:1; }
+        .admin-img-row .file-btn-wrap .file-label { display:block; padding:0.5rem 0.75rem; background:var(--bg-dark); border:1px dashed rgba(201,168,76,0.3); border-radius:6px; font-size:0.75rem; color:var(--text-secondary); text-align:center; font-family:var(--font-ui); transition:all 0.2s; }
+        .admin-img-row .file-btn-wrap:hover .file-label { border-color:var(--gold); color:var(--gold); }
+        .admin-img-row .preview { width:72px; height:72px; border-radius:4px; overflow:hidden; background:var(--bg-dark); border:1px solid rgba(201,168,76,0.1); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+        .admin-img-row .preview img { width:100%; height:100%; object-fit:cover; display:block; }
+        .admin-img-row .preview .no-img { font-size:0.55rem; color:var(--text-secondary); text-align:center; padding:0.25rem; font-family:var(--font-ui); }
         @media (max-width: 768px) {
             .admin-orders-table { font-size: 0.7rem; }
             .admin-orders-table th, .admin-orders-table td { padding: 0.5rem 0.4rem; }
@@ -240,8 +249,17 @@
                                 <input type="text" id="prod-badge" class="admin-input" placeholder="e.g. New, Limited">
                             </div>
                             <div style="grid-column:1/-1;">
-                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Image URL</label>
-                                <input type="url" id="prod-image" class="admin-input" required placeholder="https://images.unsplash.com/...">
+                                <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Image</label>
+                                <div class="admin-img-row">
+                                    <div class="inputs">
+                                        <input type="url" id="prod-image" class="admin-input" required placeholder="https://images.unsplash.com/...">
+                                        <div class="file-btn-wrap">
+                                            <input type="file" id="prod-image-file" accept="image/*">
+                                            <span class="file-label">Choose File</span>
+                                        </div>
+                                    </div>
+                                    <div class="preview" id="prod-image-preview"><span class="no-img">No<br>Image</span></div>
+                                </div>
                             </div>
                             <div>
                                 <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Sizes (comma-separated)</label>
@@ -270,48 +288,48 @@
                     </div>
                     <form id="admin-settings-form" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                         <div>
-                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Logo URL</label>
-                            <input type="url" id="set-logo" class="admin-input" placeholder="/logo.jpg">
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Logo</label>
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-logo" class="admin-input" placeholder="/logo.jpg"><div class="file-btn-wrap"><input type="file" id="set-logo-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-logo-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
-                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Favicon URL</label>
-                            <input type="url" id="set-favicon" class="admin-input" placeholder="/tabicon.png">
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Favicon</label>
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-favicon" class="admin-input" placeholder="/tabicon.png"><div class="file-btn-wrap"><input type="file" id="set-favicon-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-favicon-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Hero Background</label>
-                            <input type="url" id="set-hero" class="admin-input" placeholder="https://...hero image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-hero" class="admin-input" placeholder="https://...hero image"><div class="file-btn-wrap"><input type="file" id="set-hero-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-hero-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Banner (Crafted in Cairo)</label>
-                            <input type="url" id="set-banner-crafted" class="admin-input" placeholder="https://...banner image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-banner-crafted" class="admin-input" placeholder="https://...banner image"><div class="file-btn-wrap"><input type="file" id="set-banner-crafted-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-banner-crafted-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">About: Genesis</label>
-                            <input type="url" id="set-about-genesis" class="admin-input" placeholder="https://...genesis image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-about-genesis" class="admin-input" placeholder="https://...genesis image"><div class="file-btn-wrap"><input type="file" id="set-about-genesis-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-about-genesis-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">About: Cotton Standard</label>
-                            <input type="url" id="set-about-cotton" class="admin-input" placeholder="https://...cotton image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-about-cotton" class="admin-input" placeholder="https://...cotton image"><div class="file-btn-wrap"><input type="file" id="set-about-cotton-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-about-cotton-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Collection: Obsidian</label>
-                            <input type="url" id="set-collection-obsidian" class="admin-input" placeholder="https://...obsidian image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-collection-obsidian" class="admin-input" placeholder="https://...obsidian image"><div class="file-btn-wrap"><input type="file" id="set-collection-obsidian-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-collection-obsidian-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Collection: Anubis</label>
-                            <input type="url" id="set-collection-anubis" class="admin-input" placeholder="https://...anubis image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-collection-anubis" class="admin-input" placeholder="https://...anubis image"><div class="file-btn-wrap"><input type="file" id="set-collection-anubis-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-collection-anubis-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Journal: Featured</label>
-                            <input type="url" id="set-journal-featured" class="admin-input" placeholder="https://...featured image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-journal-featured" class="admin-input" placeholder="https://...featured image"><div class="file-btn-wrap"><input type="file" id="set-journal-featured-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-journal-featured-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Journal: Craft</label>
-                            <input type="url" id="set-journal-craft" class="admin-input" placeholder="https://...craft image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-journal-craft" class="admin-input" placeholder="https://...craft image"><div class="file-btn-wrap"><input type="file" id="set-journal-craft-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-journal-craft-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div>
                             <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Journal: Drops</label>
-                            <input type="url" id="set-journal-drops" class="admin-input" placeholder="https://...drops image">
+                            <div class="admin-img-row"><div class="inputs"><input type="url" id="set-journal-drops" class="admin-input" placeholder="https://...drops image"><div class="file-btn-wrap"><input type="file" id="set-journal-drops-file" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="set-journal-drops-preview"><span class="no-img">No<br>Image</span></div></div>
                         </div>
                         <div style="display:flex;align-items:end;">
                             <button type="submit" id="admin-save-settings-btn" style="padding:0.75rem 1.5rem;border:none;border-radius:6px;background:var(--gold);color:var(--bg-dark);font-weight:600;font-size:0.8rem;cursor:pointer;font-family:var(--font-ui);transition:opacity 0.2s;width:100%;">Save All Images</button>
@@ -448,8 +466,9 @@
                         showLogin();
                     }
                 }
-            } catch {
-                alert('Failed to load orders');
+            } catch (err) {
+                ordersLoading.innerHTML = '<p style="color:var(--text-secondary);">Failed to load orders. Check console for details.</p>';
+                console.error(err);
             }
             ordersLoading.style.display = 'none';
         }
@@ -644,7 +663,7 @@
                         <div><label>Price</label><input class="admin-input edit-price" type="number" value="${p.price}"></div>
                         <div><label>Category</label><select class="admin-input edit-category"><option value="hoodies"${p.category==='hoodies'?' selected':''}>Hoodies</option><option value="tees"${p.category==='tees'?' selected':''}>Tees</option><option value="outerwear"${p.category==='outerwear'?' selected':''}>Outerwear</option><option value="accessories"${p.category==='accessories'?' selected':''}>Accessories</option></select></div>
                         <div><label>Badge</label><input class="admin-input edit-badge" value="${p.badge || ''}"></div>
-                        <div class="full"><label>Image URL</label><input class="admin-input edit-image" value="${p.image.replace(/"/g, '&quot;')}"></div>
+                        <div class="full"><label>Image</label><div class="admin-img-row"><div class="inputs"><input class="admin-input edit-image" id="edit-image-${p.id}" value="${p.image.replace(/"/g, '&quot;')}"><div class="file-btn-wrap"><input type="file" class="edit-image-file" id="edit-image-file-${p.id}" accept="image/*"><span class="file-label">Choose File</span></div></div><div class="preview" id="edit-image-preview-${p.id}"><span class="no-img">No<br>Image</span></div></div></div>
                         <div><label>Sizes (comma)</label><input class="admin-input edit-sizes" value="${Array.isArray(p.sizes) ? p.sizes.join(', ') : ''}"></div>
                         <div style="display:flex;align-items:end;"><button class="save-btn" data-id="${p.id}">Save</button></div>
                     </div>
@@ -719,6 +738,7 @@
                 });
 
                 productGrid.appendChild(card);
+                setupImageUpload('edit-image-file-' + p.id, 'edit-image-' + p.id, 'edit-image-preview-' + p.id);
             });
         }
 
@@ -792,6 +812,24 @@
             'set-journal-drops': 'journal_drops',
         };
 
+        function setupImageUpload(fileInputId, urlInputId, previewId) {
+            const fileInput = document.getElementById(fileInputId);
+            const urlInput = document.getElementById(urlInputId);
+            const preview = document.getElementById(previewId);
+            if (!fileInput || !urlInput || !preview) return;
+            fileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUri = e.target.result;
+                    urlInput.value = dataUri;
+                    preview.innerHTML = '<img src="' + dataUri + '" alt="Preview">';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         async function loadSettings() {
             settingsLoading.style.display = 'block';
             try {
@@ -801,6 +839,10 @@
                     Object.entries(SETTING_FIELDS).forEach(([inputId, key]) => {
                         const el = document.getElementById(inputId);
                         if (el && data.settings[key]) el.value = data.settings[key];
+                        const preview = document.getElementById(inputId + '-preview');
+                        if (preview && data.settings[key]) {
+                            preview.innerHTML = '<img src="' + data.settings[key].replace(/"/g, '&quot;') + '" alt="Preview">';
+                        }
                     });
                 }
             } catch {}
@@ -838,6 +880,14 @@
                 settingsSaveBtn.textContent = 'Save All Images';
             }
             settingsSaveBtn.disabled = false;
+        });
+
+        // Wire up image upload for Add Product form
+        setupImageUpload('prod-image-file', 'prod-image', 'prod-image-preview');
+
+        // Wire up image upload for all site settings fields
+        Object.keys(SETTING_FIELDS).forEach(function(inputId) {
+            setupImageUpload(inputId + '-file', inputId, inputId + '-preview');
         });
 
         if (adminToken) {
