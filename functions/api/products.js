@@ -61,6 +61,49 @@ export async function onRequestPost(context) {
   }
 }
 
+export async function onRequestPut(context) {
+  const { request, env } = context;
+  try {
+    const url = new URL(request.url);
+    const token = url.searchParams.get("token") || request.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return json({ success: false, error: "Missing token" }, 401);
+    }
+    const payload = await verifyJWT(token, env.JWT_SECRET);
+    if (!payload || payload.role !== "admin") {
+      return json({ success: false, error: "Invalid or expired token" }, 401);
+    }
+
+    const body = await request.json();
+    const { id, name, price, category, image, sizes, badge, description } = body;
+    if (!id) {
+      return json({ success: false, error: "Missing product id" }, 400);
+    }
+
+    const raw = await env.ORDERS.get(`product:${id}`);
+    if (!raw) {
+      return json({ success: false, error: "Product not found" }, 404);
+    }
+
+    const existing = JSON.parse(raw);
+    const updated = {
+      ...existing,
+      name: name ?? existing.name,
+      price: price !== undefined ? Number(price) : existing.price,
+      category: category ?? existing.category,
+      image: image ?? existing.image,
+      sizes: sizes ?? existing.sizes,
+      badge: badge !== undefined ? badge : existing.badge,
+      description: description !== undefined ? description : existing.description,
+    };
+
+    await env.ORDERS.put(`product:${id}`, JSON.stringify(updated));
+    return json({ success: true, product: updated });
+  } catch (error) {
+    return json({ success: false, error: error.message }, 500);
+  }
+}
+
 export async function onRequestDelete(context) {
   const { request, env } = context;
   try {

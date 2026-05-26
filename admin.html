@@ -27,6 +27,12 @@
         .admin-header span { font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-body); }
         .admin-header button { background: none; border: 1px solid rgba(201,168,76,0.3); color: var(--text-secondary); padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-family: var(--font-ui); font-size: 0.8rem; transition: all 0.2s; }
         .admin-header button:hover { border-color: var(--gold); color: var(--gold); }
+        .admin-tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 1px solid rgba(201,168,76,0.15); width: 100%; }
+        .admin-tab { background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-secondary); padding: 0.75rem 1.5rem; font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; }
+        .admin-tab:hover { color: var(--text-primary); }
+        .admin-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+        .admin-tab-content { display: none; margin-top: 1.5rem; }
+        .admin-tab-content.active { display: block; }
         .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
         .stat-card { background: var(--bg-card); border: 1px solid rgba(201,168,76,0.15); border-radius: 8px; padding: 1.25rem; text-align: center; }
         .stat-card .stat-num { font-size: 1.75rem; font-weight: 600; color: var(--gold); font-family: var(--font-heading); }
@@ -51,16 +57,36 @@
         .admin-input:focus { border-color:var(--gold); }
         .admin-input::placeholder { color:var(--text-secondary); opacity:0.5; }
         select.admin-input { cursor:pointer; -webkit-appearance:none; -moz-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%23c9a84c'%3E%3Cpath d='M0 0l6 8 6-8z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:2rem; }
-        .admin-delete-btn { background:none; border:1px solid rgba(201,76,76,0.4); color:#c94c4c; padding:0.3rem 0.8rem; border-radius:4px; cursor:pointer; font-size:0.65rem; font-family:var(--font-ui); transition:all 0.2s; }
-        .admin-delete-btn:hover { background:rgba(201,76,76,0.1); border-color:#c94c4c; }
         .admin-scroll { overflow-x: auto; }
         .admin-page .fade-box { transition: opacity 0.5s ease, visibility 0.5s ease; }
         .admin-page .fade-box.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .admin-page .fade-box.visible { opacity: 1; visibility: visible; pointer-events: auto; }
+        .admin-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+        .admin-product-card { background: var(--bg-card); border: 1px solid rgba(201,168,76,0.15); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+        .admin-product-card:hover { border-color: rgba(201,168,76,0.3); }
+        .admin-product-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--bg-dark); display: block; }
+        .admin-product-card-body { padding: 1rem; }
+        .admin-product-card-body h4 { font-family: var(--font-ui); font-weight: 400; font-size: 0.85rem; margin: 0 0 0.25rem; color: var(--text-primary); }
+        .admin-product-card-body .price { color: var(--gold); font-size: 0.85rem; font-family: var(--font-ui); margin: 0 0 0.5rem; }
+        .admin-product-card-body .meta { font-size: 0.7rem; color: var(--text-secondary); font-family: var(--font-body); margin: 0 0 0.75rem; }
+        .admin-product-card-actions { display: flex; gap: 0.5rem; }
+        .admin-product-card-actions button { flex:1; padding:0.4rem; border-radius:4px; font-size:0.65rem; font-family:var(--font-ui); cursor:pointer; text-transform:uppercase; letter-spacing:0.05em; transition:all 0.2s; border:1px solid transparent; }
+        .admin-product-edit-btn { background:rgba(201,168,76,0.1); color:var(--gold); border-color:rgba(201,168,76,0.3) !important; }
+        .admin-product-edit-btn:hover { background:rgba(201,168,76,0.2); }
+        .admin-product-delete-btn { background:rgba(201,76,76,0.1); color:#c94c4c; border-color:rgba(201,76,76,0.3) !important; }
+        .admin-product-delete-btn:hover { background:rgba(201,76,76,0.2); }
+        .admin-product-edit-form { display:none; padding:1rem; border-top:1px solid rgba(201,168,76,0.1); background:rgba(0,0,0,0.15); }
+        .admin-product-edit-form.open { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+        .admin-product-edit-form .full { grid-column:1/-1; }
+        .admin-product-edit-form label { font-size:0.6rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em; display:block; margin-bottom:0.2rem; font-family:var(--font-ui); }
+        .admin-product-edit-form .admin-input { padding:0.4rem 0.6rem; font-size:0.75rem; }
+        .admin-product-edit-form .save-btn { padding:0.4rem; border:none; border-radius:4px; background:var(--gold); color:var(--bg-dark); font-size:0.65rem; font-family:var(--font-ui); cursor:pointer; text-transform:uppercase; letter-spacing:0.05em; transition:opacity 0.2s; }
+        .admin-product-edit-form .save-btn:hover { opacity:0.85; }
         @media (max-width: 768px) {
             .admin-orders-table { font-size: 0.7rem; }
             .admin-orders-table th, .admin-orders-table td { padding: 0.5rem 0.4rem; }
             .admin-login-card { padding: 2rem 1.5rem; }
+            .admin-product-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -132,9 +158,10 @@
 
             <div id="admin-panel" class="fade-box hidden">
                 <div class="admin-header">
-                    <div>
-                        <h2>Orders Dashboard</h2>
-                        <span id="admin-order-count"></span>
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-tab="orders">Orders</button>
+                        <button class="admin-tab" data-tab="products">Products</button>
+                        <button class="admin-tab" data-tab="images">Site Images</button>
                     </div>
                     <div style="display:flex;gap:0.5rem;">
                         <button id="admin-refresh-btn">Refresh</button>
@@ -142,50 +169,52 @@
                     </div>
                 </div>
 
-                <div class="admin-stats" id="admin-stats"></div>
+                <!-- Orders Tab -->
+                <div class="admin-tab-content active" id="tab-orders">
+                    <div class="admin-stats" id="admin-stats"></div>
 
-                <div id="admin-orders-loading" class="admin-loading" style="display:none;">
-                    <div class="spinner"></div>
-                    <p>Loading orders...</p>
-                </div>
+                    <div id="admin-orders-loading" class="admin-loading" style="display:none;">
+                        <div class="spinner"></div>
+                        <p>Loading orders...</p>
+                    </div>
 
-                <div class="admin-scroll">
-                    <table class="admin-orders-table" id="admin-orders-table" style="display:none;">
-                        <thead>
-                            <tr>
-                                <th>Tracking</th>
-                                <th>Customer</th>
-                                <th>Phone</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-orders-body"></tbody>
-                    </table>
-                </div>
-
-                <div style="margin-top:2rem;">
-                    <h2 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;color:var(--gold);margin:0 0 0.75rem;">Accounts</h2>
-                    <span id="admin-account-count" style="font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-body);"></span>
-                    <div class="admin-scroll" style="margin-top:0.75rem;">
-                        <table class="admin-orders-table" id="admin-accounts-table" style="display:none;">
+                    <div class="admin-scroll">
+                        <table class="admin-orders-table" id="admin-orders-table" style="display:none;">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Registered</th>
+                                    <th>Tracking</th>
+                                    <th>Customer</th>
+                                    <th>Phone</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-accounts-body"></tbody>
+                            <tbody id="admin-orders-body"></tbody>
                         </table>
+                    </div>
+
+                    <div style="margin-top:2rem;">
+                        <h2 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;color:var(--gold);margin:0 0 0.75rem;">Accounts</h2>
+                        <span id="admin-account-count" style="font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-body);"></span>
+                        <div class="admin-scroll" style="margin-top:0.75rem;">
+                            <table class="admin-orders-table" id="admin-accounts-table" style="display:none;">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Registered</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-accounts-body"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <div style="margin-top:2rem;border-top:1px solid rgba(201,168,76,0.15);padding-top:2rem;">
-                    <h2 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;color:var(--gold);margin:0 0 0.75rem;">Products</h2>
-
+                <!-- Products Tab -->
+                <div class="admin-tab-content" id="tab-products">
                     <div style="background:var(--bg-card);border:1px solid rgba(201,168,76,0.15);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;">
                         <h3 style="font-family:var(--font-ui);font-weight:400;font-size:0.9rem;color:var(--text-primary);margin:0 0 1rem;">Add New Product</h3>
                         <form id="admin-product-form" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
@@ -229,25 +258,11 @@
                         <p>Loading products...</p>
                     </div>
 
-                    <span id="admin-product-count" style="font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-body);"></span>
-                    <div class="admin-scroll" style="margin-top:0.75rem;">
-                        <table class="admin-orders-table" id="admin-products-table" style="display:none;">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Category</th>
-                                    <th>Sizes</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-products-body"></tbody>
-                        </table>
-                    </div>
+                    <div class="admin-product-grid" id="admin-product-grid"></div>
                 </div>
 
-                <div style="margin-top:2rem;border-top:1px solid rgba(201,168,76,0.15);padding-top:2rem;">
-                    <h2 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;color:var(--gold);margin:0 0 0.75rem;">Site Images</h2>
+                <!-- Site Images Tab -->
+                <div class="admin-tab-content" id="tab-images">
                     <p style="font-size:0.8rem;color:var(--text-secondary);font-family:var(--font-body);margin:0 0 1rem;">Change any image across the website. Enter new image URLs below and save.</p>
                     <div id="admin-settings-loading" class="admin-loading" style="display:none;">
                         <div class="spinner"></div>
@@ -565,6 +580,16 @@
             if (e.key === 'Enter') loginBtn.click();
         });
 
+        // ---- Tab Switching ----
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+
         refreshBtn.addEventListener('click', () => { loadOrders(); loadProducts(); loadSettings(); });
 
         document.getElementById('admin-logout-btn').addEventListener('click', () => {
@@ -575,14 +600,11 @@
 
         // ---- Product Management ----
         const productForm = document.getElementById('admin-product-form');
-        const productsBody = document.getElementById('admin-products-body');
-        const productsTable = document.getElementById('admin-products-table');
+        const productGrid = document.getElementById('admin-product-grid');
         const productsLoading = document.getElementById('admin-products-loading');
-        const productCount = document.getElementById('admin-product-count');
 
         async function loadProducts() {
             productsLoading.style.display = 'block';
-            productsTable.style.display = 'none';
             try {
                 const res = await fetch('/api/products');
                 const data = await res.json();
@@ -596,33 +618,48 @@
         }
 
         function renderProducts(products) {
-            productsTable.style.display = 'table';
-            productsBody.innerHTML = '';
-            productCount.textContent = products.length + ' total product' + (products.length !== 1 ? 's' : '');
+            productGrid.innerHTML = '';
 
             if (products.length === 0) {
-                productsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary);">No products added yet</td></tr>';
+                productGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-secondary);">No products added yet</p>';
                 return;
             }
 
             products.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${p.name}</td>
-                    <td>EGP ${(p.price || 0).toLocaleString()}</td>
-                    <td style="text-transform:capitalize;">${p.category || '—'}</td>
-                    <td>${Array.isArray(p.sizes) ? p.sizes.join(', ') : '—'}</td>
-                    <td><button class="admin-delete-btn" data-id="${p.id}">Delete</button></td>
+                const card = document.createElement('div');
+                card.className = 'admin-product-card';
+                card.innerHTML = `
+                    <img src="${p.image}" alt="${p.name}" class="admin-product-card-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22 fill=%22%23333%22%3E%3Crect width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23666%22 font-size=%2214%22 font-family=%22sans-serif%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+                    <div class="admin-product-card-body">
+                        <h4>${p.name}</h4>
+                        <div class="price">EGP ${(p.price || 0).toLocaleString()}</div>
+                        <div class="meta">${p.category}${p.badge ? ' &middot; ' + p.badge : ''} &middot; ${Array.isArray(p.sizes) ? p.sizes.join(', ') : ''}</div>
+                        <div class="admin-product-card-actions">
+                            <button class="admin-product-edit-btn" data-id="${p.id}">Edit</button>
+                            <button class="admin-product-delete-btn" data-id="${p.id}">Delete</button>
+                        </div>
+                    </div>
+                    <div class="admin-product-edit-form" data-id="${p.id}">
+                        <div class="full"><label>Name</label><input class="admin-input edit-name" value="${p.name.replace(/"/g, '&quot;')}"></div>
+                        <div><label>Price</label><input class="admin-input edit-price" type="number" value="${p.price}"></div>
+                        <div><label>Category</label><select class="admin-input edit-category"><option value="hoodies"${p.category==='hoodies'?' selected':''}>Hoodies</option><option value="tees"${p.category==='tees'?' selected':''}>Tees</option><option value="outerwear"${p.category==='outerwear'?' selected':''}>Outerwear</option><option value="accessories"${p.category==='accessories'?' selected':''}>Accessories</option></select></div>
+                        <div><label>Badge</label><input class="admin-input edit-badge" value="${p.badge || ''}"></div>
+                        <div class="full"><label>Image URL</label><input class="admin-input edit-image" value="${p.image.replace(/"/g, '&quot;')}"></div>
+                        <div><label>Sizes (comma)</label><input class="admin-input edit-sizes" value="${Array.isArray(p.sizes) ? p.sizes.join(', ') : ''}"></div>
+                        <div style="display:flex;align-items:end;"><button class="save-btn" data-id="${p.id}">Save</button></div>
+                    </div>
                 `;
-                productsBody.appendChild(tr);
-            });
 
-            productsBody.querySelectorAll('.admin-delete-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.dataset.id;
-                    if (!confirm('Delete this product?')) return;
-                    btn.disabled = true;
-                    btn.textContent = '...';
+                card.querySelector('.admin-product-edit-btn').addEventListener('click', () => {
+                    const form = card.querySelector('.admin-product-edit-form');
+                    form.classList.toggle('open');
+                });
+
+                card.querySelector('.admin-product-delete-btn').addEventListener('click', async (e) => {
+                    const id = e.target.dataset.id;
+                    if (!confirm('Delete "' + p.name + '"?')) return;
+                    e.target.disabled = true;
+                    e.target.textContent = '...';
                     try {
                         const res = await fetch('/api/products?token=' + encodeURIComponent(adminToken), {
                             method: 'DELETE',
@@ -634,15 +671,54 @@
                             loadProducts();
                         } else {
                             alert(data.error || 'Failed to delete');
-                            btn.disabled = false;
-                            btn.textContent = 'Delete';
+                            e.target.disabled = false;
+                            e.target.textContent = 'Delete';
                         }
                     } catch {
                         alert('Network error');
-                        btn.disabled = false;
-                        btn.textContent = 'Delete';
+                        e.target.disabled = false;
+                        e.target.textContent = 'Delete';
                     }
                 });
+
+                card.querySelector('.save-btn').addEventListener('click', async (e) => {
+                    const id = e.target.dataset.id;
+                    const formEl = card.querySelector('.admin-product-edit-form');
+                    const name = formEl.querySelector('.edit-name').value.trim();
+                    const price = formEl.querySelector('.edit-price').value.trim();
+                    const category = formEl.querySelector('.edit-category').value;
+                    const image = formEl.querySelector('.edit-image').value.trim();
+                    const badge = formEl.querySelector('.edit-badge').value.trim();
+                    const sizesRaw = formEl.querySelector('.edit-sizes').value.trim();
+
+                    if (!name || !price || !image) { alert('Name, price, and image are required'); return; }
+                    const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L', 'XL'];
+
+                    e.target.disabled = true;
+                    e.target.textContent = '...';
+                    try {
+                        const res = await fetch('/api/products?token=' + encodeURIComponent(adminToken), {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, name, price: Number(price), category, image, badge, sizes })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            formEl.classList.remove('open');
+                            loadProducts();
+                        } else {
+                            alert(data.error || 'Failed to update');
+                            e.target.disabled = false;
+                            e.target.textContent = 'Save';
+                        }
+                    } catch {
+                        alert('Network error');
+                        e.target.disabled = false;
+                        e.target.textContent = 'Save';
+                    }
+                });
+
+                productGrid.appendChild(card);
             });
         }
 
