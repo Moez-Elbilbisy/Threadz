@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | Threadz</title>
-    <link rel="icon" type="image/png" href="tabicon.png">
+    <link rel="icon" type="image/png" href="tabicon.png" data-site-image="favicon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="site-images.js"></script>
     <style>
         .admin-page { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 3rem; }
         .admin-login-card { background: var(--bg-card); border: 1px solid rgba(201,168,76,0.15); border-radius: 8px; padding: 3rem; max-width: 400px; margin: 2rem auto; text-align: center; }
@@ -71,7 +72,7 @@
                 <div class="logo">
                     <a href="index.html">
                         <div class="logo-placeholder">
-                            <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                            <img src="logo.jpg" data-site-image="logo" alt="Threadz Logo" class="brand-logo">
                         </div>
                     </a>
                 </div>
@@ -244,6 +245,64 @@
                         </table>
                     </div>
                 </div>
+
+                <div style="margin-top:2rem;border-top:1px solid rgba(201,168,76,0.15);padding-top:2rem;">
+                    <h2 style="font-family:var(--font-heading);font-weight:400;font-size:1.2rem;color:var(--gold);margin:0 0 0.75rem;">Site Images</h2>
+                    <p style="font-size:0.8rem;color:var(--text-secondary);font-family:var(--font-body);margin:0 0 1rem;">Change any image across the website. Enter new image URLs below and save.</p>
+                    <div id="admin-settings-loading" class="admin-loading" style="display:none;">
+                        <div class="spinner"></div>
+                        <p>Loading settings...</p>
+                    </div>
+                    <form id="admin-settings-form" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Logo URL</label>
+                            <input type="url" id="set-logo" class="admin-input" placeholder="/logo.jpg">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Favicon URL</label>
+                            <input type="url" id="set-favicon" class="admin-input" placeholder="/tabicon.png">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Hero Background</label>
+                            <input type="url" id="set-hero" class="admin-input" placeholder="https://...hero image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Banner (Crafted in Cairo)</label>
+                            <input type="url" id="set-banner-crafted" class="admin-input" placeholder="https://...banner image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">About: Genesis</label>
+                            <input type="url" id="set-about-genesis" class="admin-input" placeholder="https://...genesis image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">About: Cotton Standard</label>
+                            <input type="url" id="set-about-cotton" class="admin-input" placeholder="https://...cotton image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Collection: Obsidian</label>
+                            <input type="url" id="set-collection-obsidian" class="admin-input" placeholder="https://...obsidian image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Collection: Anubis</label>
+                            <input type="url" id="set-collection-anubis" class="admin-input" placeholder="https://...anubis image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Journal: Featured</label>
+                            <input type="url" id="set-journal-featured" class="admin-input" placeholder="https://...featured image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Journal: Craft</label>
+                            <input type="url" id="set-journal-craft" class="admin-input" placeholder="https://...craft image">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;font-family:var(--font-ui);">Journal: Drops</label>
+                            <input type="url" id="set-journal-drops" class="admin-input" placeholder="https://...drops image">
+                        </div>
+                        <div style="display:flex;align-items:end;">
+                            <button type="submit" id="admin-save-settings-btn" style="padding:0.75rem 1.5rem;border:none;border-radius:6px;background:var(--gold);color:var(--bg-dark);font-weight:600;font-size:0.8rem;cursor:pointer;font-family:var(--font-ui);transition:opacity 0.2s;width:100%;">Save All Images</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </section>
 
@@ -251,7 +310,7 @@
             <div class="container footer-grid">
                 <div class="footer-brand">
                     <div class="logo-placeholder" style="margin-bottom: 1rem;">
-                        <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                        <img src="logo.jpg" data-site-image="logo" alt="Threadz Logo" class="brand-logo">
                     </div>
                     <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
                 </div>
@@ -293,7 +352,7 @@
     <div class="mobile-menu-panel" id="mobile-menu-panel">
         <div class="mobile-menu-header">
             <div class="logo-placeholder">
-                <img src="logo.jpg" alt="Threadz Logo" class="brand-logo">
+                <img src="logo.jpg" data-site-image="logo" alt="Threadz Logo" class="brand-logo">
             </div>
             <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -506,7 +565,7 @@
             if (e.key === 'Enter') loginBtn.click();
         });
 
-        refreshBtn.addEventListener('click', () => { loadOrders(); loadProducts(); });
+        refreshBtn.addEventListener('click', () => { loadOrders(); loadProducts(); loadSettings(); });
 
         document.getElementById('admin-logout-btn').addEventListener('click', () => {
             sessionStorage.removeItem('admin_token');
@@ -634,8 +693,76 @@
                 panelEl.classList.add('visible');
                 loadOrders();
                 loadProducts();
+                loadSettings();
             }, 400);
         };
+
+        // ---- Site Settings Management ----
+        const settingsForm = document.getElementById('admin-settings-form');
+        const settingsLoading = document.getElementById('admin-settings-loading');
+        const settingsSaveBtn = document.getElementById('admin-save-settings-btn');
+
+        const SETTING_FIELDS = {
+            'set-logo': 'logo',
+            'set-favicon': 'favicon',
+            'set-hero': 'hero',
+            'set-banner-crafted': 'banner_crafted',
+            'set-about-genesis': 'about_genesis',
+            'set-about-cotton': 'about_cotton',
+            'set-collection-obsidian': 'collection_obsidian',
+            'set-collection-anubis': 'collection_anubis',
+            'set-journal-featured': 'journal_featured',
+            'set-journal-craft': 'journal_craft',
+            'set-journal-drops': 'journal_drops',
+        };
+
+        async function loadSettings() {
+            settingsLoading.style.display = 'block';
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success && data.settings) {
+                    Object.entries(SETTING_FIELDS).forEach(([inputId, key]) => {
+                        const el = document.getElementById(inputId);
+                        if (el && data.settings[key]) el.value = data.settings[key];
+                    });
+                }
+            } catch {}
+            settingsLoading.style.display = 'none';
+        }
+
+        settingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {};
+            Object.entries(SETTING_FIELDS).forEach(([inputId, key]) => {
+                const el = document.getElementById(inputId);
+                if (el && el.value.trim()) payload[key] = el.value.trim();
+            });
+
+            settingsSaveBtn.disabled = true;
+            settingsSaveBtn.textContent = 'Saving...';
+
+            try {
+                const res = await fetch('/api/settings?token=' + encodeURIComponent(adminToken), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    settingsSaveBtn.textContent = 'Saved!';
+                    try { localStorage.removeItem('threadz_site_settings'); } catch {}
+                    setTimeout(() => { settingsSaveBtn.textContent = 'Save All Images'; }, 2000);
+                } else {
+                    alert(data.error || 'Failed to save settings');
+                    settingsSaveBtn.textContent = 'Save All Images';
+                }
+            } catch {
+                alert('Network error');
+                settingsSaveBtn.textContent = 'Save All Images';
+            }
+            settingsSaveBtn.disabled = false;
+        });
 
         if (adminToken) {
             showPanel();
