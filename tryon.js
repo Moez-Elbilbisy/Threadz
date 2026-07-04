@@ -112,7 +112,10 @@ aiBtn.addEventListener('click', async () => {
       throw new Error(data.error || 'Try-on failed');
     }
   } catch (err) {
-    aiStatus.querySelector('.ai-status-text').innerHTML = `AI Try-On failed: <strong>${err.message}</strong>`;
+    const msg = err.message.includes("REPLICATE_API_KEY") || err.message.includes("Replicate")
+      ? `AI Try-On unavailable. <a href="https://replicate.com/signup" style="color:var(--gold);text-decoration:underline;">Sign up for Replicate</a> (free credits) and add the key to wrangler.toml.`
+      : `AI Try-On failed: <strong>${err.message}</strong>`;
+    aiStatus.querySelector('.ai-status-text').innerHTML = msg;
     aiStatus.querySelector('.ai-status-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
     aiStatus.classList.add('error');
   } finally {

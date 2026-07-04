@@ -34,10 +34,8 @@ async function tryHuggingFaceSpace(personFile, garmentFile) {
   if (!res.ok) {
     let text;
     try { text = await res.text(); } catch { text = "(no body)"; }
-    if (res.status === 503 || text.includes("space") || text.includes("loading") || text.includes("queue")) {
-      throw new Error("Hugging Face Space is cold-starting or busy (free ZeroGPU daily quota may be exhausted). Try again later or use Replicate.");
-    }
-    throw new Error(`Space API ${res.status}: ${text.slice(0, 300)}`);
+    const hint = "Set REPLICATE_API_KEY in wrangler.toml for reliable service (free credits at replicate.com/signup).";
+    throw new Error(`Space unavailable. ${hint} (${res.status}: ${text.slice(0, 150)})`);
   }
 
   const result = await res.json();
@@ -121,23 +119,16 @@ export async function onRequestPost(context) {
     }
 
     const repKey = env.REPLICATE_API_KEY;
-    const preferReplicate = env.PREFER_REPLICATE === "true";
 
-    if (repKey && preferReplicate) {
+    // Use Replicate if configured — it's reliable and ~$0.05/run
+    if (repKey) {
       const result = await tryReplicate(personFile, garmentFile, repKey);
       return json({ success: true, result });
     }
 
-    try {
-      const result = await tryHuggingFaceSpace(personFile, garmentFile);
-      return json({ success: true, result });
-    } catch (hfErr) {
-      if (repKey) {
-        const result = await tryReplicate(personFile, garmentFile, repKey);
-        return json({ success: true, result });
-      }
-      throw hfErr;
-    }
+    // Fallback: Hugging Face ZeroGPU (free, but may fail due to quota)
+    const result = await tryHuggingFaceSpace(personFile, garmentFile);
+    return json({ success: true, result });
   } catch (err) {
     return json({ success: false, error: err.message }, 500);
   }
