@@ -34,8 +34,14 @@ export async function onRequestPost(context) {
 
     const sess = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
 
-    // Submit to the queue (Gradio 4.x sse_v3)
-    await fetch(`${SPACE}/queue/join`, {
+    // Step 1: Open SSE connection FIRST (required before queue join)
+    const dataRes = await fetch(`${SPACE}/queue/data?session_hash=${sess}`, {
+      headers: { Accept: "text/event-stream", ...auth },
+    });
+    if (!dataRes.ok) throw new Error(`Queue error: ${dataRes.status}`);
+
+    // Step 2: Submit job to queue (SSE listener must already be registered)
+    const joinRes = await fetch(`${SPACE}/queue/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...auth },
       body: JSON.stringify({
@@ -54,13 +60,7 @@ export async function onRequestPost(context) {
       }),
     });
 
-    // Stream the SSE response from the queue
-    const dataRes = await fetch(`${SPACE}/queue/data?session_hash=${sess}`, {
-      headers: { Accept: "text/event-stream", ...auth },
-    });
-
-    if (!dataRes.ok) throw new Error(`Queue error: ${dataRes.status}`);
-
+    // Step 3: Stream SSE events for the result
     const reader = dataRes.body.getReader();
     const decoder = new TextDecoder();
     let buf = "";
