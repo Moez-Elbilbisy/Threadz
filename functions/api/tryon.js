@@ -8,6 +8,13 @@ async function fileToDataURI(file) {
   return `data:${file.type || "image/jpeg"};base64,${btoa(binary)}`;
 }
 
+function billingHint(msg) {
+  if (msg.includes("2001") || msg.includes("2021")) {
+    return "Cloudflare requires billing setup for this third-party model. Go to https://dash.cloudflare.com/ > Workers & Pages > [your project] > AI > enable pruna/p-image-try-on, or add a payment method under Billing.";
+  }
+  return msg;
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
@@ -32,6 +39,7 @@ export async function onRequestPost(context) {
     const image = response?.result?.image || response?.image || response;
     return json({ success: true, result: image });
   } catch (err) {
-    return json({ success: false, error: err.message }, 500);
+    const msg = err instanceof Error ? err.message : String(err);
+    return json({ success: false, error: billingHint(msg) }, 500);
   }
 }
