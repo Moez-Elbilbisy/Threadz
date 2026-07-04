@@ -84,11 +84,29 @@ dropZone.addEventListener('drop', (e) => {
   if (e.dataTransfer.files?.[0]) handlePhoto(e.dataTransfer.files[0]);
 });
 
+function showResult(imgUrl) {
+  if (aiResultUrl && aiResultUrl.startsWith('blob:')) URL.revokeObjectURL(aiResultUrl);
+  aiResultUrl = imgUrl;
+  resultImage.src = aiResultUrl;
+  resultContainer.classList.remove('hidden');
+  aiStatus.querySelector('.ai-status-text').textContent = 'AI Try-On complete!';
+  aiStatus.querySelector('.ai-status-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2a7d4f" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  aiStatus.classList.add('success');
+  aiBtn.disabled = false;
+}
+
+function showError(msg) {
+  aiStatus.querySelector('.ai-status-text').innerHTML = `AI Try-On failed: <strong>${msg}</strong>`;
+  aiStatus.querySelector('.ai-status-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+  aiStatus.classList.add('error');
+  aiBtn.disabled = false;
+}
+
 aiBtn.addEventListener('click', async () => {
   if (!userPhotoFile || !selectedProduct) return;
   aiBtn.disabled = true;
   aiStatus.classList.remove('hidden', 'error', 'success');
-  aiStatus.querySelector('.ai-status-text').textContent = 'Processing your try-on...';
+  aiStatus.querySelector('.ai-status-text').textContent = 'Processing AI Try-On (~5-10s)...';
   aiStatus.querySelector('.ai-status-icon').innerHTML = '<div class="track-loading-spinner"></div>';
   aiStatus.className = 'ai-status';
 
@@ -100,26 +118,15 @@ aiBtn.addEventListener('click', async () => {
 
   try {
     const res = await fetch('/api/tryon', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.success && data.result) {
-      aiResultUrl = data.result;
-      resultImage.src = aiResultUrl;
-      resultContainer.classList.remove('hidden');
-      aiStatus.querySelector('.ai-status-text').textContent = 'AI Try-On complete!';
-      aiStatus.querySelector('.ai-status-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2a7d4f" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-      aiStatus.classList.add('success');
+    if (res.ok) {
+      const blob = await res.blob();
+      showResult(URL.createObjectURL(blob));
     } else {
-      throw new Error(data.error || 'Try-on failed');
+      const data = await res.json().catch(() => ({ error: 'Unknown server error' }));
+      throw new Error(data.error || 'Server error');
     }
   } catch (err) {
-    const msg = err.message.includes("REPLICATE_API_KEY") || err.message.includes("Replicate")
-      ? `AI Try-On unavailable. <a href="https://replicate.com/signup" style="color:var(--gold);text-decoration:underline;">Sign up for Replicate</a> (free credits) and add the key to wrangler.toml.`
-      : `AI Try-On failed: <strong>${err.message}</strong>`;
-    aiStatus.querySelector('.ai-status-text').innerHTML = msg;
-    aiStatus.querySelector('.ai-status-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
-    aiStatus.classList.add('error');
-  } finally {
-    aiBtn.disabled = false;
+    showError(err.message);
   }
 });
 
@@ -134,6 +141,7 @@ downloadResultBtn.addEventListener('click', () => {
 
 retryBtn.addEventListener('click', () => {
   resultContainer.classList.add('hidden');
+  if (aiResultUrl && aiResultUrl.startsWith('blob:')) URL.revokeObjectURL(aiResultUrl);
   aiResultUrl = null;
   aiStatus.className = 'ai-status hidden';
 });

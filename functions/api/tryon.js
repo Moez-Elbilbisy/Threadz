@@ -1,117 +1,138 @@
-import { json } from "./_utils.js";
+import { events } from "fetch-event-stream";
 
-const SPACE = "https://yisol-idm-vton.hf.space";
-
-async function upload(file, token) {
-  const form = new FormData();
-  form.append("files", file, file.name || "file.png");
-  const res = await fetch(`${SPACE}/upload`, {
-    method: "POST",
-    headers: token ? { "Authorization": `Bearer ${token}` } : {},
-    body: form,
-  });
-  if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-  return (await res.json())[0];
-}
-
-function extractImage(text) {
-  for (const line of text.split("\n")) {
-    if (!line.startsWith("data: ")) continue;
-    try {
-      const d = JSON.parse(line.slice(6));
-      const items = [d?.output?.data?.[0], d?.data?.[0], Array.isArray(d) ? d[0] : null];
-      for (const c of items) {
-        if (!c) continue;
-        const img = typeof c === "string" ? c : c?.url || c?.path || "";
-        if (img) return img;
-      }
-    } catch {}
-  }
-  return null;
-}
+const SPACE = "yisol/IDM-VTON";
+const BASE = `https://${SPACE.replace("/", "-")}.hf.space`;
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const hfToken = env.HF_TOKEN || "";
-  const auth = hfToken ? { "Authorization": `Bearer ${hfToken}` } : {};
+  const hfToken = env.HF_TOKEN;
+
+  if (!hfToken) {
+    return Response.json(
+      { success: false, error: "HF_TOKEN not configured" },
+      { status: 500 }
+    );
+  }
 
   try {
     const formData = await request.formData();
     const personFile = formData.get("person");
     const garmentFile = formData.get("garment");
+
     if (!personFile || !garmentFile) {
-      return json({ success: false, error: "Missing person or garment image" }, 400);
+      return Response.json(
+        { success: false, error: "Missing person or garment image" },
+        { status: 400 }
+      );
     }
 
-    const [personUp, garmentUp] = await Promise.all([
-      upload(personFile, hfToken),
-      upload(garmentFile, hfToken),
+    const personBuf = await personFile.arrayBuffer();
+    const garmentBuf = await garmentFile.arrayBuffer();
+
+    const [personPath, garmentPath] = await Promise.all([
+      uploadImage(personBuf, personFile.name || "person.jpg", hfToken),
+      uploadImage(garmentBuf, garmentFile.name || "garment.jpg", hfToken),
     ]);
 
-    const sess = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
+    const sessionHash = crypto.randomUUID().replace(/-/g, "") +
+      crypto.randomUUID().replace(/-/g, "");
 
-    // 1. Open persistent SSE connection FIRST (must stay open)
-    const sseRes = await fetch(`${SPACE}/queue/data?session_hash=${sess}`, {
-      headers: { Accept: "text/event-stream", ...auth },
-    });
-    if (!sseRes.ok) throw new Error(`SSE error: ${sseRes.status}`);
+    const joinBody = {
+      data: [
+        {
+          background: { path: personPath, url: `${BASE}/file=${personPath}` },
+          layers: [],
+          composite: null,
+        },
+        { path: garmentPath, url: `${BASE}/file=${garmentPath}` },
+        "",
+        true,
+        false,
+        30,
+        42,
+      ],
+      event_data: null,
+      fn_index: 2,
+      trigger_id: 25,
+      session_hash: sessionHash,
+    };
 
-    // 2. Submit job to queue
-    const joinRes = await fetch(`${SPACE}/queue/join`, {
+    const joinRes = await fetch(`${BASE}/queue/join`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...auth },
-      body: JSON.stringify({
-        data: [
-          { background: personUp, layers: [], composite: null },
-          garmentUp,
-          "",
-          true,
-          false,
-          30,
-          42,
-        ],
-        event_data: null,
-        fn_index: 2,
-        trigger_id: 25,
-        session_hash: sess,
-      }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${hfToken}`,
+      },
+      body: JSON.stringify(joinBody),
     });
-    if (!joinRes.ok) {
-      const body = await joinRes.text().catch(() => "");
-      throw new Error(body.slice(0, 300) || `Queue join failed: ${joinRes.status}`);
+
+    const joinResult = await joinRes.json();
+    if (!joinResult.event_id) {
+      return Response.json(
+        { success: false, error: "Failed to join model queue" },
+        { status: 500 }
+      );
     }
 
-    // 3. Read SSE stream continuously until result or timeout
-    const reader = sseRes.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = "";
-    const deadline = Date.now() + 120000;
+    const sseRes = await fetch(
+      `${BASE}/queue/data?session_hash=${sessionHash}`,
+      {
+        headers: { Authorization: `Bearer ${hfToken}` },
+      }
+    );
 
-    while (Date.now() < deadline) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-
-      const lines = buf.split("\n");
-      buf = lines.pop() || "";
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        try {
-          const d = JSON.parse(line.slice(6));
-          const items = [d?.output?.data?.[0], d?.data?.[0], Array.isArray(d) ? d[0] : null];
-          for (const c of items) {
-            if (!c) continue;
-            const img = typeof c === "string" ? c : c?.url || c?.path || "";
-            if (img) return json({ success: true, result: img });
-          }
-        } catch {}
+    let resultData = null;
+    for await (const event of events(sseRes)) {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.msg === "process_completed") {
+          resultData = msg;
+          break;
+        }
+      } catch {
+        /* skip parse errors */
       }
     }
 
-    throw new Error("Space did not return a result");
+    if (!resultData || !resultData.success) {
+      return Response.json(
+        { success: false, error: "Model processing failed" },
+        { status: 500 }
+      );
+    }
+
+    const resultUrl = resultData.output?.data?.[0]?.url;
+    if (!resultUrl) {
+      return Response.json(
+        { success: false, error: "No result image" },
+        { status: 500 }
+      );
+    }
+
+    const imgRes = await fetch(resultUrl);
+    const imgBuf = await imgRes.arrayBuffer();
+
+    return new Response(imgBuf, {
+      status: 200,
+      headers: { "Content-Type": "image/png" },
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    return json({ success: false, error: msg }, 500);
+    return Response.json({ success: false, error: msg }, { status: 500 });
   }
+}
+
+async function uploadImage(buf, filename, token) {
+  const blob = new Blob([buf], { type: "image/jpeg" });
+  const form = new FormData();
+  form.append("files", blob, filename);
+
+  const res = await fetch(`${BASE}/upload?upload_id=${crypto.randomUUID()}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+
+  const data = await res.json();
+  return data[0];
 }
