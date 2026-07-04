@@ -35,7 +35,14 @@ async function tryHuggingFace(personFile, garmentFile, apiKey) {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`HuggingFace API: ${res.status} ${text.slice(0, 200)}`);
+    const detail = text.slice(0, 300);
+    if (res.status === 503 && detail.includes("loading")) {
+      throw new Error("Model is loading on Hugging Face's free tier — it can take 30-60s and often times out. Use Replicate instead (free credits on signup).");
+    }
+    if (res.status === 530 || detail.includes("1016")) {
+      throw new Error("This model requires paid GPU inference on Hugging Face and is not available on the free tier. Use Basic mode (free) or set up Replicate (free credits at replicate.com/signup).");
+    }
+    throw new Error(`HuggingFace API ${res.status}: ${detail}`);
   }
 
   const blob = await res.blob();
