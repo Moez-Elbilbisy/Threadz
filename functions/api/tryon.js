@@ -1,124 +1,103 @@
 import { json } from "./_utils.js";
 
 const SPACE = "https://yisol-idm-vton.hf.space";
-const API = `${SPACE}/gradio_api`;
 
-function headers(token) {
-  const h = { "Content-Type": "application/json" };
-  if (token) h["Authorization"] = `Bearer ${token}`;
-  return h;
-}
-
-async function uploadFile(url, file, token) {
+async function uploadFile(file, token) {
   const form = new FormData();
   form.append("files", file, file.name || "file.png");
-  const res = await fetch(url, {
+  const res = await fetch(`${SPACE}/upload`, {
     method: "POST",
     headers: token ? { "Authorization": `Bearer ${token}` } : {},
     body: form,
   });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   const data = await res.json();
-  return data[0]; // returns {path, url, orig_name, size}
-}
-
-async function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return data[0].path;
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const hfToken = env.HF_TOKEN || "";
+  const auth = hfToken ? { "Authorization": `Bearer ${hfToken}` } : {};
 
   try {
     const formData = await request.formData();
     const personFile = formData.get("person");
     const garmentFile = formData.get("garment");
-
     if (!personFile || !garmentFile) {
       return json({ success: false, error: "Missing person or garment image" }, 400);
     }
 
-    // Upload files to the Space (supports larger payloads than inline base64)
-    const [personUpload, garmentUpload] = await Promise.all([
-      uploadFile(`${API}/upload`, personFile, hfToken),
-      uploadFile(`${API}/upload`, garmentFile, hfToken),
+    // Upload images to the Gradio Space
+    const [personPath, garmentPath] = await Promise.all([
+      uploadFile(personFile, hfToken),
+      uploadFile(garmentFile, hfToken),
     ]);
 
-    // Submit the try-on job
-    const submitRes = await fetch(`${API}/call/tryon`, {
+    // Queue the try-on job (Gradio 4.x sse_v3 queue API)
+    const sessionHash = crypto.randomUUID().replace(/-/g, "").slice(0, 32);
+    const queueRes = await fetch(`${SPACE}/queue/join`, {
       method: "POST",
-      headers: headers(hfToken),
+      headers: { "Content-Type": "application/json", ...auth },
       body: JSON.stringify({
         data: [
-          { background: personUpload.path, layers: [], composite: null },
-          garmentUpload.path,
+          { background: personPath, layers: [], composite: null },
+          { path: garmentPath, meta: { _type: "gradio.FileData" } },
           "",
           true,
           false,
           30,
           42,
         ],
+        event_data: null,
+        fn_index: 2,
+        trigger_id: 25,
+        session_hash: sessionHash,
       }),
     });
 
-    if (!submitRes.ok) {
-      const body = await submitRes.text().catch(() => "");
-      const hint = body.includes("quota") || body.includes("429")
-        ? "Hugging Face ZeroGPU quota exhausted. Try again later or get a free HF token at huggingface.co/settings/tokens."
-        : body.slice(0, 300);
-      throw new Error(`Space request failed: ${hint}`);
+    if (!queueRes.ok) {
+      const body = await queueRes.text().catch(() => "");
+      throw new Error(body.slice(0, 300) || `Queue failed: ${queueRes.status}`);
     }
 
-    const { event_id } = await submitRes.json();
-    if (!event_id) throw new Error("No event_id from Space");
-
-    // Poll for result (model takes 10-60s, longer on cold start)
+    // Poll the SSE data endpoint for the result
     const maxAttempts = 60;
     for (let i = 0; i < maxAttempts; i++) {
-      const pollRes = await fetch(`${API}/call/tryon/${event_id}`, {
-        headers: hfToken ? { "Authorization": `Bearer ${hfToken}` } : {},
+      const dataRes = await fetch(`${SPACE}/queue/data?session_hash=${sessionHash}`, {
+        headers: { ...auth, "Accept": "text/event-stream" },
       });
 
-      const text = await pollRes.text();
+      const text = await dataRes.text();
       const lines = text.split("\n");
 
-      // Parse SSE format: event + data pairs separated by blank lines
-      let currentEvent = "";
       for (let j = 0; j < lines.length; j++) {
         const line = lines[j];
-        if (line.startsWith("event: ")) {
-          currentEvent = line.slice(7).trim();
-        } else if (line.startsWith("data: ")) {
-          const jsonStr = line.slice(6);
-          if (currentEvent === "process_completed") {
-            try {
-              const d = JSON.parse(jsonStr);
-              if (Array.isArray(d) && d.length > 0) {
-                const img = typeof d[0] === "string" ? d[0] : d[0]?.url || d[0]?.path || "";
-                if (img) return json({ success: true, result: img });
-              }
-            } catch {}
-          }
-          // Also try to extract from any data line (some Gradio versions omit event:)
-          if (!currentEvent || currentEvent === "process_generating") {
-            try {
-              const d = JSON.parse(jsonStr);
-              if (Array.isArray(d) && d[0]) {
-                const img = typeof d[0] === "string" ? d[0] : d[0]?.url || d[0]?.path || "";
+        if (line.startsWith("data: ")) {
+          try {
+            const d = JSON.parse(line.slice(6));
+            if (d?.success && d?.output?.data) {
+              const result = d.output.data[0]; // output[23] = generated image
+              if (result) {
+                const img = typeof result === "string" ? result : result?.url || result?.path || "";
                 if (img && (img.startsWith("data:") || img.startsWith("http"))) {
                   return json({ success: true, result: img });
                 }
               }
-            } catch {}
-          }
-        } else if (line === "") {
-          currentEvent = "";
+            }
+          } catch {}
         }
       }
 
-      await sleep(2000);
+      await new Promise(r => setTimeout(r, 2000));
     }
+
+    throw new Error("Space timed out after 120s");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return json({ success: false, error: msg }, 500);
+  }
+}
 
     throw new Error("Space timed out after 120s");
   } catch (err) {
