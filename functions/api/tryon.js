@@ -33,7 +33,9 @@ export async function onRequestPost(context) {
     ]);
 
     const sess = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
-    const predictRes = await fetch(`${SPACE}/api/predict/`, {
+
+    // Submit to the queue (Gradio 4.x sse_v3)
+    await fetch(`${SPACE}/queue/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...auth },
       body: JSON.stringify({
@@ -47,26 +49,48 @@ export async function onRequestPost(context) {
           42,
         ],
         fn_index: 2,
+        trigger_id: 25,
         session_hash: sess,
       }),
     });
 
-    if (!predictRes.ok) {
-      const body = await predictRes.text().catch(() => "");
-      throw new Error(body.slice(0, 300) || `Space error: ${predictRes.status}`);
-    }
+    // Stream the SSE response from the queue
+    const dataRes = await fetch(`${SPACE}/queue/data?session_hash=${sess}`, {
+      headers: { Accept: "text/event-stream", ...auth },
+    });
 
-    const result = await predictRes.json();
-    const output = result?.data?.[0];
+    if (!dataRes.ok) throw new Error(`Queue error: ${dataRes.status}`);
 
-    if (output) {
-      const img = typeof output === "string" ? output : output?.url || output?.path || "";
-      if (img && (img.startsWith("data:") || img.startsWith("http"))) {
-        return json({ success: true, result: img });
+    const reader = dataRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+
+      const lines = buf.split("\n");
+      buf = lines.pop() || "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        try {
+          const d = JSON.parse(line.slice(6));
+          if (d?.success && d?.output?.data) {
+            const output = d.output.data[0];
+            if (output) {
+              const img = typeof output === "string" ? output : output?.url || output?.path || "";
+              if (img && (img.startsWith("data:") || img.startsWith("http"))) {
+                return json({ success: true, result: img });
+              }
+            }
+          }
+        } catch {}
       }
     }
 
-    throw new Error(`Unexpected response: ${JSON.stringify(result).slice(0, 300)}`);
+    throw new Error("Space did not return a result");
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return json({ success: false, error: msg }, 500);
