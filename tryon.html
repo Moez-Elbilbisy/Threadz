@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Try-On | Threadz Premium Streetwear</title>
+    <meta name="description"
+        content="Try on Threadz clothing virtually. Upload your photo and see how our premium streetwear looks on you with AI-powered virtual try-on.">
+    <link rel="icon" type="image/png" href="tabicon.png" data-site-image="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Outfit:wght@300;400;600;700&family=Montserrat:wght@100;200;300;400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="site-images.js"></script>
+</head>
+
+<body class="entering">
+    <main id="store-content" class="store-content">
+
+        <!-- Navigation -->
+        <nav class="navbar" id="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="index.html">
+                        <div class="logo-placeholder">
+                            <img src="logo.jpg" data-site-image="logo" alt="Threadz Logo" class="brand-logo">
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="collections.html">Collections</a>
+                    <a href="tryon.html" class="active">Virtual Try-On</a>
+                    <a href="about.html">About</a>
+                    <a href="journal.html">Journal</a>
+                    <a href="track.html">Orders</a>
+                    <a href="account.html">Account</a>
+                </div>
+                <div class="nav-icons">
+                    <button aria-label="Search" class="icon-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <a href="cart.html" aria-label="Cart" class="icon-btn cart-btn" style="text-decoration:none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <button class="mobile-menu-btn" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Subpage Header -->
+        <header class="subpage-header">
+            <div class="container">
+                <div class="breadcrumbs">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Virtual Try-On</span>
+                </div>
+                <h1>Virtual Try-On</h1>
+                <p>Upload your photo and see how Threadz fits you. Use our AI-powered virtual try-on for a photorealistic preview, or the basic overlay mode to manually adjust and position items.</p>
+            </div>
+        </header>
+
+        <!-- Try-On Section -->
+        <section class="section" style="padding-top:2rem;">
+            <div class="container">
+                <div class="tryon-layout">
+
+                    <!-- Left: Canvas & Photo Upload -->
+                    <div class="tryon-viewport">
+                        <div class="tryon-canvas-wrapper">
+                            <canvas id="tryon-canvas"></canvas>
+                        </div>
+
+                        <!-- Drop Zone (overlaid on canvas when no photo) -->
+                        <div class="drop-zone" id="drop-zone">
+                            <div class="drop-zone-content">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--gold);opacity:0.5;">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <p>Upload your photo to try on clothes</p>
+                                <span class="drop-zone-hint">or drag & drop</span>
+                            </div>
+                            <input type="file" id="photo-input" accept="image/*" hidden>
+                        </div>
+
+                        <!-- Result Container -->
+                        <div class="result-container hidden" id="result-container">
+                            <div class="result-header">
+                                <span class="result-label">AI Try-On Result</span>
+                                <div class="result-actions">
+                                    <button class="result-btn" id="download-result">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        Download
+                                    </button>
+                                    <button class="result-btn" id="retry-btn">Retry</button>
+                                </div>
+                            </div>
+                            <img id="result-image" alt="AI Try-On Result">
+                        </div>
+                    </div>
+
+                    <!-- Right: Controls -->
+                    <div class="tryon-sidebar">
+
+                        <!-- Mode Toggle -->
+                        <div class="tryon-mode-toggle">
+                            <button class="mode-btn active" data-mode="basic">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                Basic
+                            </button>
+                            <button class="mode-btn" data-mode="ai">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a4 4 0 0 1 4 4c0 2-2 4-4 6-2-2-4-4-4-6a4 4 0 0 1 4-4z"></path>
+                                    <path d="M12 22v-8"></path>
+                                    <path d="M8 18h8"></path>
+                                </svg>
+                                AI Try-On
+                            </button>
+                        </div>
+
+                        <!-- Basic Controls -->
+                        <div class="tryon-controls-panel">
+                            <div class="tryon-section-title">Adjust Overlay</div>
+
+                            <div class="control-group">
+                                <label class="control-label">
+                                    Scale
+                                    <span class="control-value" id="scale-value">0.5x</span>
+                                </label>
+                                <input type="range" id="scale-slider" min="10" max="150" value="50" class="control-slider">
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label">
+                                    Rotation
+                                    <span class="control-value" id="rotate-value">0°</span>
+                                </label>
+                                <input type="range" id="rotate-slider" min="-180" max="180" value="0" class="control-slider">
+                            </div>
+
+                            <div class="tryon-actions">
+                                <button class="btn btn-primary btn-sm" id="snap-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                        <circle cx="12" cy="13" r="4"></circle>
+                                    </svg>
+                                    Snap
+                                </button>
+                                <button class="btn btn-outline btn-sm" id="clear-btn">Clear</button>
+                            </div>
+
+                            <div class="tryon-hint">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span>Drag the clothing item on the canvas to reposition it.</span>
+                            </div>
+                        </div>
+
+                        <!-- AI Panel -->
+                        <div class="tryon-ai-panel hidden">
+                            <div class="tryon-section-title">AI Virtual Try-On</div>
+                            <p class="tryon-ai-desc">Upload a full-body photo and select a product, then let AI generate a photorealistic preview of you wearing it.</p>
+                            <ol class="tryon-steps">
+                                <li>Upload a clear full-body photo</li>
+                                <li>Select a product below</li>
+                                <li>Click "Generate AI Try-On"</li>
+                            </ol>
+                            <button class="btn btn-primary btn-full" id="ai-tryon-btn" disabled>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a4 4 0 0 1 4 4c0 2-2 4-4 6-2-2-4-4-4-6a4 4 0 0 1 4-4z"></path>
+                                    <path d="M12 22v-8"></path>
+                                    <path d="M8 18h8"></path>
+                                </svg>
+                                Generate AI Try-On
+                            </button>
+                            <div class="ai-status hidden" id="ai-status">
+                                <div class="ai-status-icon"></div>
+                                <span class="ai-status-text"></span>
+                            </div>
+                        </div>
+
+                        <!-- Product Selection -->
+                        <div class="tryon-section-title" style="margin-top:1.5rem;">Select Product</div>
+                        <p class="tryon-ai-desc">Choose an item to try on. Products are loaded from the shop.</p>
+                        <div class="tryon-products-grid" id="tryon-products"></div>
+
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-placeholder" style="margin-bottom: 1rem;">
+                        <img src="logo.jpg" data-site-image="logo" alt="Threadz Logo" class="brand-logo">
+                    </div>
+                    <p>Premium streetwear brand based in Egypt, redefining heritage with modern aesthetics.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html">All Products</a></li>
+                        <li><a href="shop.html?cat=tees">T-Shirts</a></li>
+                        <li><a href="shop.html?cat=hoodies">Hoodies</a></li>
+                        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="track.html">My Orders</a></li>
+                        <li><a href="account.html">My Account</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Join the Cult</h4>
+                    <p>Subscribe for exclusive drops and early access.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email Address" required>
+                        <button type="submit">?</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Threadz Egypt. All rights reserved.</p>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu-panel" id="mobile-menu-panel">
+        <div class="mobile-menu-header">
+            <div class="logo-placeholder">
+                <img src="logo.jpg" data-site-image="logo" alt="Threadz Logo" class="brand-logo">
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-links">
+            <a href="index.html" class="mobile-link">Home</a>
+            <a href="shop.html" class="mobile-link">Shop</a>
+            <a href="collections.html" class="mobile-link">Collections</a>
+            <a href="tryon.html" class="mobile-link">Virtual Try-On</a>
+            <a href="about.html" class="mobile-link">About</a>
+            <a href="account.html" class="mobile-link">Account</a>
+            <a href="track.html" class="mobile-link">Orders</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <p class="tagline">Every Clothing Needs Threadz</p>
+            <div class="mobile-socials">
+                <a href="#">Instagram</a>
+                <a href="#">Pinterest</a>
+                <a href="#">Cairo Office</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="cart-data.js"></script>
+    <script src="script.js"></script>
+    <script src="tryon.js"></script>
+</body>
+
+</html>
