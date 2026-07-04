@@ -2,35 +2,29 @@ import { json } from "./_utils.js";
 
 const SPACE_URL = "https://yisol-idm-vton.hf.space";
 
-async function uploadToSpace(file) {
-  const form = new FormData();
-  form.append("file", file, "file.png");
-  const res = await fetch(`${SPACE_URL}/upload`, {
-    method: "POST",
-    body: form,
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Upload failed (${res.status}): ${text.slice(0, 150)}`);
-  }
-  const data = await res.json();
-  if (!data?.[0]?.path) throw new Error("Invalid upload response");
-  return data[0].path;
+function bufToDataURI(buf, mime) {
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return `data:${mime || "image/png"};base64,${btoa(binary)}`;
 }
 
 async function tryHuggingFaceSpace(personFile, garmentFile) {
-  const [personPath, garmentPath] = await Promise.all([
-    uploadToSpace(personFile),
-    uploadToSpace(garmentFile),
+  const [personBuf, garmentBuf] = await Promise.all([
+    personFile.arrayBuffer(),
+    garmentFile.arrayBuffer(),
   ]);
+
+  const personData = bufToDataURI(personBuf, personFile.type);
+  const garmentData = bufToDataURI(garmentBuf, garmentFile.type);
 
   const res = await fetch(`${SPACE_URL}/api/tryon/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       data: [
-        { path: personPath },
-        { path: garmentPath },
+        personData,
+        garmentData,
         "upper_body",
         true,
       ],
@@ -38,30 +32,28 @@ async function tryHuggingFaceSpace(personFile, garmentFile) {
   });
 
   if (!res.ok) {
-    const text = await res.text();
+    let text;
+    try { text = await res.text(); } catch { text = "(no body)"; }
     if (res.status === 503 || text.includes("space") || text.includes("loading") || text.includes("queue")) {
       throw new Error("Hugging Face Space is cold-starting or busy (free ZeroGPU daily quota may be exhausted). Try again later or use Replicate.");
     }
-    throw new Error(`Space API ${res.status}: ${text.slice(0, 200)}`);
+    throw new Error(`Space API ${res.status}: ${text.slice(0, 300)}`);
   }
 
   const result = await res.json();
   const output = result?.data?.[0];
-  if (!output) throw new Error("Empty result from Space");
 
   if (typeof output === "string" && output.startsWith("data:")) return output;
   if (typeof output === "string" && output.startsWith("http")) return output;
-  if (output.path) {
+
+  if (output?.path) {
     const imgRes = await fetch(`${SPACE_URL}/file=${output.path}`);
     if (!imgRes.ok) throw new Error("Failed to fetch result image");
     const blob = await imgRes.blob();
-    const bytes = new Uint8Array(await blob.arrayBuffer());
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return `data:${blob.type || "image/png"};base64,${btoa(binary)}`;
+    return bufToDataURI(await blob.arrayBuffer(), blob.type);
   }
 
-  throw new Error("Unexpected output format from Space");
+  throw new Error(`Unexpected Space response: ${JSON.stringify(result).slice(0, 300)}`);
 }
 
 async function tryReplicate(personFile, garmentFile, apiKey) {
