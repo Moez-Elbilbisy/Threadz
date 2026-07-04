@@ -11,7 +11,7 @@ async function upload(file, token) {
     body: form,
   });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-  return (await res.json())[0].path;
+  return (await res.json())[0];
 }
 
 export async function onRequestPost(context) {
@@ -27,67 +27,45 @@ export async function onRequestPost(context) {
       return json({ success: false, error: "Missing person or garment image" }, 400);
     }
 
-    const [personPath, garmentPath] = await Promise.all([
+    const [personUp, garmentUp] = await Promise.all([
       upload(personFile, hfToken),
       upload(garmentFile, hfToken),
     ]);
 
     const sess = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
+    const commonBody = {
+      data: [
+        { background: personUp, layers: [], composite: null },
+        garmentUp,
+        "",
+        true,
+        false,
+        30,
+        42,
+      ],
+    };
 
-    // Step 1: Open SSE connection FIRST (required before queue join)
-    const dataRes = await fetch(`${SPACE}/queue/data?session_hash=${sess}`, {
-      headers: { Accept: "text/event-stream", ...auth },
-    });
-    if (!dataRes.ok) throw new Error(`Queue error: ${dataRes.status}`);
-
-    // Step 2: Submit job to queue (SSE listener must already be registered)
-    const joinRes = await fetch(`${SPACE}/queue/join`, {
+    // Submit via queue
+    await fetch(`${SPACE}/queue/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...auth },
-      body: JSON.stringify({
-        data: [
-          { background: personPath, layers: [], composite: null },
-          { path: garmentPath, meta: { _type: "gradio.FileData" } },
-          "",
-          true,
-          false,
-          30,
-          42,
-        ],
-        fn_index: 2,
-        trigger_id: 25,
-        session_hash: sess,
-      }),
+      body: JSON.stringify({ ...commonBody, event_data: null, fn_index: 2, trigger_id: 25, session_hash: sess }),
     });
 
-    // Step 3: Stream SSE events for the result
-    const reader = dataRes.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = "";
+    // Poll for result (short-lived requests to SSE endpoint)
+    const deadline = Date.now() + 120000;
+    while (Date.now() < deadline) {
+      const res = await fetch(`${SPACE}/queue/data?session_hash=${sess}`, {
+        headers: { Accept: "text/event-stream", ...auth },
+        signal: AbortSignal.timeout(10000),
+      }).catch(() => null);
+      if (!res) continue;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
+      const text = await res.text();
+      const result = extractImage(text);
+      if (result) return json({ success: true, result });
 
-      const lines = buf.split("\n");
-      buf = lines.pop() || "";
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        try {
-          const d = JSON.parse(line.slice(6));
-          if (d?.success && d?.output?.data) {
-            const output = d.output.data[0];
-            if (output) {
-              const img = typeof output === "string" ? output : output?.url || output?.path || "";
-              if (img && (img.startsWith("data:") || img.startsWith("http"))) {
-                return json({ success: true, result: img });
-              }
-            }
-          }
-        } catch {}
-      }
+      await new Promise(r => setTimeout(r, 3000));
     }
 
     throw new Error("Space did not return a result");
@@ -95,4 +73,19 @@ export async function onRequestPost(context) {
     const msg = err instanceof Error ? err.message : String(err);
     return json({ success: false, error: msg }, 500);
   }
+}
+
+function extractImage(text) {
+  for (const line of text.split("\n")) {
+    if (!line.startsWith("data: ")) continue;
+    try {
+      const d = JSON.parse(line.slice(6));
+      for (const c of [d?.output?.data?.[0], d?.data?.[0], Array.isArray(d) ? d[0] : null]) {
+        if (!c) continue;
+        const img = typeof c === "string" ? c : c?.url || c?.path || "";
+        if (img) return img;
+      }
+    } catch {}
+  }
+  return null;
 }
