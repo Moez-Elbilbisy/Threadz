@@ -72,10 +72,3 @@ export async function onRequestPost(context) {
     return json({ success: false, error: msg }, 500);
   }
 }
-
-    throw new Error("Space timed out after 120s");
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return json({ success: false, error: msg }, 500);
-  }
-}
