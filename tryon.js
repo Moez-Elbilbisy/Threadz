@@ -5,6 +5,106 @@ let allProducts = [];
 let tryOnMode = 'ai';
 let aiResultUrl = null;
 
+const WARDROBE_BG = "https://images.unsplash.com/photo-1722153152286-d7c1ba92010f?w=800&q=80";
+
+let wardrobeBgImg = null;
+(async () => {
+  try {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = WARDROBE_BG; });
+    wardrobeBgImg = img;
+  } catch {}
+})();
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function sampleBgColor(img) {
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = img.height;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+  const d = ctx.getImageData(0, 0, img.width, img.height).data;
+  const { width: w, height: h } = img;
+  const sd = Math.min(10, Math.floor(Math.min(w, h) / 4));
+
+  let r = 0, g = 0, b = 0, n = 0;
+  const add = (i) => { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; };
+
+  for (let y = 0; y < sd; y++) for (let x = 0; x < w; x++) add((y * w + x) * 4);
+  for (let y = h - sd; y < h; y++) for (let x = 0; x < w; x++) add((y * w + x) * 4);
+  for (let x = 0; x < sd; x++) for (let y = sd; y < h - sd; y++) add((y * w + x) * 4);
+  for (let x = w - sd; x < w; x++) for (let y = sd; y < h - sd; y++) add((y * w + x) * 4);
+
+  const avgR = r / n, avgG = g / n, avgB = b / n;
+
+  let v = 0;
+  for (let i = 0; i < n; i++) {
+    const idx = i * 4;
+    const dr = d[idx] - avgR, dg = d[idx + 1] - avgG, db = d[idx + 2] - avgB;
+    v += dr * dr + dg * dg + db * db;
+  }
+
+  return { r: avgR, g: avgG, b: avgB, threshold: Math.sqrt(v / n) * 3 + 30 };
+}
+
+async function compositeOnWardrobe(personDataUrl, resultBlob) {
+  if (!wardrobeBgImg) {
+    return resultBlob;
+  }
+
+  const [personImg, resultImg] = await Promise.all([
+    loadImage(personDataUrl),
+    loadImage(URL.createObjectURL(resultBlob)),
+  ]);
+
+  const bgColor = sampleBgColor(personImg);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = resultImg.width;
+  canvas.height = resultImg.height;
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(wardrobeBgImg, 0, 0, canvas.width, canvas.height);
+
+  const rc = document.createElement("canvas");
+  rc.width = resultImg.width;
+  rc.height = resultImg.height;
+  const rctx = rc.getContext("2d");
+  rctx.drawImage(resultImg, 0, 0);
+  const rd = rctx.getImageData(0, 0, resultImg.width, resultImg.height);
+  const px = rd.data;
+  const th = bgColor.threshold;
+  const thLo = th * 0.5;
+
+  for (let i = 0; i < px.length; i += 4) {
+    const dr = px[i] - bgColor.r;
+    const dg = px[i + 1] - bgColor.g;
+    const db = px[i + 2] - bgColor.b;
+    const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+
+    if (dist < thLo) {
+      px[i + 3] = 0;
+    } else if (dist < th) {
+      px[i + 3] = Math.round(((dist - thLo) / (th - thLo)) * 255);
+    }
+  }
+
+  rctx.putImageData(rd, 0, 0);
+  ctx.drawImage(rc, 0, 0);
+
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+}
+
 const TRYON_PRODUCTS = [
   { id: "oversized-obsidian-hoodie", name: "Oversized Obsidian Hoodie", price: 1200, category: "hoodies", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "New", sizes: ["S", "M", "L", "XL"] },
   { id: "dune-graphic-tee", name: "Dune Graphic Tee", price: 650, category: "tees", image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", badge: "", sizes: ["S", "M", "L", "XL"] },
@@ -119,8 +219,10 @@ aiBtn.addEventListener('click', async () => {
   try {
     const res = await fetch('/api/tryon', { method: 'POST', body: formData });
     if (res.ok) {
-      const blob = await res.blob();
-      showResult(URL.createObjectURL(blob));
+      const resultBlob = await res.blob();
+      aiStatus.querySelector('.ai-status-text').textContent = 'Applying wardrobe background...';
+      const finalBlob = await compositeOnWardrobe(userPhoto, resultBlob);
+      showResult(URL.createObjectURL(finalBlob));
     } else {
       const data = await res.json().catch(() => ({ error: 'Unknown server error' }));
       throw new Error(data.error || 'Server error');
