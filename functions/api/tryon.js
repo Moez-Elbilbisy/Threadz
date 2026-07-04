@@ -74,44 +74,47 @@ export async function onRequestPost(context) {
     if (!event_id) throw new Error("No event_id from Space");
 
     // Poll for result (model takes 10-60s, longer on cold start)
-    const maxAttempts = 60; // 2 minutes at 2s intervals
+    const maxAttempts = 60;
     for (let i = 0; i < maxAttempts; i++) {
       const pollRes = await fetch(`${API}/call/tryon/${event_id}`, {
         headers: hfToken ? { "Authorization": `Bearer ${hfToken}` } : {},
       });
 
       const text = await pollRes.text();
-
-      // Parse SSE response for process_completed
       const lines = text.split("\n");
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        try {
-          const data = JSON.parse(line.slice(6));
-          if (Array.isArray(data) && data.length > 0) {
-            const img = typeof data[0] === "string" ? data[0] : data[0]?.url || data[0]?.path;
-            if (img && (img.startsWith("data:") || img.startsWith("http"))) {
-              return json({ success: true, result: img });
-            }
-          }
-        } catch {}
-      }
 
-      // Check if processing is still in progress or complete
-      if (text.includes('"process_completed"')) {
-        // Completed but we didn't find the image in data parsing
-        // Try extracting from process_completed data
-        for (const line of lines) {
-          if (line.startsWith("data: ") && line.includes("process_completed")) continue;
-          try {
-            const d = JSON.parse(line.replace(/^data: /, ""));
-            if (Array.isArray(d) && d[0]) {
-              const img = typeof d[0] === "string" ? d[0] : d[0]?.url || d[0]?.path;
-              if (img) return json({ success: true, result: img });
-            }
-          } catch {}
+      // Parse SSE format: event + data pairs separated by blank lines
+      let currentEvent = "";
+      for (let j = 0; j < lines.length; j++) {
+        const line = lines[j];
+        if (line.startsWith("event: ")) {
+          currentEvent = line.slice(7).trim();
+        } else if (line.startsWith("data: ")) {
+          const jsonStr = line.slice(6);
+          if (currentEvent === "process_completed") {
+            try {
+              const d = JSON.parse(jsonStr);
+              if (Array.isArray(d) && d.length > 0) {
+                const img = typeof d[0] === "string" ? d[0] : d[0]?.url || d[0]?.path || "";
+                if (img) return json({ success: true, result: img });
+              }
+            } catch {}
+          }
+          // Also try to extract from any data line (some Gradio versions omit event:)
+          if (!currentEvent || currentEvent === "process_generating") {
+            try {
+              const d = JSON.parse(jsonStr);
+              if (Array.isArray(d) && d[0]) {
+                const img = typeof d[0] === "string" ? d[0] : d[0]?.url || d[0]?.path || "";
+                if (img && (img.startsWith("data:") || img.startsWith("http"))) {
+                  return json({ success: true, result: img });
+                }
+              }
+            } catch {}
+          }
+        } else if (line === "") {
+          currentEvent = "";
         }
-        break;
       }
 
       await sleep(2000);
