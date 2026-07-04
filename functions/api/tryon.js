@@ -2,7 +2,7 @@ import { json } from "./_utils.js";
 
 const SPACE = "https://yisol-idm-vton.hf.space";
 
-async function uploadFile(file, token) {
+async function upload(file, token) {
   const form = new FormData();
   form.append("files", file, file.name || "file.png");
   const res = await fetch(`${SPACE}/upload`, {
@@ -11,8 +11,7 @@ async function uploadFile(file, token) {
     body: form,
   });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-  const data = await res.json();
-  return data[0].path;
+  return (await res.json())[0].path;
 }
 
 export async function onRequestPost(context) {
@@ -28,15 +27,13 @@ export async function onRequestPost(context) {
       return json({ success: false, error: "Missing person or garment image" }, 400);
     }
 
-    // Upload images to the Gradio Space
     const [personPath, garmentPath] = await Promise.all([
-      uploadFile(personFile, hfToken),
-      uploadFile(garmentFile, hfToken),
+      upload(personFile, hfToken),
+      upload(garmentFile, hfToken),
     ]);
 
-    // Queue the try-on job (Gradio 4.x sse_v3 queue API)
-    const sessionHash = crypto.randomUUID().replace(/-/g, "").slice(0, 32);
-    const queueRes = await fetch(`${SPACE}/queue/join`, {
+    const sess = crypto.randomUUID().replace(/-/g, "").slice(0, 24);
+    const predictRes = await fetch(`${SPACE}/api/predict/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...auth },
       body: JSON.stringify({
@@ -49,50 +46,27 @@ export async function onRequestPost(context) {
           30,
           42,
         ],
-        event_data: null,
         fn_index: 2,
-        trigger_id: 25,
-        session_hash: sessionHash,
+        session_hash: sess,
       }),
     });
 
-    if (!queueRes.ok) {
-      const body = await queueRes.text().catch(() => "");
-      throw new Error(body.slice(0, 300) || `Queue failed: ${queueRes.status}`);
+    if (!predictRes.ok) {
+      const body = await predictRes.text().catch(() => "");
+      throw new Error(body.slice(0, 300) || `Space error: ${predictRes.status}`);
     }
 
-    // Poll the SSE data endpoint for the result
-    const maxAttempts = 60;
-    for (let i = 0; i < maxAttempts; i++) {
-      const dataRes = await fetch(`${SPACE}/queue/data?session_hash=${sessionHash}`, {
-        headers: { ...auth, "Accept": "text/event-stream" },
-      });
+    const result = await predictRes.json();
+    const output = result?.data?.[0];
 
-      const text = await dataRes.text();
-      const lines = text.split("\n");
-
-      for (let j = 0; j < lines.length; j++) {
-        const line = lines[j];
-        if (line.startsWith("data: ")) {
-          try {
-            const d = JSON.parse(line.slice(6));
-            if (d?.success && d?.output?.data) {
-              const result = d.output.data[0]; // output[23] = generated image
-              if (result) {
-                const img = typeof result === "string" ? result : result?.url || result?.path || "";
-                if (img && (img.startsWith("data:") || img.startsWith("http"))) {
-                  return json({ success: true, result: img });
-                }
-              }
-            }
-          } catch {}
-        }
+    if (output) {
+      const img = typeof output === "string" ? output : output?.url || output?.path || "";
+      if (img && (img.startsWith("data:") || img.startsWith("http"))) {
+        return json({ success: true, result: img });
       }
-
-      await new Promise(r => setTimeout(r, 2000));
     }
 
-    throw new Error("Space timed out after 120s");
+    throw new Error(`Unexpected response: ${JSON.stringify(result).slice(0, 300)}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return json({ success: false, error: msg }, 500);
