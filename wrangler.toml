@@ -9,9 +9,10 @@ pages_build_output_dir = "."
 binding = "ORDERS"
 id = "9190f3f184944c9094bbeac430b89422"
 
+[ai]
+binding = "AI"
+
 [vars]
 JWT_SECRET = "threadz-jwt-secret-2024"
 BOSTA_API_KEY = "3593a672772ae29d44e4d522c57138dcaf346099c5fc24b998a724ac2592e0bd"
 ADMIN_CODE = "CBT2009"
-# For reliable AI Try-On: set REPLICATE_API_KEY (free credits at replicate.com/signup)
-# REPLICATE_API_KEY = "r8_..."
