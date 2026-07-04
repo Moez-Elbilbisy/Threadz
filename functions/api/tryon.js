@@ -1,53 +1,67 @@
 import { json } from "./_utils.js";
 
-function bufferToBase64(buf) {
-  const bytes = new Uint8Array(buf);
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary);
+const SPACE_URL = "https://yisol-idm-vton.hf.space";
+
+async function uploadToSpace(file) {
+  const form = new FormData();
+  form.append("file", file, "file.png");
+  const res = await fetch(`${SPACE_URL}/upload`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Upload failed (${res.status}): ${text.slice(0, 150)}`);
+  }
+  const data = await res.json();
+  if (!data?.[0]?.path) throw new Error("Invalid upload response");
+  return data[0].path;
 }
 
-async function tryHuggingFace(personFile, garmentFile, apiKey) {
-  const [personBuf, garmentBuf] = await Promise.all([
-    personFile.arrayBuffer(),
-    garmentFile.arrayBuffer(),
+async function tryHuggingFaceSpace(personFile, garmentFile) {
+  const [personPath, garmentPath] = await Promise.all([
+    uploadToSpace(personFile),
+    uploadToSpace(garmentFile),
   ]);
 
-  const personB64 = bufferToBase64(personBuf);
-  const garmentB64 = bufferToBase64(garmentBuf);
-
-  const res = await fetch(
-    "https://api-inference.huggingface.co/models/yisol/IDM-VTON",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: {
-          target_image: personB64,
-          garment_image: garmentB64,
-        },
-      }),
-    }
-  );
+  const res = await fetch(`${SPACE_URL}/api/tryon/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      data: [
+        { path: personPath },
+        { path: garmentPath },
+        "upper_body",
+        true,
+      ],
+    }),
+  });
 
   if (!res.ok) {
     const text = await res.text();
-    const detail = text.slice(0, 300);
-    if (res.status === 503 && detail.includes("loading")) {
-      throw new Error("Model is loading on Hugging Face's free tier — it can take 30-60s and often times out. Use Replicate instead (free credits on signup).");
+    if (res.status === 503 || text.includes("space") || text.includes("loading") || text.includes("queue")) {
+      throw new Error("Hugging Face Space is cold-starting or busy (free ZeroGPU daily quota may be exhausted). Try again later or use Replicate.");
     }
-    if (res.status === 530 || detail.includes("1016")) {
-      throw new Error("This model requires paid GPU inference on Hugging Face and is not available on the free tier. Use Basic mode (free) or set up Replicate (free credits at replicate.com/signup).");
-    }
-    throw new Error(`HuggingFace API ${res.status}: ${detail}`);
+    throw new Error(`Space API ${res.status}: ${text.slice(0, 200)}`);
   }
 
-  const blob = await res.blob();
-  const resultB64 = bufferToBase64(await blob.arrayBuffer());
-  return `data:${blob.type || "image/png"};base64,${resultB64}`;
+  const result = await res.json();
+  const output = result?.data?.[0];
+  if (!output) throw new Error("Empty result from Space");
+
+  if (typeof output === "string" && output.startsWith("data:")) return output;
+  if (typeof output === "string" && output.startsWith("http")) return output;
+  if (output.path) {
+    const imgRes = await fetch(`${SPACE_URL}/file=${output.path}`);
+    if (!imgRes.ok) throw new Error("Failed to fetch result image");
+    const blob = await imgRes.blob();
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return `data:${blob.type || "image/png"};base64,${btoa(binary)}`;
+  }
+
+  throw new Error("Unexpected output format from Space");
 }
 
 async function tryReplicate(personFile, garmentFile, apiKey) {
@@ -114,24 +128,24 @@ export async function onRequestPost(context) {
       return json({ success: false, error: "Missing person or garment image" }, 400);
     }
 
-    const hfKey = env.HUGGINGFACE_API_KEY;
     const repKey = env.REPLICATE_API_KEY;
+    const preferReplicate = env.PREFER_REPLICATE === "true";
 
-    if (hfKey) {
-      const result = await tryHuggingFace(personFile, garmentFile, hfKey);
-      return json({ success: true, result });
-    }
-
-    if (repKey) {
+    if (repKey && preferReplicate) {
       const result = await tryReplicate(personFile, garmentFile, repKey);
       return json({ success: true, result });
     }
 
-    return json({
-      success: false,
-      error:
-        "No API key configured. Add HUGGINGFACE_API_KEY (free) or REPLICATE_API_KEY to wrangler.toml [vars].",
-    }, 503);
+    try {
+      const result = await tryHuggingFaceSpace(personFile, garmentFile);
+      return json({ success: true, result });
+    } catch (hfErr) {
+      if (repKey) {
+        const result = await tryReplicate(personFile, garmentFile, repKey);
+        return json({ success: true, result });
+      }
+      throw hfErr;
+    }
   } catch (err) {
     return json({ success: false, error: err.message }, 500);
   }
