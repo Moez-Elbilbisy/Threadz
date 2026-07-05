@@ -1,0 +1,374 @@
+/**
+ * Standalone Cloudflare Worker — /api/tryon
+ *
+ * Same logic as functions/api/tryon.js but in ES modules Worker format.
+ *
+ * wrangler.toml (standalone worker):
+ *   name = "threadz-tryon"
+ *   main = "worker.js"
+ *   compatibility_date = "2024-12-01"
+ *
+ *   [vars]
+ *   AI_PROVIDER = "gemini"         # "gemini" | "fal" | "segmind" | "idm-vton" | "lightx"
+ *   GEMINI_API_KEY = ""            # Google Gemini API key (free)
+ *   FAL_KEY = ""                   # Fal.ai API key
+ *   SEGMIND_API_KEY = ""           # Segmind API key
+ *   HF_TOKEN = ""                  # Hugging Face token (idm-vton fallback)
+ *
+ * Deploy:
+ *   npx wrangler deploy
+ */
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (request.method !== "POST" || url.pathname !== "/api/tryon") {
+      return new Response("Not Found", { status: 404 });
+    }
+
+    try {
+      const form = await request.formData();
+      const personFile = form.get("person");
+      let garmentFile = form.get("garment");
+      const garmentUrl = form.get("garment_url");
+      const garmentType = form.get("garment_type") || "upper_body";
+
+      if (!personFile) return json({ error: "Missing 'person' file" }, 400);
+      if (!garmentFile && !garmentUrl) return json({ error: "Missing 'garment' file or 'garment_url'" }, 400);
+
+      if (!garmentFile && garmentUrl) {
+        const resp = await fetch(garmentUrl);
+        if (!resp.ok) throw new Error(`Failed to fetch garment URL: ${resp.status}`);
+        garmentFile = new File([await resp.blob()], "garment.png", { type: "image/png" });
+      }
+
+      const personBuf = await personFile.arrayBuffer();
+      const personB64 = arrayBufferToBase64(personBuf);
+      const personMime = personFile.type || "image/jpeg";
+      const personDataUri = `data:${personMime};base64,${personB64}`;
+
+      const garmentBuf = await garmentFile.arrayBuffer();
+      const garmentB64 = arrayBufferToBase64(garmentBuf);
+      const garmentMime = garmentFile.type || "image/png";
+      const garmentDataUri = `data:${garmentMime};base64,${garmentB64}`;
+
+      const provider = (env.AI_PROVIDER || "gemini").toLowerCase();
+      let resultBlob;
+
+      if (provider === "gemini") {
+        resultBlob = await geminiTryon(personDataUri, garmentDataUri, garmentType, env);
+      } else if (provider === "segmind") {
+        resultBlob = await segmindTryon(personDataUri, garmentDataUri, garmentType, env);
+      } else if (provider === "idm-vton" || provider === "gradio") {
+        resultBlob = await idmVtonTryon(personDataUri, garmentFile, garmentType, env);
+      } else if (provider === "lightx") {
+        resultBlob = await lightxTryon(personFile, garmentFile, garmentType, env);
+      } else if (provider === "rapidapi") {
+        resultBlob = await rapidapiTryon(personFile, garmentFile, garmentType, env);
+      } else {
+        resultBlob = await falTryon(personDataUri, garmentDataUri, garmentType, env);
+      }
+
+      return new Response(resultBlob, {
+        headers: { "Content-Type": "image/png", "Cache-Control": "no-store" },
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return json({ error: msg }, 500);
+    }
+  },
+};
+
+// ─── Gemini ──────────────────────────────────────────────────────────────────
+async function geminiTryon(personDataUri, garmentDataUri, garmentType, env) {
+  const key = env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY not configured");
+
+  const prompt = `You are a virtual try-on assistant. The first image is a person. The second image is a garment (${garmentType.replace("_", " ")}).
+
+Put the garment on the person realistically. Follow these rules exactly:
+- Keep the person's face, hair, skin tone, body shape, and pose unchanged.
+- Keep the background and lighting identical to the original photo.
+- Only replace the ${garmentType.replace("_", " ")} area with the new garment.
+- The garment must look natural — match its shape, draping, and texture to the person's body.
+- Do NOT add accessories, change the background, or modify anything outside the clothing area.
+- The result should look like a real photo of the person wearing the new garment.`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: personDataUri.includes("png") ? "image/png" : "image/jpeg", data: personDataUri.split(",")[1] } },
+            { inline_data: { mime_type: garmentDataUri.includes("png") ? "image/png" : "image/jpeg", data: garmentDataUri.split(",")[1] } },
+          ],
+        }],
+        generationConfig: { temperature: 0.4, topK: 32, topP: 1, maxOutputTokens: 8192 },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`Gemini error (${res.status}): ${txt.slice(0, 400)}`);
+  }
+
+  const data = await res.json();
+  const part = data.candidates?.[0]?.content?.parts?.find((p) => p.inline_data);
+  if (!part?.inline_data?.data) {
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(data).slice(0, 300);
+    throw new Error(`Gemini returned no image: ${text}`);
+  }
+
+  const mimeType = part.inline_data.mime_type || "image/png";
+  const binaryStr = atob(part.inline_data.data);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+  return new Blob([bytes], { type: mimeType });
+}
+
+// ─── Fal.ai ──────────────────────────────────────────────────────────────────
+async function falTryon(personDataUri, garmentDataUri, garmentType, env) {
+  const key = env.FAL_KEY;
+  if (!key) throw new Error("FAL_KEY not configured");
+  const res = await fetch("https://fal.run/fashn/v1.6", {
+    method: "POST",
+    headers: { Authorization: `Key ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model_image: personDataUri, garment_image: garmentDataUri, category: garmentType }),
+  });
+  if (!res.ok) { const txt = await res.text().catch(() => ""); throw new Error(`Fal.ai error (${res.status}): ${txt.slice(0, 300)}`); }
+  const data = await res.json();
+  const imageUrl = data.output || data.image?.url;
+  if (!imageUrl) throw new Error("Fal.ai returned no image URL");
+  const imgRes = await fetch(imageUrl);
+  if (!imgRes.ok) throw new Error("Failed to download Fal.ai result");
+  return imgRes.blob();
+}
+
+// ─── Segmind ────────────────────────────────────────────────────────────────
+async function segmindTryon(personDataUri, garmentDataUri, garmentType, env) {
+  const key = env.SEGMIND_API_KEY;
+  if (!key) throw new Error("SEGMIND_API_KEY not configured");
+  const categoryMap = { upper_body: "Upper body", lower_body: "Lower body", dress: "Dress" };
+  const res = await fetch("https://api.segmind.com/v1/try-on-diffusion", {
+    method: "POST",
+    headers: { "x-api-key": key, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model_image: personDataUri,
+      cloth_image: garmentDataUri,
+      category: categoryMap[garmentType] || "Upper body",
+      num_inference_steps: 30,
+      guidance_scale: 2.0,
+    }),
+  });
+  if (!res.ok) { const txt = await res.text().catch(() => ""); throw new Error(`Segmind error (${res.status}): ${txt.slice(0, 300)}`); }
+  return res.blob();
+}
+
+// ─── IDM-VTON / Custom Gradio ──────────────────────────────────────────────
+async function idmVtonTryon(personDataUri, garmentFile, garmentType, env) {
+  const token = env.HF_TOKEN;
+  if (!token) throw new Error("HF_TOKEN required for Gradio-based providers");
+  const HF_BASE = env.GRADIO_BASE_URL || "https://yisol-idm-vton.hf.space";
+  const uploadForm = new FormData();
+  const personResp = await fetch(personDataUri);
+  uploadForm.append("files", await personResp.blob(), "person.png");
+  const uploadRes = await fetch(`${HF_BASE}/upload`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: uploadForm });
+  if (!uploadRes.ok) throw new Error("IDM-VTON upload failed");
+  const [{ path: personPath }] = await uploadRes.json();
+  const joinRes = await fetch(`${HF_BASE}/queue/join?__theme=light`, {
+    method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ fn_index: 2, data: [personDataUri, "Use Auto Crop", "upper_body", false, 20, 30, 1.0], event_data: null, session_hash: crypto.randomUUID() }),
+  });
+  if (!joinRes.ok) throw new Error("IDM-VTON queue join failed");
+  const sessionHash = crypto.randomUUID();
+  const sseRes = await fetch(`${HF_BASE}/queue/data?session_hash=${sessionHash}`, { headers: { Authorization: `Bearer ${token}` } });
+  let resultUrl = null;
+  const reader = sseRes.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      try {
+        const msg = JSON.parse(line.slice(6));
+        if (msg.msg === "process_completed") {
+          const output = msg.output?.data?.[0];
+          if (output) {
+            resultUrl = typeof output === "string" ? output : output.url || output.path;
+            if (resultUrl && !resultUrl.startsWith("http")) resultUrl = `${HF_BASE}/file=${resultUrl}`;
+          }
+        }
+      } catch {}
+    }
+    if (resultUrl) break;
+  }
+  if (!resultUrl) throw new Error("IDM-VTON returned no result image");
+  const imgRes = await fetch(resultUrl, { headers: { Authorization: `Bearer ${token}` } });
+  if (!imgRes.ok) throw new Error("Failed to download IDM-VTON result");
+  return imgRes.blob();
+}
+
+// ─── LightX ─────────────────────────────────────────────────────────────────
+async function lightxTryon(personFile, garmentFile, garmentType, env) {
+  const key = env.LIGHTX_API_KEY;
+  if (!key) throw new Error("LIGHTX_API_KEY not configured");
+
+  const API = "https://api.lightxeditor.com/external/api/v2";
+
+  async function uploadToLightX(blob, name) {
+    const buf = await blob.arrayBuffer();
+    const size = buf.byteLength;
+    const contentType = blob.type || "image/jpeg";
+
+    const urlRes = await fetch(`${API}/uploadImageUrl`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": key },
+      body: JSON.stringify({ uploadType: "imageUrl", size, contentType }),
+    });
+    if (!urlRes.ok) {
+      const txt = await urlRes.text().catch(() => "");
+      throw new Error(`LightX upload URL failed for ${name}: ${txt.slice(0, 200)}`);
+    }
+    const urlData = await urlRes.json();
+    if (urlData.statusCode !== 2000) throw new Error(`LightX upload URL error: ${urlData.message}`);
+    const { uploadImage, imageUrl } = urlData.body;
+
+    const putRes = await fetch(uploadImage, {
+      method: "PUT", headers: { "Content-Type": contentType }, body: buf,
+    });
+    if (!putRes.ok) {
+      let txt = "";
+      try { txt = await putRes.text(); } catch {}
+      throw new Error(`LightX S3 upload failed for ${name}: HTTP ${putRes.status} ${txt.slice(0, 200)}`);
+    }
+
+    // Verify the image is accessible at the CDN URL before proceeding
+    for (let i = 0; i < 5; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      const check = await fetch(imageUrl, { method: "HEAD" }).catch(() => null);
+      if (check && check.ok) return imageUrl;
+    }
+    throw new Error(`LightX image URL not accessible for ${name} after upload`);
+  }
+
+  const [personUrl, garmentUrl] = await Promise.all([
+    uploadToLightX(personFile, "person"),
+    uploadToLightX(garmentFile, "garment"),
+  ]);
+
+  const segType = garmentType === "lower_body" ? 1 : garmentType === "dress" ? 2 : 0;
+  const tryonRes = await fetch(`${API}/outfit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": key },
+    body: JSON.stringify({ imageUrl: personUrl, textPrompt: `Person wearing this ${garmentType.replace("_", " ")} garment`, styleImageUrl: garmentUrl }),
+  });
+  let tryonBody = "";
+  try { tryonBody = await tryonRes.text(); } catch {}
+  if (!tryonRes.ok) throw new Error(`LightX tryon error (${tryonRes.status}): ${tryonBody.slice(0, 500)}`);
+  let tryonData;
+  try { tryonData = JSON.parse(tryonBody); } catch { throw new Error(`LightX tryon bad JSON: ${tryonBody.slice(0, 500)}`); }
+  if (tryonData.statusCode !== 2000) throw new Error(`LightX tryon error: ${tryonData.message} (full: ${tryonBody.slice(0, 500)})`);
+  const { orderId } = tryonData.body;
+
+  let outputUrl = null;
+  let statusLog = [];
+  for (let attempt = 0; attempt < 10; attempt++) {
+    await new Promise(r => setTimeout(r, 3000));
+    const statusRes = await fetch(`${API}/order-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": key },
+      body: JSON.stringify({ orderId }),
+    });
+    let statusBody = "";
+    try { statusBody = await statusRes.text(); } catch {}
+    statusLog.push(`attempt=${attempt} http=${statusRes.status} body=${statusBody.slice(0, 300)}`);
+    if (!statusRes.ok) continue;
+    let statusData;
+    try { statusData = JSON.parse(statusBody); } catch { continue; }
+    const st = statusData.body?.status || "unknown";
+    if (st === "active") { outputUrl = statusData.body.output; break; }
+    if (st === "failed") throw new Error(`LightX try-on failed: ${statusLog.join(" | ")}`);
+  }
+  if (!outputUrl) throw new Error(`LightX try-on did not complete. Log: ${statusLog.join(" | ")}`);
+
+  const imgRes = await fetch(outputUrl);
+  if (!imgRes.ok) throw new Error("Failed to download LightX result");
+  return imgRes.blob();
+}
+
+// ─── RapidAPI (Texel.Moda VTON-D) ──────────────────────────────────────────
+async function rapidapiTryon(personFile, garmentFile, garmentType, env) {
+  const key = env.RAPIDAPI_KEY;
+  if (!key) throw new Error("RAPIDAPI_KEY not configured");
+
+  const lightxKey = env.LIGHTX_API_KEY;
+  if (!lightxKey) throw new Error("LIGHTX_API_KEY also required to host person image for RapidAPI");
+
+  async function upload(url, blob, name) {
+    const buf = await blob.arrayBuffer();
+    const size = buf.byteLength;
+    const ct = blob.type || "image/jpeg";
+    const urlRes = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": lightxKey },
+      body: JSON.stringify({ uploadType: "imageUrl", size, contentType: ct }),
+    });
+    if (!urlRes.ok) throw new Error(`Upload URL failed for ${name}`);
+    const d = await urlRes.json();
+    if (d.statusCode !== 2000) throw new Error(`Upload URL error: ${d.message}`);
+    const put = await fetch(d.body.uploadImage, { method: "PUT", headers: { "Content-Type": ct }, body: buf });
+    if (!put.ok) throw new Error(`S3 upload failed for ${name}`);
+    for (let i = 0; i < 5; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      const c = await fetch(d.body.imageUrl, { method: "HEAD" }).catch(() => null);
+      if (c && c.ok) return d.body.imageUrl;
+    }
+    throw new Error(`Image URL not accessible for ${name}`);
+  }
+
+  const api = "https://api.lightxeditor.com/external/api/v2";
+  const [personUrl, clothingUrl] = await Promise.all([
+    upload(`${api}/uploadImageUrl`, personFile, "person"),
+    upload(`${api}/uploadImageUrl`, garmentFile, "garment"),
+  ]);
+
+  const res = await fetch("https://try-on-diffusion.p.rapidapi.com/try-on-url", {
+    method: "POST",
+    headers: {
+      "X-RapidAPI-Key": key,
+      "X-RapidAPI-Host": "try-on-diffusion.p.rapidapi.com",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ avatar_image_url: personUrl, clothing_image_url: clothingUrl, seed: -1 }),
+  });
+
+  if (!res.ok) {
+    let txt = "";
+    try { txt = await res.text(); } catch {}
+    throw new Error(`RapidAPI error (${res.status}): ${txt.slice(0, 400)}`);
+  }
+
+  return res.blob();
+}
+
+// ─── Utilities ──────────────────────────────────────────────────────────────
+function arrayBufferToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+}
