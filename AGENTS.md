@@ -37,6 +37,13 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
 - Remote: https://github.com/Threadzeg/Threadz.git
 - Branch: main
 
+## Credit Rotation
+- ComfyICU free tier gives 5k credits. When exhausted, API returns HTTP 402.
+- `tryon.js` auto-rotates through `COMFYICU_API_KEY_BACKUP_1`, `_BACKUP_2` on 402.
+- Active key index stored in KV (`comfyicu_key_index`).
+- ComfyICU uses Google OAuth only — no email signup. Create backup Google accounts manually.
+- `scripts/monitor-comfyicu.js` documents the rotation logic (imported inline in tryon.js).
+
 ## Memory Instructions (for AI)
 Every time a new session starts, read this file first. When making changes to the project, update this file to reflect:
 - New files added

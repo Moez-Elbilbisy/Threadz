@@ -642,8 +642,31 @@ async function pollinationsTryon(personFile, garmentFile, garmentType, env) {
 }
 
 // ─── ComfyICU (CatVTON / Nano Banana) ─────────────────────────────────────
+const BACKUP_KEYS = [
+  "COMFYICU_API_KEY",
+  "COMFYICU_API_KEY_BACKUP_1",
+  "COMFYICU_API_KEY_BACKUP_2",
+];
+
+async function getComfyicuKey(env) {
+  if (!env.ORDERS) return env.COMFYICU_API_KEY;
+  let idx = parseInt(await env.ORDERS.get("comfyicu_key_index") || "0", 10);
+  const key = env[BACKUP_KEYS[idx]];
+  if (key) return key;
+  await env.ORDERS.put("comfyicu_key_index", "0");
+  return env.COMFYICU_API_KEY;
+}
+
+async function rotateComfyicuKey(env) {
+  if (!env.ORDERS) return env.COMFYICU_API_KEY;
+  let idx = parseInt(await env.ORDERS.get("comfyicu_key_index") || "0", 10);
+  idx = (idx + 1) % BACKUP_KEYS.length;
+  await env.ORDERS.put("comfyicu_key_index", String(idx));
+  return env[BACKUP_KEYS[idx]] || env.COMFYICU_API_KEY;
+}
+
 async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
-  const apiKey = env.COMFYICU_API_KEY;
+  let apiKey = await getComfyicuKey(env);
   if (!apiKey) throw new Error("COMFYICU_API_KEY not configured");
 
   const workflowId = env.COMFYICU_WORKFLOW_ID;
@@ -736,6 +759,22 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
 
   if (!runRes.ok) {
     const txt = await runRes.text().catch(() => "");
+    if (runRes.status === 402) {
+      apiKey = await rotateComfyicuKey(env);
+      if (apiKey) {
+        authHeaders["Authorization"] = `Bearer ${apiKey}`;
+        const retryRes = await fetch(`${BASE}/api/v1/workflows/${workflowId}/runs`, {
+          method: "POST",
+          headers: { ...authHeaders, "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (retryRes.ok) {
+          const retryData = await retryRes.json();
+          const rid = retryData.id;
+          if (rid) return await pollComfyicuResult(rid, authHeaders, BASE, workflowId);
+        }
+      }
+    }
     throw new Error(`ComfyICU run error (${runRes.status}): ${txt.slice(0, 600)}`);
   }
 
@@ -743,6 +782,10 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   const runId = runData.id;
   if (!runId) throw new Error(`ComfyICU returned no run ID: ${JSON.stringify(runData).slice(0, 200)}`);
 
+  return await pollComfyicuResult(runId, authHeaders, BASE, workflowId);
+}
+
+async function pollComfyicuResult(runId, authHeaders, BASE, workflowId) {
   let outputUrl = null;
   for (let attempt = 0; attempt < 120; attempt++) {
     await new Promise(r => setTimeout(r, 3000));

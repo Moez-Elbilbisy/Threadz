@@ -33,8 +33,11 @@ GEMINI_API_KEY = "AQ.Ab8RN6JMk9vBRiaGkh4xp7rrNdDXNbeFIjd-XTSPQoM8eX_jug"
 LIGHTX_API_KEY = "3b14bc4beb8449a4b6d62735f4cd7f5d_d870f9e878924ef38fba485f25a26af3_andoraitools"
 # RapidAPI key — free Basic plan at https://rapidapi.com/texelmoda-texelmoda-apis/api/try-on-diffusion (100 req/month, no CC)
 RAPIDAPI_KEY = "e655c6d27cmsh9899638e406eb3ap1da6d7jsna458496516cd"
-# Pollinations.ai API key — https://pollinations.ai
+# ComfyICU — https://comfy.icu (free 5k credits, Google OAuth signup)
+# Add backup keys for auto-rotation when credits run out (HTTP 402)
 COMFYICU_API_KEY = "OMVzxw4DSwttahBNCd6micoUzYlHcBPrPbf7Io5lWoQxURqr"
+COMFYICU_API_KEY_BACKUP_1 = ""
+COMFYICU_API_KEY_BACKUP_2 = ""
 COMFYICU_WORKFLOW_ID = "ZVxjqQR0cwQ7W1-eVr5ht"
 # Custom Gradio base URL — set this to a Colab/Kaggle Gradio share URL to use your own GPU
 # Example: GRADIO_BASE_URL = "https://xxxx.gradio.live"
