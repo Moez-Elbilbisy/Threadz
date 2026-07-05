@@ -12,7 +12,11 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
 ## AI Try-On Architecture
 - `tryon.html` — Upload photo + select product → generate
 - `infinite-tryon.html` — TikTok-style infinite scroll feed of AI try-on results
-- `infinite-tryon.js` — Uses pool of stock model photos × products, calls `/api/tryon`, caches results
+- `infinite-tryon.js` — Uses pool of stock model photos × products, generates AI try-on with 3-layer fallback:
+  1. Server API (`/api/tryon`) — calls configured AI provider (IDM-VTON/Gemini/etc)
+  2. Puter.js (Nano Banana / Gemini 3 Pro) — client-side, free, no API key needed
+  3. Canvas fallback — composites model photo + product thumbnail
+- `puter.ai.txt2img()` used with composite person+garment image and try-on prompt
 - `/api/tryon` (functions/api/tryon.js) — receives person + garment images, calls configured AI provider
 - `worker.js` — standalone ES module version of the try-on worker (for direct deploy)
 

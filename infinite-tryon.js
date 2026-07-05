@@ -119,7 +119,7 @@
     return div;
   }
 
-  // ─── Generate AI Try-On ─────────────────────────────────────────────
+  // ─── Fetch helpers ──────────────────────────────────────────────────
   async function fetchBlobCached(url, cache) {
     if (cache.has(url)) return cache.get(url);
     const resp = await fetch(url);
@@ -129,43 +129,143 @@
     return blob;
   }
 
-  async function generateTryOn(modelUrl, product) {
-    try {
-      const [personBlob, garmentBlob] = await Promise.all([
-        fetchBlobCached(modelUrl, modelBlobCache),
-        fetchBlobCached(product.image, modelBlobCache),
-      ]);
+  function blobToDataURL(blob) {
+    return new Promise((resolve) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.readAsDataURL(blob);
+    });
+  }
 
-      const formData = new FormData();
-      formData.append('person', personBlob, 'person.png');
-      formData.append('garment', garmentBlob, 'garment.png');
-      formData.append('garment_url', product.image);
-      const garmentType = product.category === 'tees' || product.category === 'hoodies' || product.category === 'outerwear' ? 'upper_body' : 'upper_body';
-      formData.append('garment_type', garmentType);
+  // ─── Server-side API Try-On ──────────────────────────────────────────
+  async function generateViaServer(modelUrl, product) {
+    const [personBlob, garmentBlob] = await Promise.all([
+      fetchBlobCached(modelUrl, modelBlobCache),
+      fetchBlobCached(product.image, modelBlobCache),
+    ]);
 
-      const res = await fetch('/api/tryon', { method: 'POST', body: formData });
-      if (!res.ok) {
-        let errMsg = 'Server error';
-        try { const d = await res.json(); errMsg = d.error || errMsg; } catch {}
-        throw new Error(errMsg);
-      }
+    const formData = new FormData();
+    formData.append('person', personBlob, 'person.png');
+    formData.append('garment', garmentBlob, 'garment.png');
+    formData.append('garment_url', product.image);
+    const garmentType = product.category === 'tees' || product.category === 'hoodies' || product.category === 'outerwear' ? 'upper_body' : 'upper_body';
+    formData.append('garment_type', garmentType);
 
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        const imgRes = await fetch(data.result);
-        if (!imgRes.ok) throw new Error('Failed to fetch result image');
-        return await imgRes.blob();
-      }
-
-      return await res.blob();
-    } catch (err) {
-      throw err;
+    const res = await fetch('/api/tryon', { method: 'POST', body: formData });
+    if (!res.ok) {
+      let errMsg = 'Server error';
+      try { const d = await res.json(); errMsg = d.error || errMsg; } catch {}
+      throw new Error(errMsg);
     }
+
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      const imgRes = await fetch(data.result);
+      if (!imgRes.ok) throw new Error('Failed to fetch result image');
+      return await imgRes.blob();
+    }
+
+    return await res.blob();
+  }
+
+  // ─── Puter.js Client-Side Try-On (Nano Banana / Gemini) ─────────────
+  async function generateViaPuter(modelUrl, product) {
+    if (typeof puter === 'undefined') throw new Error('Puter.js not loaded');
+
+    const [personBlob, garmentBlob] = await Promise.all([
+      fetchBlobCached(modelUrl, modelBlobCache),
+      fetchBlobCached(product.image, modelBlobCache),
+    ]);
+
+    // Composite person + garment into one image
+    const compositeBlob = await compositePersonAndGarment(personBlob, garmentBlob, product.name);
+    const dataUrl = await blobToDataURL(compositeBlob);
+
+    const prompt = `You are a virtual try-on assistant. The person in this image needs to wear the garment shown in the bottom-right corner (${product.name}). Generate a photorealistic image of the person wearing this garment naturally. Follow these rules exactly: Keep the person's face, hair, skin tone, body shape, and pose unchanged. Only replace their current clothing with the garment shown in the corner. The garment must look natural with realistic draping and texture matching the person's body. The result should look like a real photo.`;
+
+    const img = await puter.ai.txt2img(prompt, {
+      model: "google/gemini-3-pro-image-preview",
+      input_image: dataUrl.split(',')[1],
+      input_image_mime_type: "image/jpeg",
+    });
+
+    // puter.ai.txt2img returns an Image element
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || 1024;
+    canvas.height = img.naturalHeight || 1024;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    return new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
+  }
+
+  async function compositePersonAndGarment(personBlob, garmentBlob, productName) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const [personImg, garmentImg] = await Promise.all([
+      new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(personBlob); }),
+      new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(garmentBlob); }),
+    ]);
+
+    const w = 768, h = 1024;
+    canvas.width = w;
+    canvas.height = h;
+
+    // Fill background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+
+    // Draw person (cover frame)
+    const pScale = Math.max(w / personImg.width, h / personImg.height);
+    const pw = personImg.width * pScale;
+    const ph = personImg.height * pScale;
+    ctx.drawImage(personImg, (w - pw) / 2, (h - ph) / 2, pw, ph);
+
+    // Draw garment thumbnail bottom-right
+    const insetSize = 200;
+    const ix = w - insetSize - 16;
+    const iy = h - insetSize - 16;
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 24;
+    ctx.drawImage(garmentImg, ix, iy, insetSize, insetSize);
+    ctx.shadowBlur = 0;
+
+    // Gold border around inset
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(ix, iy, insetSize, insetSize);
+
+    URL.revokeObjectURL(personImg.src);
+    URL.revokeObjectURL(garmentImg.src);
+
+    return new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
+  }
+
+  // ─── Try-On orchestrator (tries server → puter → canvas fallback) ────
+  async function generateTryOn(modelUrl, product) {
+    let lastError;
+
+    // Try server API
+    try {
+      return await generateViaServer(modelUrl, product);
+    } catch (err) {
+      lastError = err;
+    }
+
+    // Try Puter.js client-side
+    try {
+      return await generateViaPuter(modelUrl, product);
+    } catch (err) {
+      lastError = err;
+    }
+
+    // Final fallback: canvas composite
+    return await generateFallbackImage(modelUrl, product, lastError);
   }
 
   // ─── Generate fallback image (composite model + product) ─────────────
-  async function generateFallbackImage(modelUrl, product) {
+  async function generateFallbackImage(modelUrl, product, err = null) {
     const canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 800;
@@ -223,12 +323,7 @@
       updateStatus();
 
       try {
-        let blob;
-        try {
-          blob = await generateTryOn(item.modelUrl, item.product);
-        } catch {
-          blob = await generateFallbackImage(item.modelUrl, item.product);
-        }
+        let blob = await generateTryOn(item.modelUrl, item.product);
         const url = URL.createObjectURL(blob);
         resultCache.set(item.cacheKey, url);
         item.status = 'done';
