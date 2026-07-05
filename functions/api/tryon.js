@@ -652,17 +652,14 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   const BASE = "https://comfy.icu";
   const authHeaders = { "Authorization": `Bearer ${apiKey}` };
 
-  const toB64 = async (file) => {
+  const toFile = async (file, name) => {
     const buf = await file.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-    return btoa(binary);
+    return new Blob([buf], { type: file.type || "image/png" });
   };
 
-  const [personB64, garmentB64] = await Promise.all([
-    toB64(personFile),
-    toB64(garmentFile),
+  const [personBlob, garmentBlob] = await Promise.all([
+    toFile(personFile, "person.png"),
+    toFile(garmentFile, "garment.png"),
   ]);
 
   const gtype = (garmentType || "upper_body").replace("_", " ");
@@ -699,16 +696,19 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
     }
   };
 
+  const formData = new FormData();
+  formData.append("prompt", JSON.stringify(prompt));
+  formData.append("files", JSON.stringify({
+    "person.png": "person.png",
+    "garment.png": "garment.png",
+  }));
+  formData.append("person.png", personBlob, "person.png");
+  formData.append("garment.png", garmentBlob, "garment.png");
+
   const runRes = await fetch(`${BASE}/api/v1/workflows/${workflowId}/runs`, {
     method: "POST",
-    headers: { ...authHeaders, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      prompt,
-      files: {
-        "person.png": personB64,
-        "garment.png": garmentB64,
-      },
-    }),
+    headers: authHeaders,
+    body: formData,
   });
 
   if (!runRes.ok) {
