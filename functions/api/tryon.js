@@ -149,7 +149,7 @@ Put the garment on the person realistically. Follow these rules exactly:
 - The result should look like a real photo of the person wearing the new garment.`;
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent?key=${key}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
