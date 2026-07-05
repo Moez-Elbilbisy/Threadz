@@ -7,7 +7,7 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
 - Cloudflare Pages (wrangler) + Pages Functions (ES modules)
 - KV namespace `ORDERS` for products, orders, users
 - Static HTML/CSS/JS frontend (no framework)
-- AI try-on via **Pollinations.ai (nanobanana-pro)** — server-side proxy at `/api/tryon`
+- AI try-on via **ComfyICU (Nano Banana / CatVTON)** — server-side proxy at `/api/tryon`
 - **Puter.js** retained as client-side fallback if server fails
 
 ## AI Try-On Architecture
@@ -16,9 +16,9 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
   1. Primary: `generateWithServer()` sends `person` file + `garment_url` to `/api/tryon`
   2. Fallback: if server fails, `generateWithPuter()` composites person+garment and calls `puter.ai.txt2img()`
 - `functions/api/tryon.js` — Cloudflare Pages Function with multiple providers:
-  - `pollinations` (default): Uses Pollinations.ai with nanobanana-pro (Gemini 3 Pro Image) for virtual try-on
+  - `comfyicu` (default): Uses ComfyICU with Nano Banana / CatVTON workflow
   - Other: gemini, fal, segmind, idm-vton, lightx, rapidapi
-- Pollinations API key stored in `wrangler.toml` as `POLLINATIONS_API_KEY` (not exposed to client)
+- ComfyICU API key + workflow ID stored in `wrangler.toml` as `COMFYICU_API_KEY` / `COMFYICU_WORKFLOW_ID` (not exposed to client)
 - Puter.js CDN (`https://js.puter.com/v2/`) kept for fallback
 
 ## Key Files

@@ -70,6 +70,8 @@ export async function onRequestPost({ request, env }) {
       return asImage(await piapiTryon(personFile, garmentFile, garmentType, env));
     } else if (provider === "pollinations") {
       return asImage(await pollinationsTryon(personFile, garmentFile, garmentType, env));
+    } else if (provider === "comfyicu") {
+      return asImage(await comfyicuTryon(personFile, garmentFile, garmentType, env));
     } else {
       return asImage(await falTryon(personDataUri, garmentDataUri, garmentType, env));
     }
@@ -637,6 +639,116 @@ async function pollinationsTryon(personFile, garmentFile, garmentType, env) {
   const bytes = new Uint8Array(binaryStr.length);
   for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
   return new Blob([bytes], { type: "image/png" });
+}
+
+// ─── ComfyICU (CatVTON / Nano Banana) ─────────────────────────────────────
+async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
+  const apiKey = env.COMFYICU_API_KEY;
+  if (!apiKey) throw new Error("COMFYICU_API_KEY not configured");
+
+  const workflowId = env.COMFYICU_WORKFLOW_ID;
+  if (!workflowId) throw new Error("COMFYICU_WORKFLOW_ID not configured");
+
+  const toB64 = async (file) => {
+    const buf = await file.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  };
+
+  const [personB64, garmentB64] = await Promise.all([
+    toB64(personFile),
+    toB64(garmentFile),
+  ]);
+
+  const gtype = (garmentType || "upper_body").replace("_", " ");
+  const seed = Math.floor(Math.random() * 1125899906842624);
+
+  const prompt = {
+    "2": {
+      "inputs": { "filename_prefix": "ComfyUI", "images": ["11", 0] },
+      "class_type": "SaveImage",
+      "_meta": { "title": "Save Image" }
+    },
+    "3": {
+      "inputs": { "image": "person.png" },
+      "class_type": "LoadImage",
+      "_meta": { "title": "Load Person" }
+    },
+    "7": {
+      "inputs": { "image": "garment.png" },
+      "class_type": "LoadImage",
+      "_meta": { "title": "Load Garment" }
+    },
+    "9": {
+      "inputs": { "images.image0": ["3", 0], "images.image1": ["7", 0] },
+      "class_type": "BatchImagesNode",
+      "_meta": { "title": "Batch Images" }
+    },
+    "11": {
+      "inputs": {
+        "prompt": `Virtual try-on: Place this ${gtype} garment onto the person in the first image. Keep the person's face, hair, skin tone, body shape, pose, background, and lighting unchanged. Only replace the ${gtype} area with the new garment. The result must look like a real photo.`,
+        "model": "gemini-2.5-flash-image",
+        "seed": seed,
+        "aspect_ratio": "auto",
+        "response_modalities": "IMAGE+TEXT",
+        "system_prompt": "You are a virtual try-on assistant. Always produce an image showing the person wearing the garment naturally.",
+        "images": ["9", 0]
+      },
+      "class_type": "GeminiImageNode",
+      "_meta": { "title": "Nano Banana (Google Gemini Image)" }
+    }
+  };
+
+  const runRes = await fetch(`https://comfy.icu/api/v1/workflows/${workflowId}/runs`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      workflow_id: workflowId,
+      prompt,
+      files: {
+        "input/person.png": personB64,
+        "input/garment.png": garmentB64,
+      },
+    }),
+  });
+
+  if (!runRes.ok) {
+    const txt = await runRes.text().catch(() => "");
+    throw new Error(`ComfyICU run error (${runRes.status}): ${txt.slice(0, 400)}`);
+  }
+
+  const runData = await runRes.json();
+  const runId = runData.id;
+  if (!runId) throw new Error(`ComfyICU returned no run ID: ${JSON.stringify(runData).slice(0, 200)}`);
+
+  let outputUrl = null;
+  for (let attempt = 0; attempt < 60; attempt++) {
+    await new Promise(r => setTimeout(r, 5000));
+    const statusRes = await fetch(
+      `https://comfy.icu/api/v1/workflows/${workflowId}/runs/${runId}`,
+      { headers: { "Authorization": `Bearer ${apiKey}` } }
+    );
+    if (!statusRes.ok) continue;
+    const statusData = await statusRes.json();
+    if (statusData.status === "COMPLETED") {
+      outputUrl = statusData.output?.[0]?.url;
+      if (!outputUrl) throw new Error(`ComfyICU completed but no output URL`);
+      break;
+    } else if (statusData.status === "ERROR") {
+      throw new Error(`ComfyICU run failed: ${JSON.stringify(statusData).slice(0, 300)}`);
+    }
+  }
+
+  if (!outputUrl) throw new Error("ComfyICU did not complete in time");
+
+  const imgRes = await fetch(outputUrl);
+  if (!imgRes.ok) throw new Error("Failed to download ComfyICU result");
+  return imgRes.blob();
 }
 
 // ─── Utilities ──────────────────────────────────────────────────────────────
