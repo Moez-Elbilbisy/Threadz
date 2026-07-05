@@ -11,11 +11,12 @@
  *   - garment_type  (string, opt)    — "upper_body" | "lower_body" | "dress"
  *
  * Environment variables (wrangler.toml [vars]):
- *   AI_PROVIDER      "gemini" | "fal" | "segmind" | "idm-vton" | "lightx"   (default: "gemini")
+ *   AI_PROVIDER      "gemini" | "fal" | "segmind" | "idm-vton" | "lightx" | "piapi"   (default: "gemini")
  *   GEMINI_API_KEY   Google Gemini API key (free tier: 60 req/min, no CC needed)
  *   FAL_KEY          Fal.ai API key
  *   SEGMIND_API_KEY  Segmind API key
  *   HF_TOKEN         Hugging Face token (idm-vton fallback)
+ *   PIAPI_KEY        PiAPI key (free trial at piapi.ai, then $0.07/image via Kling)
  */
 
 export async function onRequestPost({ request, env }) {
@@ -65,6 +66,8 @@ export async function onRequestPost({ request, env }) {
       return asImage(await lightxTryon(personFile, garmentFile, garmentType, env));
     } else if (provider === "rapidapi") {
       return asImage(await rapidapiTryon(personFile, garmentFile, garmentType, env));
+    } else if (provider === "piapi") {
+      return asImage(await piapiTryon(personFile, garmentFile, garmentType, env));
     } else {
       return asImage(await falTryon(personDataUri, garmentDataUri, garmentType, env));
     }
@@ -454,6 +457,113 @@ async function rapidapiTryon(personFile, garmentFile, garmentType, env) {
   }
 
   return res.blob();
+}
+
+// ─── PiAPI (Kling Virtual Try-On) ──────────────────────────────────────────
+async function piapiTryon(personFile, garmentFile, garmentType, env) {
+  const key = env.PIAPI_KEY;
+  if (!key) throw new Error("PIAPI_KEY not configured — set it in wrangler.toml");
+
+  // Need LightX to host the person image (PiAPI requires URLs, not files)
+  const lightxKey = env.LIGHTX_API_KEY;
+  if (!lightxKey) throw new Error("LIGHTX_API_KEY also required to host person image for PiAPI");
+
+  // Reuse LightX upload function
+  async function upload(blob, name) {
+    const buf = await blob.arrayBuffer();
+    const size = buf.byteLength;
+    const ct = blob.type || "image/jpeg";
+
+    const urlRes = await fetch("https://api.lightxeditor.com/external/api/v2/uploadImageUrl", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": lightxKey },
+      body: JSON.stringify({ uploadType: "imageUrl", size, contentType: ct }),
+    });
+    if (!urlRes.ok) throw new Error(`LightX upload URL failed for ${name}`);
+    const d = await urlRes.json();
+    if (d.statusCode !== 2000) throw new Error(`LightX upload URL error: ${d.message}`);
+
+    const put = await fetch(d.body.uploadImage, {
+      method: "PUT", headers: { "Content-Type": ct }, body: buf,
+    });
+    if (!put.ok) throw new Error(`LightX S3 upload failed for ${name}`);
+
+    for (let i = 0; i < 5; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      const c = await fetch(d.body.imageUrl, { method: "HEAD" }).catch(() => null);
+      if (c && c.ok) return d.body.imageUrl;
+    }
+    throw new Error(`LightX image URL not accessible for ${name} after upload`);
+  }
+
+  // Upload both images to LightX CDN (PiAPI requires URLs, not files)
+  const [personUrl, garmentUrl] = await Promise.all([
+    upload(personFile, "person"),
+    upload(garmentFile, "garment"),
+  ]);
+
+  // Map garment type to PiAPI/Kling field
+  const gtype = (garmentType || "upper_body").toLowerCase();
+  const inputField = gtype === "dress" ? "dress_input" : gtype === "lower_body" ? "lower_input" : "upper_input";
+
+  // Submit task to PiAPI
+  const taskRes = await fetch("https://api.piapi.ai/api/v1/task", {
+    method: "POST",
+    headers: { "x-api-key": key, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "kling",
+      task_type: "ai_try_on",
+      input: {
+        model_input: personUrl,
+        [inputField]: garmentUrl,
+        batch_size: 1,
+      },
+    }),
+  });
+
+  if (!taskRes.ok) {
+    const txt = await taskRes.text().catch(() => "");
+    throw new Error(`PiAPI task creation failed (${taskRes.status}): ${txt.slice(0, 400)}`);
+  }
+
+  const taskData = await taskRes.json();
+  const taskId = taskData.data?.task_id;
+  if (!taskId) throw new Error(`PiAPI returned no task_id: ${JSON.stringify(taskData).slice(0, 300)}`);
+
+  // Poll for result
+  let outputUrl = null;
+  let attempts = 0;
+  const maxAttempts = 30;
+  while (attempts < maxAttempts) {
+    attempts++;
+    await new Promise(r => setTimeout(r, 3000));
+
+    const statusRes = await fetch(`https://api.piapi.ai/api/v1/task/${taskId}`, {
+      headers: { "x-api-key": key },
+    });
+    if (!statusRes.ok) continue;
+
+    const statusData = await statusRes.json();
+    const status = statusData.data?.status;
+
+    if (status === "completed") {
+      outputUrl = statusData.data?.output?.imgs?.[0] ||
+                  statusData.data?.output?.images?.[0] ||
+                  statusData.data?.output?.image ||
+                  statusData.data?.output?.img;
+      break;
+    } else if (status === "failed") {
+      const errMsg = statusData.data?.error || statusData.message || "unknown error";
+      throw new Error(`PiAPI task failed: ${errMsg}`);
+    }
+    // else "processing" or "queued" — keep polling
+  }
+
+  if (!outputUrl) throw new Error(`PiAPI did not complete after ${maxAttempts} polls`);
+
+  const imgRes = await fetch(outputUrl);
+  if (!imgRes.ok) throw new Error("Failed to download PiAPI result");
+  return imgRes.blob();
 }
 
 // ─── Utilities ──────────────────────────────────────────────────────────────

@@ -7,18 +7,25 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
 - Cloudflare Pages (wrangler) + Pages Functions (ES modules)
 - KV namespace `ORDERS` for products, orders, users
 - Static HTML/CSS/JS frontend (no framework)
-- AI try-on via **Puter.js** (Nano Banana / Gemini 3 Pro) — client-side, free, no API key needed
+- AI try-on via **PiAPI** (Kling Virtual Try-On) — server-side proxy at `/api/tryon`, $0.07/image
+- **Puter.js** retained as client-side fallback if server fails
 
 ## AI Try-On Architecture
-- `tryon.html` — Upload photo + select product → generates with Puter.js
-- `tryon.js` — Composites user photo + garment image, calls `puter.ai.txt2img()` with
-  Gemini 3 Pro model + try-on prompt. No server-side AI calls.
-- Puter.js CDN: `https://js.puter.com/v2/` loaded in tryon.html
+- `tryon.html` — Upload photo + select product → sends to `/api/tryon` (server proxy)
+- `tryon.js`:
+  1. Primary: `generateWithServer()` sends `person` file + `garment_url` to `/api/tryon`
+  2. Fallback: if server fails, `generateWithPuter()` composites person+garment and calls `puter.ai.txt2img()`
+- `functions/api/tryon.js` — Cloudflare Pages Function with multiple providers:
+  - `piapi` (default): Uploads person + garment to LightX CDN, calls PiAPI `POST /api/v1/task` (Kling model), polls for result
+  - Other: gemini, fal, segmind, idm-vton, lightx, rapidapi
+- PiAPI key stored in `wrangler.toml` as `PIAPI_KEY` (not exposed to client)
+- Puter.js CDN (`https://js.puter.com/v2/`) kept for fallback
 
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `tryon.html` / `tryon.js` | AI try-on page (Puter.js client-side generation) |
+| `tryon.html` / `tryon.js` | AI try-on page (PiAPI primary, Puter.js fallback) |
+| `functions/api/tryon.js` | Server try-on endpoint (PiAPI/Kling + 6 other providers) |
 | `functions/api/products.js` | Product CRUD (KV-backed) |
 | `wrangler.toml` | Config with API keys, KV binding |
 | `styles.css` | All site styles (~2800 lines) |

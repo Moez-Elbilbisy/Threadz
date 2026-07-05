@@ -116,6 +116,20 @@
     return new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
   }
 
+  // ─── Server Try-On (PiAPI via /api/tryon) ──────────────────────────────────
+  async function generateWithServer(personFile, product) {
+    const formData = new FormData();
+    formData.append('person', personFile);
+    formData.append('garment_url', product.image);
+
+    const res = await fetch('/api/tryon', { method: 'POST', body: formData });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `Server error (${res.status})`);
+    }
+    return res.blob();
+  }
+
   // ─── Init ─────────────────────────────────────────────────────────────────
   function renderProducts(products) {
     productGrid.innerHTML = '';
@@ -169,15 +183,32 @@
     if (!userPhotoFile || !selectedProduct) return;
     aiBtn.disabled = true;
     aiStatus.classList.remove('hidden', 'error', 'success');
-    aiStatus.querySelector('.ai-status-text').textContent = 'Nano Banana AI is generating your try-on...';
+    aiStatus.querySelector('.ai-status-text').textContent = 'Generating your try-on...';
     aiStatus.querySelector('.ai-status-icon').innerHTML = '<div class="track-loading-spinner"></div>';
     aiStatus.className = 'ai-status';
 
+    let blob;
+    let usedFallback = false;
     try {
-      const blob = await generateWithPuter(userPhotoFile, selectedProduct);
+      // Try server-side PiAPI first
+      blob = await generateWithServer(userPhotoFile, selectedProduct);
+    } catch (serverErr) {
+      console.warn('Server try-on failed, falling back to Puter.js:', serverErr.message);
+      try {
+        // Fall back to client-side Puter.js
+        blob = await generateWithPuter(userPhotoFile, selectedProduct);
+        usedFallback = true;
+      } catch (puterErr) {
+        showError(`${serverErr.message}. Fallback also failed: ${puterErr.message}`);
+        return;
+      }
+    }
+
+    if (blob) {
       showResult(URL.createObjectURL(blob));
-    } catch (err) {
-      showError(err.message);
+      if (usedFallback) {
+        aiStatus.querySelector('.ai-status-text').textContent = 'AI Try-On complete (used fallback)';
+      }
     }
   });
 
