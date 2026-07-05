@@ -652,7 +652,7 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   const BASE = "https://comfy.icu";
   const authHeaders = { "Authorization": `Bearer ${apiKey}` };
 
-  // Upload images to LightX CDN for public URL access
+  // Upload images to a publicly accessible URL so ComfyICU can download them
   const lightxKey = env.LIGHTX_API_KEY;
   if (!lightxKey) throw new Error("LIGHTX_API_KEY required for ComfyICU image hosting");
 
@@ -685,21 +685,28 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
     uploadCdn(garmentFile, "garment"),
   ]);
 
+  // ComfyICU's `files` field expects public URLs — it downloads them to the
+  // ComfyUI /input/ directory before executing the workflow.  The LoadImage
+  // node then references just the filename.
+  const files = {
+    "/input/person.png": personUrl,
+    "/input/garment.png": garmentUrl,
+  };
+
   const gtype = (garmentType || "upper_body").replace("_", " ");
   const seed = Math.floor(Math.random() * 1125899906842624);
 
-  // Use CDN URLs directly in LoadImage nodes (some backends support this)
   const prompt = {
     "2": {
       "inputs": { "filename_prefix": "ComfyUI", "images": ["11", 0] },
       "class_type": "SaveImage"
     },
     "3": {
-      "inputs": { "image": personUrl },
+      "inputs": { "image": "person.png", "upload": "image" },
       "class_type": "LoadImage"
     },
     "7": {
-      "inputs": { "image": garmentUrl },
+      "inputs": { "image": "garment.png", "upload": "image" },
       "class_type": "LoadImage"
     },
     "9": {
@@ -720,10 +727,11 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
     }
   };
 
+  const body = { workflow_id: workflowId, prompt, files };
   const runRes = await fetch(`${BASE}/api/v1/workflows/${workflowId}/runs`, {
     method: "POST",
     headers: { ...authHeaders, "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify(body),
   });
 
   if (!runRes.ok) {
