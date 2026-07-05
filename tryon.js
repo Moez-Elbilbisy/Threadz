@@ -30,14 +30,6 @@
   const retryBtn = document.getElementById('retry-btn');
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
-  function blobToDataURL(blob) {
-    return new Promise((resolve) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.readAsDataURL(blob);
-    });
-  }
-
   function showResult(imgUrl) {
     if (aiResultUrl && aiResultUrl.startsWith('blob:')) URL.revokeObjectURL(aiResultUrl);
     aiResultUrl = imgUrl;
@@ -54,66 +46,6 @@
     aiStatus.querySelector('.ai-status-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
     aiStatus.classList.add('error');
     aiBtn.disabled = false;
-  }
-
-  // ─── Composite user photo + garment for Puter input ────────────────────────
-  async function compositeForPuter(personBlob, garmentBlob) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    const [personImg, garmentImg] = await Promise.all([
-      new Promise((res, rej) => { const i = new Image(); i.onload = () => { URL.revokeObjectURL(i.src); res(i); }; i.onerror = rej; i.src = URL.createObjectURL(personBlob); }),
-      new Promise((res, rej) => { const i = new Image(); i.onload = () => { URL.revokeObjectURL(i.src); res(i); }; i.onerror = rej; i.src = URL.createObjectURL(garmentBlob); }),
-    ]);
-
-    const w = 768, h = 1024;
-    canvas.width = w;
-    canvas.height = h;
-
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, w, h);
-
-    const pScale = Math.max(w / personImg.width, h / personImg.height);
-    ctx.drawImage(personImg, (w - personImg.width * pScale) / 2, (h - personImg.height * pScale) / 2, personImg.width * pScale, personImg.height * pScale);
-
-    const insetSize = 200;
-    const ix = w - insetSize - 16, iy = h - insetSize - 16;
-    ctx.shadowColor = 'rgba(0,0,0,0.7)';
-    ctx.shadowBlur = 24;
-    ctx.drawImage(garmentImg, ix, iy, insetSize, insetSize);
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(ix, iy, insetSize, insetSize);
-
-    return new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
-  }
-
-  // ─── Puter.js Try-On ───────────────────────────────────────────────────────
-  async function generateWithPuter(personBlob, product) {
-    if (typeof puter === 'undefined') throw new Error('Puter.js not loaded. Please refresh and try again.');
-
-    const garmentResp = await fetch(product.image);
-    if (!garmentResp.ok) throw new Error('Failed to load product image');
-    const garmentBlob = await garmentResp.blob();
-
-    const compositeBlob = await compositeForPuter(personBlob, garmentBlob);
-    const dataUrl = await blobToDataURL(compositeBlob);
-
-    const prompt = `You are a virtual try-on assistant. The person in this image needs to wear the garment shown in the bottom-right corner (${product.name}). Generate a photorealistic image of the person wearing this garment naturally. Follow these rules exactly: Keep the person's face, hair, skin tone, body shape, and pose unchanged. Only replace their current clothing with the garment shown in the corner. The garment must look natural with realistic draping and texture matching the person's body. The result should look like a real photo.`;
-
-    const img = await puter.ai.txt2img(prompt, {
-      model: "google/gemini-3-pro-image-preview",
-      input_image: dataUrl.split(',')[1],
-      input_image_mime_type: "image/jpeg",
-    });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth || 1024;
-    canvas.height = img.naturalHeight || 1024;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    return new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
   }
 
   // ─── Server Try-On (PiAPI via /api/tryon) ──────────────────────────────────
@@ -187,28 +119,11 @@
     aiStatus.querySelector('.ai-status-icon').innerHTML = '<div class="track-loading-spinner"></div>';
     aiStatus.className = 'ai-status';
 
-    let blob;
-    let usedFallback = false;
     try {
-      // Try server-side PiAPI first
-      blob = await generateWithServer(userPhotoFile, selectedProduct);
-    } catch (serverErr) {
-      console.warn('Server try-on failed, falling back to Puter.js:', serverErr.message);
-      try {
-        // Fall back to client-side Puter.js
-        blob = await generateWithPuter(userPhotoFile, selectedProduct);
-        usedFallback = true;
-      } catch (puterErr) {
-        showError(`${serverErr.message}. Fallback also failed: ${puterErr.message}`);
-        return;
-      }
-    }
-
-    if (blob) {
+      const blob = await generateWithServer(userPhotoFile, selectedProduct);
       showResult(URL.createObjectURL(blob));
-      if (usedFallback) {
-        aiStatus.querySelector('.ai-status-text').textContent = 'AI Try-On complete (used fallback)';
-      }
+    } catch (err) {
+      showError(err.message);
     }
   });
 
