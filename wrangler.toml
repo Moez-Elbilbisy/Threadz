@@ -22,7 +22,7 @@ HF_TOKEN = "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"
 # Set to "piapi" (recommended), "fal", "segmind", "gemini", "idm-vton", "lightx", or "rapidapi"
 AI_PROVIDER = "piapi"
 # PiAPI key (Kling Virtual Try-On) — free trial at https://piapi.ai, then $0.07/image
-PIAPI_KEY = ""
+PIAPI_KEY = "f524a64aab464e895819c16dfb16db23dfef82c394569e3ba4a4116a109005ad"
 # Fal.ai API key — sign up at https://fal.ai for $5 free credits
 FAL_KEY = ""
 # Segmind API key — sign up at https://segmind.com for free daily credits
