@@ -650,27 +650,28 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   if (!workflowId) throw new Error("COMFYICU_WORKFLOW_ID not configured");
 
   const BASE = "https://comfy.icu";
-  const auth = { "Authorization": `Bearer ${apiKey}` };
+  const authHeaders = { "Authorization": `Bearer ${apiKey}` };
 
-  // Upload person + garment images to ComfyICU first
-  async function uploadImage(file, filename) {
+  // Upload person + garment images via multipart
+  async function uploadToComfy(file, filename) {
+    const buf = await file.arrayBuffer();
     const fd = new FormData();
-    fd.append("image", file, filename);
+    fd.append("image", new Blob([buf], { type: file.type || "image/png" }), filename);
     fd.append("type", "input");
     fd.append("overwrite", "true");
     const res = await fetch(`${BASE}/api/upload/image`, {
-      method: "POST", headers: auth, body: fd,
+      method: "POST", headers: authHeaders, body: fd,
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
-      throw new Error(`ComfyICU upload failed for ${filename}: ${res.status} ${txt.slice(0, 200)}`);
+      throw new Error(`Upload failed for ${filename}: ${res.status} ${txt.slice(0, 400)}`);
     }
     return res.json();
   }
 
   await Promise.all([
-    uploadImage(personFile, "person.png"),
-    uploadImage(garmentFile, "garment.png"),
+    uploadToComfy(personFile, "person.png"),
+    uploadToComfy(garmentFile, "garment.png"),
   ]);
 
   const gtype = (garmentType || "upper_body").replace("_", " ");
@@ -679,23 +680,19 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   const prompt = {
     "2": {
       "inputs": { "filename_prefix": "ComfyUI", "images": ["11", 0] },
-      "class_type": "SaveImage",
-      "_meta": { "title": "Save Image" }
+      "class_type": "SaveImage"
     },
     "3": {
       "inputs": { "image": "person.png" },
-      "class_type": "LoadImage",
-      "_meta": { "title": "Load Person" }
+      "class_type": "LoadImage"
     },
     "7": {
       "inputs": { "image": "garment.png" },
-      "class_type": "LoadImage",
-      "_meta": { "title": "Load Garment" }
+      "class_type": "LoadImage"
     },
     "9": {
       "inputs": { "images.image0": ["3", 0], "images.image1": ["7", 0] },
-      "class_type": "BatchImagesNode",
-      "_meta": { "title": "Batch Images" }
+      "class_type": "BatchImagesNode"
     },
     "11": {
       "inputs": {
@@ -707,20 +704,19 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
         "system_prompt": "You are a virtual try-on assistant. Always produce an image showing the person wearing the garment naturally.",
         "images": ["9", 0]
       },
-      "class_type": "GeminiImageNode",
-      "_meta": { "title": "Nano Banana (Google Gemini Image)" }
+      "class_type": "GeminiImageNode"
     }
   };
 
   const runRes = await fetch(`${BASE}/api/v1/workflows/${workflowId}/runs`, {
     method: "POST",
-    headers: { ...auth, "Content-Type": "application/json" },
-    body: JSON.stringify({ workflow_id: workflowId, prompt }),
+    headers: { ...authHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
   });
 
   if (!runRes.ok) {
     const txt = await runRes.text().catch(() => "");
-    throw new Error(`ComfyICU run error (${runRes.status}): ${txt.slice(0, 400)}`);
+    throw new Error(`ComfyICU run error (${runRes.status}): ${txt.slice(0, 600)}`);
   }
 
   const runData = await runRes.json();
@@ -732,7 +728,7 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
     await new Promise(r => setTimeout(r, 3000));
     const statusRes = await fetch(
       `${BASE}/api/v1/workflows/${workflowId}/runs/${runId}`,
-      { headers: auth }
+      { headers: authHeaders }
     );
     if (!statusRes.ok) continue;
     const statusData = await statusRes.json();
@@ -741,7 +737,8 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
       if (!outputUrl) throw new Error(`ComfyICU completed but no output URL`);
       break;
     } else if (statusData.status === "ERROR") {
-      throw new Error(`ComfyICU run failed: ${JSON.stringify(statusData).slice(0, 500)}`);
+      const errMsg = statusData.error || statusData.error_message || statusData.message || JSON.stringify(statusData);
+      throw new Error(`ComfyICU run failed: ${String(errMsg).slice(0, 1000)}`);
     }
   }
 
