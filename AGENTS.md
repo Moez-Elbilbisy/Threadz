@@ -7,7 +7,7 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
 - Cloudflare Pages (wrangler) + Pages Functions (ES modules)
 - KV namespace `ORDERS` for products, orders, users
 - Static HTML/CSS/JS frontend (no framework)
-- AI try-on via **Gemini 3.1 Flash Lite Image** — server-side proxy at `/api/tryon` (Gemini provider)
+- AI try-on via **Pollinations.ai (nanobanana-pro)** — server-side proxy at `/api/tryon`
 - **Puter.js** retained as client-side fallback if server fails
 
 ## AI Try-On Architecture
@@ -16,9 +16,9 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
   1. Primary: `generateWithServer()` sends `person` file + `garment_url` to `/api/tryon`
   2. Fallback: if server fails, `generateWithPuter()` composites person+garment and calls `puter.ai.txt2img()`
 - `functions/api/tryon.js` — Cloudflare Pages Function with multiple providers:
-  - `gemini` (default): Uses Google Gemini 3.1 Flash Lite Image for virtual try-on
+  - `pollinations` (default): Uses Pollinations.ai with nanobanana-pro (Gemini 3 Pro Image) for virtual try-on
   - Other: gemini, fal, segmind, idm-vton, lightx, rapidapi
-- Gemini API key stored in `wrangler.toml` as `GEMINI_API_KEY` (not exposed to client)
+- Pollinations API key stored in `wrangler.toml` as `POLLINATIONS_API_KEY` (not exposed to client)
 - Puter.js CDN (`https://js.puter.com/v2/`) kept for fallback
 
 ## Key Files

@@ -68,6 +68,8 @@ export async function onRequestPost({ request, env }) {
       return asImage(await rapidapiTryon(personFile, garmentFile, garmentType, env));
     } else if (provider === "piapi") {
       return asImage(await piapiTryon(personFile, garmentFile, garmentType, env));
+    } else if (provider === "pollinations") {
+      return asImage(await pollinationsTryon(personFile, garmentFile, garmentType, env));
     } else {
       return asImage(await falTryon(personDataUri, garmentDataUri, garmentType, env));
     }
@@ -564,6 +566,77 @@ async function piapiTryon(personFile, garmentFile, garmentType, env) {
   const imgRes = await fetch(outputUrl);
   if (!imgRes.ok) throw new Error("Failed to download PiAPI result");
   return imgRes.blob();
+}
+
+// ─── Pollinations.ai (nanobanana-pro) ─────────────────────────────────────
+async function pollinationsTryon(personFile, garmentFile, garmentType, env) {
+  const key = env.POLLINATIONS_API_KEY;
+  if (!key) throw new Error("POLLINATIONS_API_KEY not configured");
+
+  const lightxKey = env.LIGHTX_API_KEY;
+  if (!lightxKey) throw new Error("LIGHTX_API_KEY also required to host images for Pollinations");
+
+  async function upload(blob, name) {
+    const buf = await blob.arrayBuffer();
+    const size = buf.byteLength;
+    const ct = blob.type || "image/jpeg";
+    const urlRes = await fetch("https://api.lightxeditor.com/external/api/v2/uploadImageUrl", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": lightxKey },
+      body: JSON.stringify({ uploadType: "imageUrl", size, contentType: ct }),
+    });
+    if (!urlRes.ok) throw new Error(`LightX upload URL failed for ${name}`);
+    const d = await urlRes.json();
+    if (d.statusCode !== 2000) throw new Error(`LightX upload URL error: ${d.message}`);
+    const put = await fetch(d.body.uploadImage, {
+      method: "PUT", headers: { "Content-Type": ct }, body: buf,
+    });
+    if (!put.ok) throw new Error(`LightX S3 upload failed for ${name}`);
+    for (let i = 0; i < 5; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      const c = await fetch(d.body.imageUrl, { method: "HEAD" }).catch(() => null);
+      if (c && c.ok) return d.body.imageUrl;
+    }
+    throw new Error(`LightX image URL not accessible for ${name} after upload`);
+  }
+
+  const [personUrl, garmentUrl] = await Promise.all([
+    upload(personFile, "person"),
+    upload(garmentFile, "garment"),
+  ]);
+
+  const gtype = (garmentType || "upper_body").replace("_", " ");
+  const prompt = `Virtual try-on: Place this ${gtype} garment onto the person in the first image. Keep the person's face, hair, skin tone, body shape, pose, background, and lighting unchanged. Only replace the ${gtype} area with the new garment. The result must look like a real photo. Do not modify anything outside the clothing area.`;
+
+  const res = await fetch("https://gen.pollinations.ai/v1/images/generations", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "nanobanana-pro",
+      prompt,
+      n: 1,
+      size: "1024x1024",
+      response_format: "b64_json",
+      image: [personUrl, garmentUrl],
+    }),
+  });
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`Pollinations error (${res.status}): ${txt.slice(0, 400)}`);
+  }
+
+  const data = await res.json();
+  const b64 = data.data?.[0]?.b64_json;
+  if (!b64) throw new Error("Pollinations returned no image data");
+
+  const binaryStr = atob(b64);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+  return new Blob([bytes], { type: "image/png" });
 }
 
 // ─── Utilities ──────────────────────────────────────────────────────────────

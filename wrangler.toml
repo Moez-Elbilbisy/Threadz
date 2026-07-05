@@ -20,7 +20,7 @@ HF_TOKEN = "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"
 
 # ── AI Virtual Try-On Provider ──────────────────────────────────────────
 # Set to "piapi" (recommended), "fal", "segmind", "gemini", "idm-vton", "lightx", or "rapidapi"
-AI_PROVIDER = "gemini"
+AI_PROVIDER = "pollinations"
 # PiAPI key (Kling Virtual Try-On) — free trial at https://piapi.ai, then $0.07/image
 PIAPI_KEY = "f524a64aab464e895819c16dfb16db23dfef82c394569e3ba4a4116a109005ad"
 # Fal.ai API key — sign up at https://fal.ai for $5 free credits
@@ -33,6 +33,8 @@ GEMINI_API_KEY = "AQ.Ab8RN6JMk9vBRiaGkh4xp7rrNdDXNbeFIjd-XTSPQoM8eX_jug"
 LIGHTX_API_KEY = "3b14bc4beb8449a4b6d62735f4cd7f5d_d870f9e878924ef38fba485f25a26af3_andoraitools"
 # RapidAPI key — free Basic plan at https://rapidapi.com/texelmoda-texelmoda-apis/api/try-on-diffusion (100 req/month, no CC)
 RAPIDAPI_KEY = "e655c6d27cmsh9899638e406eb3ap1da6d7jsna458496516cd"
+# Pollinations.ai API key — https://pollinations.ai
+POLLINATIONS_API_KEY = "sk_twSUtURYqV3xOdQXRBRbPWop3NhRyD6i"
 # Custom Gradio base URL — set this to a Colab/Kaggle Gradio share URL to use your own GPU
 # Example: GRADIO_BASE_URL = "https://xxxx.gradio.live"
 GRADIO_BASE_URL = ""
