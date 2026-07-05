@@ -1,3 +1,4 @@
 node_modules/
 .vscode/
 api-keys.txt
+.env.comfyicu

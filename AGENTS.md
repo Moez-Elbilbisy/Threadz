@@ -42,6 +42,10 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
 - `tryon.js` auto-rotates through `COMFYICU_API_KEY_BACKUP_1`, `_BACKUP_2` on 402.
 - Active key index stored in KV (`comfyicu_key_index`).
 - ComfyICU uses Google OAuth only — no email signup. Create backup Google accounts manually.
+- `scripts/setup-comfyicu.js` automates ComfyICU signup + API key extraction with Playwright.
+  - Run: `node scripts/setup-comfyicu.js` (requires Playwright, see script header)
+  - Creates `.env.comfyicu` with Google creds (gitignored)
+  - Updates `wrangler.toml` with extracted API keys
 - Rotation logic is inline in `comfyicuTryon()` in `functions/api/tryon.js`.
 
 ## Memory Instructions (for AI)
