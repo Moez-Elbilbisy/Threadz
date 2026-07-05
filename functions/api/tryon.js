@@ -737,7 +737,7 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
       break;
     } else if (statusData.status === "ERROR") {
       const full = JSON.stringify(statusData, null, 2);
-      throw new Error(`ComfyICU run failed:\n${full.slice(0, 2000)}`);
+      throw new Error(`ComfyICU run failed:\n${full.slice(0, 5000)}`);
     }
   }
 
