@@ -41,11 +41,38 @@ Premium Egyptian streetwear brand — Cloudflare Pages site. Shop, collections, 
 - ComfyICU free tier gives 5k credits. When exhausted, API returns HTTP 402.
 - `tryon.js` auto-rotates through `COMFYICU_API_KEY_BACKUP_1`, `_BACKUP_2` on 402.
 - Active key index stored in KV (`comfyicu_key_index`).
-- ComfyICU uses Google OAuth only — no email signup. Create backup Google accounts manually.
-- `scripts/setup-comfyicu.js` automates ComfyICU signup + API key extraction with Playwright.
-  - Run: `node scripts/setup-comfyicu.js` (requires Playwright, see script header)
-  - Creates `.env.comfyicu` with Google creds (gitignored)
-  - Updates `wrangler.toml` with extracted API keys
+- ComfyICU uses Google OAuth only — no email signup.
+
+## Account Automation
+Two tools chained together for fully automated account cycling:
+
+### 1. Auto-Gmail-Creator (external Python tool)
+- https://github.com/ai-to-ai/Auto-Gmail-Creator
+- Creates Gmail accounts via Selenium with sms-activate.org phone verification
+- Outputs `Created.txt` with `username\tpassword\tbirthday\tphone` format
+- Requires: sms-activate.org API key (~$0.15/phone number), proxies
+- Place cloned repo at project root or any directory
+
+### 2. `scripts/setup-comfyicu.js` (our Playwright script)
+- Reads from Auto-Gmail-Creator's `Created.txt` first (use `--gmail-dir <path>` flag)
+- Falls back to `.env.comfyicu` file or env vars
+- Opens browser, does Google OAuth → ComfyICU signup → API key extraction
+- Updates `wrangler.toml` with all 3 keys
+
+### Full cycle
+```bash
+# Step 1: Create 3 Gmail accounts
+cd Auto-Gmail-Creator
+python app.py  # needs sms-activate.org API key + proxies
+# Output: Created.txt with 3 accounts
+
+# Step 2: Create ComfyICU accounts & extract API keys
+cd ../Threadz/Website
+node scripts/setup-comfyicu.js --gmail-dir ../../Auto-Gmail-Creator
+
+# Step 3: Deploy
+npx wrangler pages deploy . --branch=main
+```
 - Rotation logic is inline in `comfyicuTryon()` in `functions/api/tryon.js`.
 
 ## Memory Instructions (for AI)

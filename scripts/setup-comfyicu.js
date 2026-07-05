@@ -8,19 +8,28 @@
  *   npm install playwright
  *   npx playwright install chromium
  *
- * Usage:
+ * Reads Gmail accounts from Auto-Gmail-Creator's Created.txt first,
+ * then falls back to .env.comfyicu or environment variables.
+ *
+ * Prerequisites:
+ *   npm install playwright
+ *   npx playwright install chromium
+ *
+ * Usage — chained with Auto-Gmail-Creator:
+ *   git clone https://github.com/ai-to-ai/Auto-Gmail-Creator.git
+ *   # Run Auto-Gmail-Creator to create Gmail accounts -> outputs Created.txt
+ *   # Point this script to that output:
+ *   node scripts/setup-comfyicu.js --gmail-dir ../Auto-Gmail-Creator
+ *
+ * Usage — manual accounts:
  *   set COMFYICU_EMAIL_1=youraccount1@gmail.com
  *   set COMFYICU_PASS_1=yourpassword1
- *   set COMFYICU_EMAIL_2=youraccount2@gmail.com
- *   set COMFYICU_PASS_2=yourpassword2
- *   set COMFYICU_EMAIL_3=youraccount3@gmail.com
- *   set COMFYICU_PASS_3=yourpassword3
+ *   ... (up to 3)
  *   node scripts/setup-comfyicu.js
  *
- * Or create a .env.comfyicu file in the project root:
+ * Or use .env.comfyicu file:
  *   COMFYICU_EMAIL_1=...
  *   COMFYICU_PASS_1=...
- *   (one pair per account, up to 3)
  */
 
 const { chromium } = require("playwright");
@@ -29,6 +38,35 @@ const path = require("path");
 
 // ── Read accounts ─────────────────────────────────────────────────────
 function loadAccounts() {
+  const accounts = [];
+
+  // Priority 1: Auto-Gmail-Creator output (--gmail-dir flag or Auto-Gmail-Creator/)
+  const gmailDir = process.argv.includes("--gmail-dir")
+    ? process.argv[process.argv.indexOf("--gmail-dir") + 1]
+    : path.join(__dirname, "..", "Auto-Gmail-Creator");
+
+  const createdTxt = path.join(gmailDir, "Created.txt");
+  if (fs.existsSync(createdTxt)) {
+    const lines = fs.readFileSync(createdTxt, "utf-8").split("\n").filter(Boolean);
+    for (let i = 0; i < lines.length && i < 3; i++) {
+      const parts = lines[i].split("\t");
+      if (parts.length >= 2) {
+        const username = parts[0].trim();
+        const password = parts[1].trim();
+        accounts.push({
+          email: username.includes("@") ? username : `${username}@gmail.com`,
+          pass: password,
+          index: accounts.length + 1,
+        });
+      }
+    }
+    if (accounts.length > 0) {
+      console.log(`Loaded ${accounts.length} account(s) from ${createdTxt}`);
+      return accounts;
+    }
+  }
+
+  // Priority 2: .env.comfyicu file
   const envPath = path.join(__dirname, "..", ".env.comfyicu");
   if (fs.existsSync(envPath)) {
     const lines = fs.readFileSync(envPath, "utf-8").split("\n");
@@ -38,7 +76,6 @@ function loadAccounts() {
     }
   }
 
-  const accounts = [];
   for (let i = 1; i <= 3; i++) {
     const email = process.env[`COMFYICU_EMAIL_${i}`];
     const pass = process.env[`COMFYICU_PASS_${i}`];
