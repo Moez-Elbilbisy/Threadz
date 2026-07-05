@@ -651,27 +651,17 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
 
   const BASE = "https://comfy.icu";
   const authHeaders = { "Authorization": `Bearer ${apiKey}` };
-
-  // Upload person + garment images via multipart
-  async function uploadToComfy(file, filename) {
+  const toB64 = async (file) => {
     const buf = await file.arrayBuffer();
-    const fd = new FormData();
-    fd.append("image", new Blob([buf], { type: file.type || "image/png" }), filename);
-    fd.append("type", "input");
-    fd.append("overwrite", "true");
-    const res = await fetch(`${BASE}/api/upload/image`, {
-      method: "POST", headers: authHeaders, body: fd,
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`Upload failed for ${filename}: ${res.status} ${txt.slice(0, 400)}`);
-    }
-    return res.json();
-  }
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  };
 
-  await Promise.all([
-    uploadToComfy(personFile, "person.png"),
-    uploadToComfy(garmentFile, "garment.png"),
+  const [personB64, garmentB64] = await Promise.all([
+    toB64(personFile),
+    toB64(garmentFile),
   ]);
 
   const gtype = (garmentType || "upper_body").replace("_", " ");
@@ -711,7 +701,13 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   const runRes = await fetch(`${BASE}/api/v1/workflows/${workflowId}/runs`, {
     method: "POST",
     headers: { ...authHeaders, "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({
+      prompt,
+      files: {
+        "input/person.png": personB64,
+        "input/garment.png": garmentB64,
+      },
+    }),
   });
 
   if (!runRes.ok) {
