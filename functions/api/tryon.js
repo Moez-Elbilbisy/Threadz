@@ -652,30 +652,54 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   const BASE = "https://comfy.icu";
   const authHeaders = { "Authorization": `Bearer ${apiKey}` };
 
-  const toFile = async (file, name) => {
-    const buf = await file.arrayBuffer();
-    return new Blob([buf], { type: file.type || "image/png" });
-  };
+  // Upload images to LightX CDN for public URL access
+  const lightxKey = env.LIGHTX_API_KEY;
+  if (!lightxKey) throw new Error("LIGHTX_API_KEY required for ComfyICU image hosting");
 
-  const [personBlob, garmentBlob] = await Promise.all([
-    toFile(personFile, "person.png"),
-    toFile(garmentFile, "garment.png"),
+  async function uploadCdn(blob, name) {
+    const buf = await blob.arrayBuffer();
+    const size = buf.byteLength;
+    const ct = blob.type || "image/png";
+    const urlRes = await fetch("https://api.lightxeditor.com/external/api/v2/uploadImageUrl", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": lightxKey },
+      body: JSON.stringify({ uploadType: "imageUrl", size, contentType: ct }),
+    });
+    if (!urlRes.ok) throw new Error(`CDN upload failed for ${name}`);
+    const d = await urlRes.json();
+    if (d.statusCode !== 2000) throw new Error(`CDN upload error: ${d.message}`);
+    const put = await fetch(d.body.uploadImage, {
+      method: "PUT", headers: { "Content-Type": ct }, body: buf,
+    });
+    if (!put.ok) throw new Error(`CDN S3 upload failed for ${name}`);
+    for (let i = 0; i < 5; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      const c = await fetch(d.body.imageUrl, { method: "HEAD" }).catch(() => null);
+      if (c && c.ok) return d.body.imageUrl;
+    }
+    throw new Error(`CDN URL not accessible for ${name}`);
+  }
+
+  const [personUrl, garmentUrl] = await Promise.all([
+    uploadCdn(personFile, "person"),
+    uploadCdn(garmentFile, "garment"),
   ]);
 
   const gtype = (garmentType || "upper_body").replace("_", " ");
   const seed = Math.floor(Math.random() * 1125899906842624);
 
+  // Use CDN URLs directly in LoadImage nodes (some backends support this)
   const prompt = {
     "2": {
       "inputs": { "filename_prefix": "ComfyUI", "images": ["11", 0] },
       "class_type": "SaveImage"
     },
     "3": {
-      "inputs": { "image": "person.png" },
+      "inputs": { "image": personUrl },
       "class_type": "LoadImage"
     },
     "7": {
-      "inputs": { "image": "garment.png" },
+      "inputs": { "image": garmentUrl },
       "class_type": "LoadImage"
     },
     "9": {
@@ -696,19 +720,10 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
     }
   };
 
-  const formData = new FormData();
-  formData.append("prompt", JSON.stringify(prompt));
-  formData.append("files", JSON.stringify({
-    "person.png": "person.png",
-    "garment.png": "garment.png",
-  }));
-  formData.append("person.png", personBlob, "person.png");
-  formData.append("garment.png", garmentBlob, "garment.png");
-
   const runRes = await fetch(`${BASE}/api/v1/workflows/${workflowId}/runs`, {
     method: "POST",
-    headers: authHeaders,
-    body: formData,
+    headers: { ...authHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
   });
 
   if (!runRes.ok) {
