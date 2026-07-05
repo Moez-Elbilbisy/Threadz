@@ -652,19 +652,17 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
   const BASE = "https://comfy.icu";
   const authHeaders = { "Authorization": `Bearer ${apiKey}` };
 
-  const toDataUri = async (file) => {
+  const toB64 = async (file) => {
     const buf = await file.arrayBuffer();
     const bytes = new Uint8Array(buf);
     let binary = "";
     for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-    const b64 = btoa(binary);
-    const mime = file.type || "image/png";
-    return `data:${mime};base64,${b64}`;
+    return btoa(binary);
   };
 
-  const [personDataUri, garmentDataUri] = await Promise.all([
-    toDataUri(personFile),
-    toDataUri(garmentFile),
+  const [personB64, garmentB64] = await Promise.all([
+    toB64(personFile),
+    toB64(garmentFile),
   ]);
 
   const gtype = (garmentType || "upper_body").replace("_", " ");
@@ -706,10 +704,10 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
     headers: { ...authHeaders, "Content-Type": "application/json" },
     body: JSON.stringify({
       prompt,
-      images: [
-        { name: "person.png", image: personDataUri },
-        { name: "garment.png", image: garmentDataUri },
-      ],
+      files: {
+        "person.png": personB64,
+        "garment.png": garmentB64,
+      },
     }),
   });
 
