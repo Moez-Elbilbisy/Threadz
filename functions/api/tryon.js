@@ -651,17 +651,20 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
 
   const BASE = "https://comfy.icu";
   const authHeaders = { "Authorization": `Bearer ${apiKey}` };
-  const toB64 = async (file) => {
+
+  const toDataUri = async (file) => {
     const buf = await file.arrayBuffer();
     const bytes = new Uint8Array(buf);
     let binary = "";
     for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-    return btoa(binary);
+    const b64 = btoa(binary);
+    const mime = file.type || "image/png";
+    return `data:${mime};base64,${b64}`;
   };
 
-  const [personB64, garmentB64] = await Promise.all([
-    toB64(personFile),
-    toB64(garmentFile),
+  const [personDataUri, garmentDataUri] = await Promise.all([
+    toDataUri(personFile),
+    toDataUri(garmentFile),
   ]);
 
   const gtype = (garmentType || "upper_body").replace("_", " ");
@@ -703,10 +706,10 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
     headers: { ...authHeaders, "Content-Type": "application/json" },
     body: JSON.stringify({
       prompt,
-      files: {
-        "input/person.png": personB64,
-        "input/garment.png": garmentB64,
-      },
+      images: [
+        { name: "person.png", image: personDataUri },
+        { name: "garment.png", image: garmentDataUri },
+      ],
     }),
   });
 
@@ -733,8 +736,8 @@ async function comfyicuTryon(personFile, garmentFile, garmentType, env) {
       if (!outputUrl) throw new Error(`ComfyICU completed but no output URL`);
       break;
     } else if (statusData.status === "ERROR") {
-      const errMsg = statusData.error || statusData.error_message || statusData.message || JSON.stringify(statusData);
-      throw new Error(`ComfyICU run failed: ${String(errMsg).slice(0, 1000)}`);
+      const full = JSON.stringify(statusData, null, 2);
+      throw new Error(`ComfyICU run failed:\n${full.slice(0, 2000)}`);
     }
   }
 
