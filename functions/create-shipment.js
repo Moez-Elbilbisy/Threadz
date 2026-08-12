@@ -1,3 +1,34 @@
+async function sendOrderEmail(env, data, trackingNumber) {
+  const apiKey = env.RESEND_API_KEY;
+  if (!apiKey || !data.email) return;
+  const from = env.RESEND_FROM || "Threadz <orders@threadzeg.pages.dev>";
+  const site = env.SITE_URL || env.CF_PAGES_URL || "https://threadzeg.pages.dev";
+  try {
+    const items =
+      (data.items || [])
+        .map((i) => `${i.name || i.title || "Item"} ${i.qty ? `x${i.qty}` : ""}`)
+        .join(", ") || "Your order";
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: data.email,
+        subject: `Threadz order confirmed — ${trackingNumber}`,
+        html: [
+          `<p>Hi ${data.fullName || "there"},</p>`,
+          `<p>Your Threadz order is confirmed.</p>`,
+          `<ul><li>Order: <strong>${trackingNumber}</strong></li><li>Items: ${items}</li><li>Total: ${data.total || ""}</li><li>Payment: ${data.paymentMethod || ""}</li></ul>`,
+          `<p>Track it: <a href="${site}/track.html?tracking=${trackingNumber}">${site}/track.html?tracking=${trackingNumber}</a></p>`,
+        ].join(""),
+      }),
+    });
+    if (!r.ok) console.error("Resend email failed (non-fatal):", r.status, await r.text());
+  } catch (e) {
+    console.error("Resend email error (non-fatal):", e.message);
+  }
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -114,6 +145,8 @@ export async function onRequestPost(context) {
     } catch (kvErr) {
       console.error("KV store error (non-fatal):", kvErr);
     }
+
+    await sendOrderEmail(env, data, trackingNumber);
 
     return new Response(JSON.stringify({
       success: true,
