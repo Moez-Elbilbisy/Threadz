@@ -9,36 +9,14 @@ pages_build_output_dir = "."
 binding = "ORDERS"
 id = "9190f3f184944c9094bbeac430b89422"
 
-[ai]
-binding = "AI"
-
 [vars]
 JWT_SECRET = "threadz-jwt-secret-2024"
 BOSTA_API_KEY = "3593a672772ae29d44e4d522c57138dcaf346099c5fc24b998a724ac2592e0bd"
 ADMIN_CODE = "CBT2009"
-HF_TOKEN = "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"
-
-# ── AI Virtual Try-On Provider ──────────────────────────────────────────
-# Set to "piapi" (recommended), "fal", "segmind", "gemini", "idm-vton", "lightx", or "rapidapi"
-AI_PROVIDER = "comfyicu"
-# PiAPI key (Kling Virtual Try-On) — free trial at https://piapi.ai, then $0.07/image
-PIAPI_KEY = "f524a64aab464e895819c16dfb16db23dfef82c394569e3ba4a4116a109005ad"
-# Fal.ai API key — sign up at https://fal.ai for $5 free credits
-FAL_KEY = ""
-# Segmind API key — sign up at https://segmind.com for free daily credits
-SEGMIND_API_KEY = "SG_b499f1adf354b646"
-# Google Gemini API key — free at https://aistudio.google.com/app/apikey (no CC)
+# Google Gemini — free tier (Google AI Studio, no CC). Only AI key; /api/tryon uses it.
 GEMINI_API_KEY = "AQ.Ab8RN6JMk9vBRiaGkh4xp7rrNdDXNbeFIjd-XTSPQoM8eX_jug"
-# LightX API key — sign up at https://www.lightxeditor.com/api/ for 25 free credits (no CC)
-LIGHTX_API_KEY = "3b14bc4beb8449a4b6d62735f4cd7f5d_d870f9e878924ef38fba485f25a26af3_andoraitools"
-# RapidAPI key — free Basic plan at https://rapidapi.com/texelmoda-texelmoda-apis/api/try-on-diffusion (100 req/month, no CC)
-RAPIDAPI_KEY = "e655c6d27cmsh9899638e406eb3ap1da6d7jsna458496516cd"
-# ComfyICU — https://comfy.icu (free 5k credits, Google OAuth signup)
-# Add backup keys for auto-rotation when credits run out (HTTP 402)
-COMFYICU_API_KEY = "OMVzxw4DSwttahBNCd6micoUzYlHcBPrPbf7Io5lWoQxURqr"
-COMFYICU_API_KEY_BACKUP_1 = ""
-COMFYICU_API_KEY_BACKUP_2 = ""
-COMFYICU_WORKFLOW_ID = "ZVxjqQR0cwQ7W1-eVr5ht"
-# Custom Gradio base URL — set this to a Colab/Kaggle Gradio share URL to use your own GPU
-# Example: GRADIO_BASE_URL = "https://xxxx.gradio.live"
-GRADIO_BASE_URL = ""
+# Optional free tools (add as Pages Variables when accounts exist):
+# RESEND_API_KEY   — transactional order emails (free tier: 3k/mo)
+# CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY — product image CDN
+# ALGOLIA_APP_ID / ALGOLIA_API_KEY — shop search
+# UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN — sessions / key index

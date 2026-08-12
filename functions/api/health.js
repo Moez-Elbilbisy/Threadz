@@ -1,4 +1,4 @@
-const PROVIDERS = ["AI_PROVIDER", "PIAPI_KEY", "SEGMIND_API_KEY", "GEMINI_API_KEY", "LIGHTX_API_KEY", "RAPIDAPI_KEY", "COMFYICU_API_KEY", "COMFYICU_API_KEY_BACKUP_1", "COMFYICU_API_KEY_BACKUP_2"];
+const PROVIDERS = ["GEMINI_API_KEY"];
 
 const mask = (v) => (v && v.length > 8 ? `${v.slice(0, 4)}…${v.slice(-4)}` : v ? "set" : "");
 
@@ -27,7 +27,6 @@ export async function onRequest(context) {
     },
     core: {
       BOSTA_API_KEY: Boolean(env.BOSTA_API_KEY),
-      HF_TOKEN: Boolean(env.HF_TOKEN),
     },
   };
 
@@ -39,7 +38,7 @@ export async function onRequest(context) {
         revision: env.CF_PAGES_COMMIT_SHA || "local",
         branch: env.CF_PAGES_BRANCH || "local",
         site: base,
-        aiProvider: env.AI_PROVIDER || "gemini",
+        aiProvider: "gemini",
         kv: kvOk ? "ok" : "error",
         configured,
         services,
